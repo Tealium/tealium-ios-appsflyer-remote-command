@@ -79,7 +79,7 @@ public class AppsFlyerCommand {
         }
     }
     
-    func remoteCommand() -> TealiumRemoteCommand {
+    public func remoteCommand() -> TealiumRemoteCommand {
         return TealiumRemoteCommand(commandId: "appsflyer", description: "AppsFlyer Remote Command") { response in
             
             let payload = response.payload()

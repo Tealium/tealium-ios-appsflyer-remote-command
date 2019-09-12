@@ -7,8 +7,9 @@
 //
 
 import XCTest
-@testable import RemoteCommandModules
-@testable import TealiumSwift
+@testable import TealiumAppsFlyer
+import TealiumRemoteCommands
+
 
 class AppsFlyerRemoteCommandRunnerTests: XCTestCase {
 

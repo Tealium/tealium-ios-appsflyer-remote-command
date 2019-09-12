@@ -8,10 +8,10 @@
 
 import Foundation
 
-enum AppsFlyer {
+public enum AppsFlyer {
     
     /// Standard AppsFlyer events: https://support.appsflyer.com/hc/en-us/articles/115005544169#Event-Types
-    enum EventCommandNames: String, CaseIterable {
+    public enum EventCommandNames: String, CaseIterable {
         case achievelevel
         case adclick
         case adview
@@ -40,7 +40,7 @@ enum AppsFlyer {
     }
     
     /// Other events/methods
-    enum CommandNames {
+    public enum CommandNames {
         static let launch = "launch"
         static let initialize = "initialize"
         static let inAppPurchase = "inapppurchase"
@@ -53,7 +53,7 @@ enum AppsFlyer {
         static let resolveDeepLinkUrls = "resolvedeeplinkurls"
     }
     
-    enum Configuration {
+    public enum Configuration {
         static let appDevKey = "app_dev_key"
         static let debug = "debug"
         static let disableAdTracking = "disable_ad_tracking"
@@ -68,7 +68,7 @@ enum AppsFlyer {
     /// These parameters are available to send with events and commands
     /// For more information about what to send with a particular event,
     /// please refer to this document: https://support.appsflyer.com/hc/en-us/articles/115005544169#Event-Types
-    enum Parameters {
+    public enum Parameters {
         static let latitude = "af_lat"
         static let longitude = "af_long"
         static let pushPayload = "af_push_payload"
@@ -82,7 +82,7 @@ enum AppsFlyer {
         static let deepLinkUrls = "af_deep_link"
     }
     
-    enum Events {
+    public enum Events {
         static let achievedLevel = "af_level_achieved"
         static let addPaymentInfo = "af_add_payment_info"
         static let addToCart = "af_add_to_cart"

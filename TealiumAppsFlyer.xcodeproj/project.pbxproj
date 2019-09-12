@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CF01034A232AFF76007A03EE /* TealiumCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF0D0226232AC591005BFE15 /* TealiumCore.framework */; };
+		CF01034B232AFF76007A03EE /* TealiumRemoteCommands.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF0D0225232AC591005BFE15 /* TealiumRemoteCommands.framework */; };
 		CF0D01F5232AB7CB005BFE15 /* TealiumAppsFlyer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF0D01EB232AB7CB005BFE15 /* TealiumAppsFlyer.framework */; };
 		CF0D01FC232AB7CB005BFE15 /* TealiumAppsFlyer.h in Headers */ = {isa = PBXBuildFile; fileRef = CF0D01EE232AB7CB005BFE15 /* TealiumAppsFlyer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CF0D0208232AB81A005BFE15 /* AppsFlyerCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF0D0205232AB81A005BFE15 /* AppsFlyerCommand.swift */; };
@@ -14,7 +16,6 @@
 		CF0D020A232AB81A005BFE15 /* AppsFlyerCommandRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF0D0207232AB81A005BFE15 /* AppsFlyerCommandRunner.swift */; };
 		CF0D0211232AB848005BFE15 /* AppsFlyerRemoteCommandRunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF0D020C232AB841005BFE15 /* AppsFlyerRemoteCommandRunnerTests.swift */; };
 		CF0D0212232AB84B005BFE15 /* MockAppsFlyerCommandRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF0D020B232AB841005BFE15 /* MockAppsFlyerCommandRunner.swift */; };
-		CF0D0213232AB84D005BFE15 /* HttpTestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF0D020F232AB847005BFE15 /* HttpTestHelpers.swift */; };
 		CF0D0227232AC591005BFE15 /* TealiumTagManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF0D0222232AC591005BFE15 /* TealiumTagManagement.framework */; };
 		CF0D0228232AC591005BFE15 /* TealiumDelegate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF0D0223232AC591005BFE15 /* TealiumDelegate.framework */; };
 		CF0D0229232AC591005BFE15 /* AppsFlyerTracker.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF0D0224232AC591005BFE15 /* AppsFlyerTracker.framework */; };
@@ -22,6 +23,7 @@
 		CF0D022B232AC591005BFE15 /* TealiumCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF0D0226232AC591005BFE15 /* TealiumCore.framework */; };
 		CF904C7F232AE9BC004F2C06 /* EnumMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF904C7E232AE9BC004F2C06 /* EnumMap.swift */; };
 		CF904C87232AEA5A004F2C06 /* TealiumRegistration.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF904C86232AEA5A004F2C06 /* TealiumRegistration.swift */; };
+		CF9B51B8232AF23C003019F9 /* HttpTestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF0D020F232AB847005BFE15 /* HttpTestHelpers.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -72,6 +74,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CF01034A232AFF76007A03EE /* TealiumCore.framework in Frameworks */,
+				CF01034B232AFF76007A03EE /* TealiumRemoteCommands.framework in Frameworks */,
 				CF0D01F5232AB7CB005BFE15 /* TealiumAppsFlyer.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -304,7 +308,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CF0D0213232AB84D005BFE15 /* HttpTestHelpers.swift in Sources */,
+				CF9B51B8232AF23C003019F9 /* HttpTestHelpers.swift in Sources */,
 				CF0D0212232AB84B005BFE15 /* MockAppsFlyerCommandRunner.swift in Sources */,
 				CF0D0211232AB848005BFE15 /* AppsFlyerRemoteCommandRunnerTests.swift in Sources */,
 			);
@@ -485,6 +489,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_TESTABILITY = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
@@ -510,6 +515,10 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = XC939GDC9P;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
 				INFOPLIST_FILE = Tests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -529,6 +538,10 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = XC939GDC9P;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
 				INFOPLIST_FILE = Tests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

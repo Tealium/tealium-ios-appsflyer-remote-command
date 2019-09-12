@@ -7,7 +7,7 @@
 //
 
 import Foundation
-@testable import RemoteCommandModules
+@testable import TealiumAppsFlyer
 
 class MockAppsFlyerCommandRunner: AppsFlyerCommandRunnable {
     
