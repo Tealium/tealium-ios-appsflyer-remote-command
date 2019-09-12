@@ -7,13 +7,20 @@
 //
 
 import Foundation
+#if COCOAPODS
 import TealiumSwift
+#else
+import TealiumCore
+import TealiumDelegate
+import TealiumTagManagement
+import TealiumRemoteCommands
+#endif
 
-class AppsFlyerCommand {
+public class AppsFlyerCommand {
 
     let appsFlyerCommandRunner: AppsFlyerCommandRunnable
     
-    init(appsFlyerCommandRunner: AppsFlyerCommandRunnable = AppsFlyerCommandRunner()) {
+    public init(appsFlyerCommandRunner: AppsFlyerCommandRunnable = AppsFlyerCommandRunner()) {
         self.appsFlyerCommandRunner = appsFlyerCommandRunner
     }
     
@@ -165,4 +172,10 @@ class AppsFlyerCommand {
         }
     }
     
+}
+
+extension TealiumRemoteCommand {
+    static let commandName = "command_name"
+    static let apiKey = "api_key"
+    static let appId = "app_id"
 }

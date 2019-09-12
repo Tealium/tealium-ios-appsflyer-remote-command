@@ -20,6 +20,8 @@
 		CF0D0229232AC591005BFE15 /* AppsFlyerTracker.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF0D0224232AC591005BFE15 /* AppsFlyerTracker.framework */; };
 		CF0D022A232AC591005BFE15 /* TealiumRemoteCommands.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF0D0225232AC591005BFE15 /* TealiumRemoteCommands.framework */; };
 		CF0D022B232AC591005BFE15 /* TealiumCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF0D0226232AC591005BFE15 /* TealiumCore.framework */; };
+		CF904C7F232AE9BC004F2C06 /* EnumMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF904C7E232AE9BC004F2C06 /* EnumMap.swift */; };
+		CF904C87232AEA5A004F2C06 /* TealiumRegistration.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF904C86232AEA5A004F2C06 /* TealiumRegistration.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +51,8 @@
 		CF0D0224232AC591005BFE15 /* AppsFlyerTracker.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppsFlyerTracker.framework; path = Carthage/Build/iOS/AppsFlyerTracker.framework; sourceTree = "<group>"; };
 		CF0D0225232AC591005BFE15 /* TealiumRemoteCommands.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TealiumRemoteCommands.framework; path = Carthage/Build/iOS/TealiumRemoteCommands.framework; sourceTree = "<group>"; };
 		CF0D0226232AC591005BFE15 /* TealiumCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TealiumCore.framework; path = Carthage/Build/iOS/TealiumCore.framework; sourceTree = "<group>"; };
+		CF904C7E232AE9BC004F2C06 /* EnumMap.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EnumMap.swift; sourceTree = "<group>"; };
+		CF904C86232AEA5A004F2C06 /* TealiumRegistration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TealiumRegistration.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +104,8 @@
 				CF0D0206232AB81A005BFE15 /* AppsFlyer.swift */,
 				CF0D0205232AB81A005BFE15 /* AppsFlyerCommand.swift */,
 				CF0D0207232AB81A005BFE15 /* AppsFlyerCommandRunner.swift */,
+				CF904C7E232AE9BC004F2C06 /* EnumMap.swift */,
+				CF904C86232AEA5A004F2C06 /* TealiumRegistration.swift */,
 				CF0D01EE232AB7CB005BFE15 /* TealiumAppsFlyer.h */,
 				CF0D01EF232AB7CB005BFE15 /* Info.plist */,
 			);
@@ -288,7 +294,9 @@
 			files = (
 				CF0D0209232AB81A005BFE15 /* AppsFlyer.swift in Sources */,
 				CF0D020A232AB81A005BFE15 /* AppsFlyerCommandRunner.swift in Sources */,
+				CF904C87232AEA5A004F2C06 /* TealiumRegistration.swift in Sources */,
 				CF0D0208232AB81A005BFE15 /* AppsFlyerCommand.swift in Sources */,
+				CF904C7F232AE9BC004F2C06 /* EnumMap.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
