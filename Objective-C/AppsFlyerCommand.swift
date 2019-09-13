@@ -7,19 +7,13 @@
 //
 
 import Foundation
-#if COCOAPODS
-import TealiumSwift
-#else
-import TealiumCore
-import TealiumDelegate
-import TealiumTagManagement
-import TealiumRemoteCommands
-#endif
+import TealiumIOS
 
-public class AppsFlyerCommand {
-    
+public class AppsFlyerCommand: NSObject {
+
     let appsFlyerCommandRunner: AppsFlyerCommandRunnable
     
+    @objc
     public init(appsFlyerCommandRunner: AppsFlyerCommandRunnable = AppsFlyerCommandRunner()) {
         self.appsFlyerCommandRunner = appsFlyerCommandRunner
     }
@@ -79,10 +73,12 @@ public class AppsFlyerCommand {
         }
     }
     
-    public func remoteCommand() -> TealiumRemoteCommand {
-        return TealiumRemoteCommand(commandId: "appsflyer", description: "AppsFlyer Remote Command") { response in
-            
-            let payload = response.payload()
+    @objc
+    public func remoteCommand() -> TEALRemoteCommandResponseBlock {
+        return { response in
+            guard let payload = response?.requestPayload as? [String: Any] else {
+                return
+            }
             
             if let disableTracking = payload[AppsFlyer.Parameters.stopTracking] as? Bool {
                 if disableTracking == true {
@@ -91,15 +87,16 @@ public class AppsFlyerCommand {
                 }
             }
             
-            guard let command = payload[TealiumRemoteCommand.commandName] as? String else {
+            guard let command = payload[AppsFlyer.commandName] as? String else {
                 return
             }
             let commands = command.split(separator: ",")
             let appsflyerCommands = commands.map { command in
                 return command.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-            }
+            }            
             
             self.parseCommands(appsflyerCommands, payload: payload)
+            
         }
     }
     
@@ -114,7 +111,7 @@ public class AppsFlyerCommand {
             } else {
                 switch lowercasedCommand {
                 case AppsFlyer.CommandNames.initialize:
-                    guard let appId = payload[TealiumRemoteCommand.appId] as? String,
+                    guard let appId = payload[AppsFlyer.appId] as? String,
                         let appDevKey = payload[AppsFlyer.Configuration.appDevKey] as? String else {
                             print("Appsflyer: Must set an app_id and api_key in AppsFlyer Mobile Remote Command tag to initialize")
                             return
@@ -178,8 +175,3 @@ public class AppsFlyerCommand {
     
 }
 
-extension TealiumRemoteCommand {
-    static let commandName = "command_name"
-    static let apiKey = "api_key"
-    static let appId = "app_id"
-}
