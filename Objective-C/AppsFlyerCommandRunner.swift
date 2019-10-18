@@ -1,5 +1,5 @@
 //
-//  AppsFlyerCommandRunner.swift
+//  AppsFlyerCommandTracker.swift
 //  AppsFlyerRemoteCommand
 //
 //  Created by Christina Sund on 5/29/19.
@@ -11,7 +11,7 @@ import AppsFlyerLib
 import TealiumIOS
 
 @objc
-public protocol AppsFlyerCommandRunnable {
+public protocol AppsFlyerTrackable {
     func initialize(appId: String, appDevKey: String)
     func initialize(appId: String, appDevKey: String, config: [String: Any])
     func trackLaunch()
@@ -26,7 +26,7 @@ public protocol AppsFlyerCommandRunnable {
 }
 
 @objc
-public class AppsFlyerCommandRunner: NSObject, AppsFlyerCommandRunnable, TealiumRegistration {
+public class AppsFlyerCommandTracker: NSObject, AppsFlyerTrackable, TealiumRegistration {
 
     weak var tealium: Tealium?
     
@@ -129,7 +129,7 @@ public class AppsFlyerCommandRunner: NSObject, AppsFlyerCommandRunnable, Tealium
 
 }
 
-extension AppsFlyerCommandRunner: AppsFlyerTrackerDelegate {
+extension AppsFlyerCommandTracker: AppsFlyerTrackerDelegate {
 
     public func onConversionDataReceived(_ installData: [AnyHashable: Any]!) {
         guard let tealium = tealium else { return }
