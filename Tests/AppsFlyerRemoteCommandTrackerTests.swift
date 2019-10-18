@@ -11,14 +11,14 @@ import XCTest
 import TealiumRemoteCommands
 
 
-class AppsFlyerRemoteCommandRunnerTests: XCTestCase {
+class AppsFlyerRemoteCommandTrackerTests: XCTestCase {
 
-    var appsFlyerCommandRunner = MockAppsFlyerCommandRunner()
+    var appsFlyerCommandTracker = MockAppsFlyerCommandTracker()
     var appsFlyerCommand: AppsFlyerCommand!
     var remoteCommand: TealiumRemoteCommand!
     
     override func setUp() {
-        appsFlyerCommand = AppsFlyerCommand(appsFlyerCommandRunner: appsFlyerCommandRunner)
+        appsFlyerCommand = AppsFlyerCommand(appsFlyerCommandTracker: appsFlyerCommandTracker)
         remoteCommand = appsFlyerCommand.remoteCommand()
     }
     
@@ -41,7 +41,7 @@ class AppsFlyerRemoteCommandRunnerTests: XCTestCase {
         
         if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
             remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(1, self.appsFlyerCommandRunner.initWithoutConfigCount)
+            XCTAssertEqual(1, self.appsFlyerCommandTracker.initWithoutConfigCount)
         }
         
         expect.fulfill()
@@ -54,8 +54,8 @@ class AppsFlyerRemoteCommandRunnerTests: XCTestCase {
         
         if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
             remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(0, self.appsFlyerCommandRunner.initWithoutConfigCount)
-            XCTAssertEqual(0, self.appsFlyerCommandRunner.initWithConfigCount)
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.initWithoutConfigCount)
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.initWithConfigCount)
         }
         
         expect.fulfill()
@@ -71,7 +71,7 @@ class AppsFlyerRemoteCommandRunnerTests: XCTestCase {
         
         if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
             remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(1, self.appsFlyerCommandRunner.initWithConfigCount)
+            XCTAssertEqual(1, self.appsFlyerCommandTracker.initWithConfigCount)
         }
         
         expect.fulfill()
@@ -85,8 +85,8 @@ class AppsFlyerRemoteCommandRunnerTests: XCTestCase {
         
         if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
             remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(0, self.appsFlyerCommandRunner.initWithConfigCount)
-            XCTAssertEqual(0, self.appsFlyerCommandRunner.initWithConfigCount)
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.initWithConfigCount)
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.initWithConfigCount)
         }
         
         expect.fulfill()
@@ -99,7 +99,7 @@ class AppsFlyerRemoteCommandRunnerTests: XCTestCase {
         
         if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
             remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(1, self.appsFlyerCommandRunner.trackLaunchCount)
+            XCTAssertEqual(1, self.appsFlyerCommandTracker.trackLaunchCount)
         }
         
         expect.fulfill()
@@ -112,7 +112,7 @@ class AppsFlyerRemoteCommandRunnerTests: XCTestCase {
         
         if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
             remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(0, self.appsFlyerCommandRunner.trackLaunchCount)
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.trackLaunchCount)
         }
         
         expect.fulfill()
@@ -125,7 +125,7 @@ class AppsFlyerRemoteCommandRunnerTests: XCTestCase {
         
         if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
             remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(3, self.appsFlyerCommandRunner.trackEventCount)
+            XCTAssertEqual(3, self.appsFlyerCommandTracker.trackEventCount)
         }
         
         expect.fulfill()
@@ -138,7 +138,7 @@ class AppsFlyerRemoteCommandRunnerTests: XCTestCase {
         
         if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
             remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(0, self.appsFlyerCommandRunner.trackEventCount)
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.trackEventCount)
         }
         
         expect.fulfill()
@@ -153,7 +153,7 @@ class AppsFlyerRemoteCommandRunnerTests: XCTestCase {
         
         if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
             remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(1, self.appsFlyerCommandRunner.trackLocationCount)
+            XCTAssertEqual(1, self.appsFlyerCommandTracker.trackLocationCount)
         }
         
         expect.fulfill()
@@ -166,7 +166,7 @@ class AppsFlyerRemoteCommandRunnerTests: XCTestCase {
         
         if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
             remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(0, self.appsFlyerCommandRunner.trackLocationCount)
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.trackLocationCount)
         }
         
         expect.fulfill()
@@ -181,7 +181,7 @@ class AppsFlyerRemoteCommandRunnerTests: XCTestCase {
         
         if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
             remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(1, self.appsFlyerCommandRunner.setHostCount)
+            XCTAssertEqual(1, self.appsFlyerCommandTracker.setHostCount)
         }
         
         expect.fulfill()
@@ -195,7 +195,7 @@ class AppsFlyerRemoteCommandRunnerTests: XCTestCase {
         
         if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
             remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(0, self.appsFlyerCommandRunner.setHostCount)
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.setHostCount)
         }
         
         expect.fulfill()
@@ -210,7 +210,7 @@ class AppsFlyerRemoteCommandRunnerTests: XCTestCase {
         
         if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
             remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(1, self.appsFlyerCommandRunner.setUserEmailsCount)
+            XCTAssertEqual(1, self.appsFlyerCommandTracker.setUserEmailsCount)
         }
         
         expect.fulfill()
@@ -224,7 +224,7 @@ class AppsFlyerRemoteCommandRunnerTests: XCTestCase {
         
         if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
             remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(0, self.appsFlyerCommandRunner.setUserEmailsCount)
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.setUserEmailsCount)
         }
         
         expect.fulfill()
@@ -237,7 +237,7 @@ class AppsFlyerRemoteCommandRunnerTests: XCTestCase {
         
         if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
             remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(1, self.appsFlyerCommandRunner.setCurrencyCodeCount)
+            XCTAssertEqual(1, self.appsFlyerCommandTracker.setCurrencyCodeCount)
         }
         
         expect.fulfill()
@@ -250,7 +250,7 @@ class AppsFlyerRemoteCommandRunnerTests: XCTestCase {
         
         if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
             remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(0, self.appsFlyerCommandRunner.setCurrencyCodeCount)
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.setCurrencyCodeCount)
         }
         
         expect.fulfill()
@@ -263,7 +263,7 @@ class AppsFlyerRemoteCommandRunnerTests: XCTestCase {
         
         if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
             remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(1, self.appsFlyerCommandRunner.setCustomerIdCount)
+            XCTAssertEqual(1, self.appsFlyerCommandTracker.setCustomerIdCount)
         }
         
         expect.fulfill()
@@ -276,7 +276,7 @@ class AppsFlyerRemoteCommandRunnerTests: XCTestCase {
         
         if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
             remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(0, self.appsFlyerCommandRunner.setCustomerIdCount)
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.setCustomerIdCount)
         }
         
         expect.fulfill()
@@ -289,7 +289,7 @@ class AppsFlyerRemoteCommandRunnerTests: XCTestCase {
         
         if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
             remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(1, self.appsFlyerCommandRunner.disableTrackingCount)
+            XCTAssertEqual(1, self.appsFlyerCommandTracker.disableTrackingCount)
         }
         
         expect.fulfill()
@@ -302,7 +302,7 @@ class AppsFlyerRemoteCommandRunnerTests: XCTestCase {
         
         if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
             remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(0, self.appsFlyerCommandRunner.disableTrackingCount)
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.disableTrackingCount)
         }
         
         expect.fulfill()
@@ -315,7 +315,7 @@ class AppsFlyerRemoteCommandRunnerTests: XCTestCase {
         
         if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
             remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(1, self.appsFlyerCommandRunner.disableTrackingCount)
+            XCTAssertEqual(1, self.appsFlyerCommandTracker.disableTrackingCount)
         }
         
         expect.fulfill()
@@ -328,7 +328,7 @@ class AppsFlyerRemoteCommandRunnerTests: XCTestCase {
         
         if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
             remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(1, self.appsFlyerCommandRunner.resolveDeepLinkURLsCount)
+            XCTAssertEqual(1, self.appsFlyerCommandTracker.resolveDeepLinkURLsCount)
         }
         
         expect.fulfill()
@@ -341,7 +341,7 @@ class AppsFlyerRemoteCommandRunnerTests: XCTestCase {
         
         if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
             remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(0, self.appsFlyerCommandRunner.resolveDeepLinkURLsCount)
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.resolveDeepLinkURLsCount)
         }
         
         expect.fulfill()

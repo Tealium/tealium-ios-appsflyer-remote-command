@@ -9,7 +9,7 @@
 import Foundation
 @testable import TealiumAppsFlyer
 
-class MockAppsFlyerCommandRunner: AppsFlyerCommandRunnable {
+class MockAppsFlyerCommandTracker: AppsFlyerTrackable {
     
     var initWithoutConfigCount = 0
     var initWithConfigCount = 0
