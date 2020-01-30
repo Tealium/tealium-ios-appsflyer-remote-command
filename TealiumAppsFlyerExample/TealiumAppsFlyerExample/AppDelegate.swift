@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  TealiumAppsFlyerExample
 //
-//  Created by Christina Sund on 8/13/19.
+//  Created by Christina S on 8/13/19.
 //  Copyright © 2019 Tealium. All rights reserved.
 //
 

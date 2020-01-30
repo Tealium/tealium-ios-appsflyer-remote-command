@@ -2,7 +2,7 @@
 //  ProductViewController.swift
 //  TealiumAppsFlyerExample
 //
-//  Created by Christina Sund on 7/19/19.
+//  Created by Christina S on 7/19/19.
 //  Copyright © 2019 Tealium. All rights reserved.
 //
 

@@ -2,7 +2,7 @@
 //  ProductCell.swift
 //  TealiumAppsFlyerExample
 //
-//  Created by Christina Sund on 7/21/19.
+//  Created by Christina S on 7/21/19.
 //  Copyright © 2019 Tealium. All rights reserved.
 //
 

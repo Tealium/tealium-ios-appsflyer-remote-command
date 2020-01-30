@@ -2,7 +2,7 @@
 //  AppsFlyerCommand.swift
 //  TealiumAppsFlyer
 //
-//  Created by Christina Sund on 5/29/19.
+//  Created by Christina S on 5/29/19.
 //  Copyright © 2019 Tealium. All rights reserved.
 //
 

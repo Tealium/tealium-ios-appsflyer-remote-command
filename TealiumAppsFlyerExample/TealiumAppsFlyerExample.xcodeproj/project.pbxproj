@@ -28,9 +28,9 @@
 		CF140181230366B7002AC330 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CF14017F230366B7002AC330 /* LaunchScreen.storyboard */; };
 		CF140182230366B7002AC330 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CF140180230366B7002AC330 /* Main.storyboard */; };
 		CF14019223036D32002AC330 /* EnumMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF14019123036D32002AC330 /* EnumMap.swift */; };
+		CF3F5C0E23E2575A0007C9B1 /* AppsFlyerCommandTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF3F5C0D23E2575A0007C9B1 /* AppsFlyerCommandTracker.swift */; };
 		CFC7377023E14E6A00AF5B6C /* AppsFlyer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFC7376D23E14E6A00AF5B6C /* AppsFlyer.swift */; };
 		CFC7377123E14E6A00AF5B6C /* AppsFlyerCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFC7376E23E14E6A00AF5B6C /* AppsFlyerCommand.swift */; };
-		CFC7377223E14E6A00AF5B6C /* AppsFlyerCommandTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFC7376F23E14E6A00AF5B6C /* AppsFlyerCommandTracker.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -58,9 +58,9 @@
 		CF14017F230366B7002AC330 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		CF140180230366B7002AC330 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		CF14019123036D32002AC330 /* EnumMap.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EnumMap.swift; sourceTree = "<group>"; };
+		CF3F5C0D23E2575A0007C9B1 /* AppsFlyerCommandTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppsFlyerCommandTracker.swift; sourceTree = "<group>"; };
 		CFC7376D23E14E6A00AF5B6C /* AppsFlyer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppsFlyer.swift; sourceTree = "<group>"; };
 		CFC7376E23E14E6A00AF5B6C /* AppsFlyerCommand.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppsFlyerCommand.swift; sourceTree = "<group>"; };
-		CFC7376F23E14E6A00AF5B6C /* AppsFlyerCommandTracker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AppsFlyerCommand\U0010\U0010\U0010\U0010Tracker.swift"; sourceTree = "<group>"; };
 		CFE3050323E20D9700A13B14 /* TealiumAppsFlyerExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TealiumAppsFlyerExample.entitlements; sourceTree = "<group>"; };
 		F5D43E1348B25ADA844A2476 /* Pods-TealiumAppsFlyerExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TealiumAppsFlyerExample.debug.xcconfig"; path = "Target Support Files/Pods-TealiumAppsFlyerExample/Pods-TealiumAppsFlyerExample.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -155,7 +155,7 @@
 				CF14019123036D32002AC330 /* EnumMap.swift */,
 				CFC7376D23E14E6A00AF5B6C /* AppsFlyer.swift */,
 				CFC7376E23E14E6A00AF5B6C /* AppsFlyerCommand.swift */,
-				CFC7376F23E14E6A00AF5B6C /* AppsFlyerCommandTracker.swift */,
+				CF3F5C0D23E2575A0007C9B1 /* AppsFlyerCommandTracker.swift */,
 			);
 			path = AppsFlyer;
 			sourceTree = "<group>";
@@ -294,13 +294,13 @@
 				CF1400F1230365E4002AC330 /* GamingViewController.swift in Sources */,
 				CF1400EF230365E4002AC330 /* ProductViewController.swift in Sources */,
 				CFC7377123E14E6A00AF5B6C /* AppsFlyerCommand.swift in Sources */,
-				CFC7377223E14E6A00AF5B6C /* AppsFlyerCommandTracker.swift in Sources */,
 				CF1400F4230365E4002AC330 /* TravelViewController.swift in Sources */,
 				CF1400D5230365B9002AC330 /* TealiumHelper.swift in Sources */,
 				CF1400F6230365E4002AC330 /* RegisterViewController.swift in Sources */,
 				CF1400EE230365E4002AC330 /* CheckoutViewController.swift in Sources */,
 				CF1400F2230365E4002AC330 /* LoginViewController.swift in Sources */,
 				CF14019223036D32002AC330 /* EnumMap.swift in Sources */,
+				CF3F5C0E23E2575A0007C9B1 /* AppsFlyerCommandTracker.swift in Sources */,
 				CF1400F3230365E4002AC330 /* CategoryViewController.swift in Sources */,
 				CF1400C323036575002AC330 /* AppDelegate.swift in Sources */,
 			);

@@ -2,7 +2,7 @@
 //  TealiumHelper.swift
 //  TealiumAppsFlyerExample
 //
-//  Created by Christina Sund on 6/18/19.
+//  Created by Christina S on 6/18/19.
 //  Copyright © 2019 Tealium. All rights reserved.
 //
 
