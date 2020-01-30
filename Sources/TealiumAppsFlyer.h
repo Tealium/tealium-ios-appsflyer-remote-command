@@ -2,7 +2,7 @@
 //  TealiumAppsFlyer.h
 //  TealiumAppsFlyer
 //
-//  Created by Christina Sund on 9/12/19.
+//  Created by Christina S on 9/12/19.
 //  Copyright © 2019 Tealium. All rights reserved.
 //
 

@@ -2,7 +2,7 @@
 //  AppsFlyerRemoteCommandTests.swift
 //  AppsFlyerRemoteCommandTests
 //
-//  Created by Christina Sund on 5/24/19.
+//  Created by Christina S on 5/24/19.
 //  Copyright © 2019 Christina. All rights reserved.
 //
 

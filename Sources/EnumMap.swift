@@ -2,7 +2,7 @@
 //  EnumMap.swift
 //  RemoteCommandModules
 //
-//  Created by Christina Sund on 5/31/19.
+//  Created by Christina S on 5/31/19.
 //  Copyright © 2019 Tealium. All rights reserved.
 //
 
