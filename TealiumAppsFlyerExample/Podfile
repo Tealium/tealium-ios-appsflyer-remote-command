@@ -1,0 +1,11 @@
+# Uncomment the next line to define a global platform for your project
+# platform :ios, '9.0'
+
+target 'TealiumAppsFlyerExample' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for TealiumAppsFlyerExample
+  pod 'tealium-swift', :path => "/Users/christina/Projects/work-repos/github/tealium-swift-builder"
+  pod 'AppsFlyerFramework', '~> 5.0.0'
+end
