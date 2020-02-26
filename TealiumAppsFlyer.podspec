@@ -34,6 +34,6 @@ Pod::Spec.new do |s|
     s.ios.dependency 'tealium-swift/TealiumRemoteCommands'
     s.ios.dependency 'tealium-swift/TealiumDelegate'
     s.ios.dependency 'tealium-swift/TealiumTagManagement'
-    s.ios.dependency 'AppsFlyerFramework'
+    s.ios.dependency 'AppsFlyerFramework', '~> 5.1.0'
 
 end
