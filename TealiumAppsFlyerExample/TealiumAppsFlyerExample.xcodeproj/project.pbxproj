@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BB452A53F8999B0F02B76A4C /* Pods_TealiumAppsFlyerExample.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2E4E8D581D1558AA690820B9 /* Pods_TealiumAppsFlyerExample.framework */; };
 		CF1400C323036575002AC330 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF1400C223036575002AC330 /* AppDelegate.swift */; };
 		CF1400CA23036576002AC330 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CF1400C923036576002AC330 /* Assets.xcassets */; };
 		CF1400D5230365B9002AC330 /* TealiumHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF1400D4230365B9002AC330 /* TealiumHelper.swift */; };
@@ -34,8 +33,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		2E4E8D581D1558AA690820B9 /* Pods_TealiumAppsFlyerExample.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TealiumAppsFlyerExample.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		37EF57AB7A4058E30E0B92A4 /* Pods-TealiumAppsFlyerExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TealiumAppsFlyerExample.release.xcconfig"; path = "Target Support Files/Pods-TealiumAppsFlyerExample/Pods-TealiumAppsFlyerExample.release.xcconfig"; sourceTree = "<group>"; };
 		CF1400BF23036575002AC330 /* TealiumAppsFlyerExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TealiumAppsFlyerExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CF1400C223036575002AC330 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CF1400C923036576002AC330 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -62,7 +59,6 @@
 		CFC7376D23E14E6A00AF5B6C /* AppsFlyer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppsFlyer.swift; sourceTree = "<group>"; };
 		CFC7376E23E14E6A00AF5B6C /* AppsFlyerCommand.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppsFlyerCommand.swift; sourceTree = "<group>"; };
 		CFE3050323E20D9700A13B14 /* TealiumAppsFlyerExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TealiumAppsFlyerExample.entitlements; sourceTree = "<group>"; };
-		F5D43E1348B25ADA844A2476 /* Pods-TealiumAppsFlyerExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TealiumAppsFlyerExample.debug.xcconfig"; path = "Target Support Files/Pods-TealiumAppsFlyerExample/Pods-TealiumAppsFlyerExample.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,7 +66,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BB452A53F8999B0F02B76A4C /* Pods_TealiumAppsFlyerExample.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -80,8 +75,6 @@
 		81E2F130CB92622A4A613A14 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				F5D43E1348B25ADA844A2476 /* Pods-TealiumAppsFlyerExample.debug.xcconfig */,
-				37EF57AB7A4058E30E0B92A4 /* Pods-TealiumAppsFlyerExample.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -92,7 +85,6 @@
 				CF1400C123036575002AC330 /* TealiumAppsFlyerExample */,
 				CF1400C023036575002AC330 /* Products */,
 				81E2F130CB92622A4A613A14 /* Pods */,
-				E28038C2AD2E73B293D8B5F8 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -160,14 +152,6 @@
 			path = AppsFlyer;
 			sourceTree = "<group>";
 		};
-		E28038C2AD2E73B293D8B5F8 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				2E4E8D581D1558AA690820B9 /* Pods_TealiumAppsFlyerExample.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -175,11 +159,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = CF1400D123036576002AC330 /* Build configuration list for PBXNativeTarget "TealiumAppsFlyerExample" */;
 			buildPhases = (
-				A032A91EF79E628A9A2AD9F4 /* [CP] Check Pods Manifest.lock */,
 				CF1400BB23036575002AC330 /* Sources */,
 				CF1400BC23036575002AC330 /* Frameworks */,
 				CF1400BD23036575002AC330 /* Resources */,
-				DEFB7B208A9C5A9D2BB86D22 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -237,48 +219,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		A032A91EF79E628A9A2AD9F4 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-TealiumAppsFlyerExample-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		DEFB7B208A9C5A9D2BB86D22 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-TealiumAppsFlyerExample/Pods-TealiumAppsFlyerExample-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-TealiumAppsFlyerExample/Pods-TealiumAppsFlyerExample-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TealiumAppsFlyerExample/Pods-TealiumAppsFlyerExample-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		CF1400BB23036575002AC330 /* Sources */ = {
@@ -427,7 +367,6 @@
 		};
 		CF1400D223036576002AC330 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F5D43E1348B25ADA844A2476 /* Pods-TealiumAppsFlyerExample.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = TealiumAppsFlyerExample/TealiumAppsFlyerExample.entitlements;
@@ -447,7 +386,6 @@
 		};
 		CF1400D323036576002AC330 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 37EF57AB7A4058E30E0B92A4 /* Pods-TealiumAppsFlyerExample.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = TealiumAppsFlyerExample/TealiumAppsFlyerExample.entitlements;

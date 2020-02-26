@@ -128,10 +128,10 @@
 			children = (
 				CF0D0206232AB81A005BFE15 /* AppsFlyer.swift */,
 				CF0D0205232AB81A005BFE15 /* AppsFlyerCommand.swift */,
+				CF3F5C1123E258D10007C9B1 /* AppsFlyerCommandTracker.swift */,
 				CF904C7E232AE9BC004F2C06 /* EnumMap.swift */,
 				CF0D01EE232AB7CB005BFE15 /* TealiumAppsFlyer.h */,
 				CF0D01EF232AB7CB005BFE15 /* Info.plist */,
-				CF3F5C1123E258D10007C9B1 /* AppsFlyerCommandTracker.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";

@@ -30,7 +30,10 @@ Pod::Spec.new do |s|
     s.ios.source_files      = "Sources/*.{swift}"
 
     # ――― Dependencies ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
-    s.ios.dependency 'tealium-swift', '~> 1.8.2' #change this to 1.9.0
-    s.ios.dependency 'AppsFlyerFramework', '~> 5.0.0'
+    s.ios.dependency 'tealium-swift/Core'
+    s.ios.dependency 'tealium-swift/TealiumRemoteCommands'
+    s.ios.dependency 'tealium-swift/TealiumDelegate'
+    s.ios.dependency 'tealium-swift/TealiumTagManagement'
+    s.ios.dependency 'AppsFlyerFramework'
 
 end
