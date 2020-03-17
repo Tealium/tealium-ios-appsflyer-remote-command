@@ -1,5 +1,5 @@
 //
-//  AppsFlyer.swift
+//  AppsFlyerConstants.swift
 //  TealiumAppsFlyer
 //
 //  Created by Christina S on 5/29/19.
@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum AppsFlyer {
+public enum AppsFlyerConstants {
     
     /// Standard AppsFlyer events: https://support.appsflyer.com/hc/en-us/articles/115005544169#Event-Types
     public enum EventCommandNames: String, CaseIterable {
@@ -61,7 +61,7 @@ public enum AppsFlyer {
         static let anonymizeUser = "anonymize_user"
         static let collectDeviceName = "collect_device_name"
         static let customData = "custom_data"
-        static let config = "config"
+        static let settings = "settings"
     }
 
     /// These parameters are available to send with events and commands

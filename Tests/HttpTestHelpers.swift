@@ -31,7 +31,7 @@ class HttpTestHelpers {
     
     class func httpRequest(commandId: String, config: [String: Any], payload: [String: Any]) -> URLRequest? {
         let url = "tealium://\(commandId)?request="
-        let remoteCommandrc = ["config": config, "payload": payload] as [String: Any]
+        let remoteCommandrc = ["settings": config, "payload": payload] as [String: Any]
         let json = try! JSONSerialization.data(withJSONObject: remoteCommandrc, options: .prettyPrinted)
         if let encodedString = String(data: json, encoding: .utf8)?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed), let url = URL(string: "\(url)\(encodedString)") {
             print(encodedString)
@@ -43,7 +43,7 @@ class HttpTestHelpers {
     
     class func httpRequestDescription(commandId: String, config: [String: Any], payload: [String: Any]) -> String? {
         let url = "tealium://\(commandId)?request="
-        let remoteCommandrc = ["config": config, "payload": payload] as [String: Any]
+        let remoteCommandrc = ["settings": config, "payload": payload] as [String: Any]
         let json = try! JSONSerialization.data(withJSONObject: remoteCommandrc, options: .prettyPrinted)
         if let encodedString = String(data: json, encoding: .utf8)?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed), let url = URL(string: "\(url)\(encodedString)") {
             print(encodedString)

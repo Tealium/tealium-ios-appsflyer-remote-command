@@ -29,7 +29,7 @@ class MockAppsFlyerCommandTracker: AppsFlyerTrackable {
         initWithoutConfigCount += 1
     }
     
-    func initialize(appId: String, appDevKey: String, config: [String : Any]) {
+    func initialize(appId: String, appDevKey: String, settings: [String : Any]) {
         initWithConfigCount += 1
     }
     

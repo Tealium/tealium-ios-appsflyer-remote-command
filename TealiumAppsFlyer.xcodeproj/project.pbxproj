@@ -12,7 +12,7 @@
 		CF0D01F5232AB7CB005BFE15 /* TealiumAppsFlyer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF0D01EB232AB7CB005BFE15 /* TealiumAppsFlyer.framework */; };
 		CF0D01FC232AB7CB005BFE15 /* TealiumAppsFlyer.h in Headers */ = {isa = PBXBuildFile; fileRef = CF0D01EE232AB7CB005BFE15 /* TealiumAppsFlyer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CF0D0208232AB81A005BFE15 /* AppsFlyerCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF0D0205232AB81A005BFE15 /* AppsFlyerCommand.swift */; };
-		CF0D0209232AB81A005BFE15 /* AppsFlyer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF0D0206232AB81A005BFE15 /* AppsFlyer.swift */; };
+		CF0D0209232AB81A005BFE15 /* AppsFlyerConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF0D0206232AB81A005BFE15 /* AppsFlyerConstants.swift */; };
 		CF0D0211232AB848005BFE15 /* AppsFlyerRemoteCommandTrackerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF0D020C232AB841005BFE15 /* AppsFlyerRemoteCommandTrackerTests.swift */; };
 		CF0D0212232AB84B005BFE15 /* MockAppsFlyerCommandTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF0D020B232AB841005BFE15 /* MockAppsFlyerCommandTracker.swift */; };
 		CF17C368235937A600FC306D /* TealiumCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF0D0226232AC591005BFE15 /* TealiumCore.framework */; };
@@ -65,7 +65,7 @@
 		CF0D01F4232AB7CB005BFE15 /* TealiumAppsFlyerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TealiumAppsFlyerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CF0D01FB232AB7CB005BFE15 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CF0D0205232AB81A005BFE15 /* AppsFlyerCommand.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppsFlyerCommand.swift; sourceTree = "<group>"; };
-		CF0D0206232AB81A005BFE15 /* AppsFlyer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppsFlyer.swift; sourceTree = "<group>"; };
+		CF0D0206232AB81A005BFE15 /* AppsFlyerConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppsFlyerConstants.swift; sourceTree = "<group>"; };
 		CF0D020B232AB841005BFE15 /* MockAppsFlyerCommandTracker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockAppsFlyerCommandTracker.swift; sourceTree = "<group>"; };
 		CF0D020C232AB841005BFE15 /* AppsFlyerRemoteCommandTrackerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppsFlyerRemoteCommandTrackerTests.swift; sourceTree = "<group>"; };
 		CF0D020F232AB847005BFE15 /* HttpTestHelpers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HttpTestHelpers.swift; sourceTree = "<group>"; };
@@ -126,7 +126,7 @@
 		CF0D01ED232AB7CB005BFE15 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
-				CF0D0206232AB81A005BFE15 /* AppsFlyer.swift */,
+				CF0D0206232AB81A005BFE15 /* AppsFlyerConstants.swift */,
 				CF0D0205232AB81A005BFE15 /* AppsFlyerCommand.swift */,
 				CF3F5C1123E258D10007C9B1 /* AppsFlyerCommandTracker.swift */,
 				CF904C7E232AE9BC004F2C06 /* EnumMap.swift */,
@@ -317,7 +317,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CF0D0209232AB81A005BFE15 /* AppsFlyer.swift in Sources */,
+				CF0D0209232AB81A005BFE15 /* AppsFlyerConstants.swift in Sources */,
 				CF3F5C1223E258D10007C9B1 /* AppsFlyerCommandTracker.swift in Sources */,
 				CF0D0208232AB81A005BFE15 /* AppsFlyerCommand.swift in Sources */,
 				CF904C7F232AE9BC004F2C06 /* EnumMap.swift in Sources */,

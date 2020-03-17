@@ -63,11 +63,11 @@ class AppsFlyerRemoteCommandTrackerTests: XCTestCase {
     }
     
     func testInitWithConfig() {
-        let expect = expectation(description: "AppsFlyerRunner initialize(appId:appDevKey:config:) method run")
+        let expect = expectation(description: "AppsFlyerRunner initialize(appId:appDevKey:settings:) method run")
         let payload: [String: Any] = ["command_name": "initialize",
                                       "app_id": "test",
                                       "app_dev_key": "test",
-                                      "config": ["test": "test"]]
+                                      "settings": ["test": "test"]]
         
         if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
             remoteCommand.remoteCommandCompletion(response)
@@ -79,9 +79,9 @@ class AppsFlyerRemoteCommandTrackerTests: XCTestCase {
     }
     
     func testInitWithConfigNotRun() {
-        let expect = expectation(description: "AppsFlyerRunner initialize(appId:appDevKey:config:) method does not run")
+        let expect = expectation(description: "AppsFlyerRunner initialize(appId:appDevKey:settings:) method does not run")
         let payload: [String: Any] = ["command_name": "initialize",
-                                      "config": ["test": "test"]]
+                                      "settings": ["test": "test"]]
         
         if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
             remoteCommand.remoteCommandCompletion(response)
