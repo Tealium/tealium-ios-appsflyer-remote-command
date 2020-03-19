@@ -91,10 +91,10 @@ public class AppsFlyerRemoteCommand {
                 }
             }
             
-            guard let command = payload[TealiumRemoteCommand.commandName] as? String else {
+            guard let command = payload[AppsFlyerConstants.commandName] as? String else {
                 return
             }
-            let commands = command.split(separator: ",")
+            let commands = command.split(separator: AppsFlyerConstants.separator)
             let appsflyerCommands = commands.map { command in
                 return command.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
             }
@@ -114,13 +114,13 @@ public class AppsFlyerRemoteCommand {
             } else {
                 switch lowercasedCommand {
                 case AppsFlyerConstants.CommandNames.initialize:
-                    guard let appId = payload[TealiumRemoteCommand.appId] as? String,
+                    guard let appId = payload[AppsFlyerConstants.appId] as? String,
                         let appDevKey = payload[AppsFlyerConstants.Configuration.appDevKey] as? String else {
                             print("Appsflyer: Must set an app_id and api_key in AppsFlyer Mobile Remote Command tag to initialize")
                             return
                     }
                     guard let settings = payload[AppsFlyerConstants.Configuration.settings] as? [String: Any] else {
-                        return self.appsFlyerCommandTracker.initialize(appId: appId, appDevKey: appDevKey)
+                        return self.appsFlyerCommandTracker.initialize(appId: appId, appDevKey: appDevKey, settings: nil)
                     }
                     return self.appsFlyerCommandTracker.initialize(appId: appId, appDevKey: appDevKey, settings: settings)
                 case AppsFlyerConstants.CommandNames.launch:
@@ -176,10 +176,4 @@ public class AppsFlyerRemoteCommand {
         }
     }
     
-}
-
-extension TealiumRemoteCommand {
-    static let commandName = "command_name"
-    static let apiKey = "api_key"
-    static let appId = "app_id"
 }

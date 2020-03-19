@@ -10,6 +10,11 @@ import Foundation
 
 public enum AppsFlyerConstants {
     
+    static let commandName = "command_name"
+    static let separator: Character = ","
+    static let apiKey = "api_key"
+    static let appId = "app_id"
+    
     /// Standard AppsFlyer events: https://support.appsflyer.com/hc/en-us/articles/115005544169#Event-Types
     public enum EventCommandNames: String, CaseIterable {
         case achievelevel

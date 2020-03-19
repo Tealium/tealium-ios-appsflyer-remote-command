@@ -20,8 +20,7 @@ import Foundation
 
 
 public protocol AppsFlyerTrackable {
-    func initialize(appId: String, appDevKey: String)
-    func initialize(appId: String, appDevKey: String, settings: [String: Any])
+    func initialize(appId: String, appDevKey: String, settings: [String: Any]?)
     func trackLaunch()
     func trackEvent(_ eventName: String, values: [String: Any])
     func trackLocation(longitude: Double, latitude: Double)
@@ -45,14 +44,14 @@ public class AppsFlyerCommandTracker: NSObject, AppsFlyerTrackable, TealiumRegis
         AppsFlyerTracker.shared().delegate = self
     }
 
-    public func initialize(appId: String, appDevKey: String) {
+    public func initialize(appId: String, appDevKey: String, settings: [String: Any]?) {
         AppsFlyerTracker.shared().appsFlyerDevKey = appDevKey
         AppsFlyerTracker.shared().appleAppID = appId
-    }
-
-    public func initialize(appId: String, appDevKey: String, settings: [String: Any]) {
-        AppsFlyerTracker.shared().appsFlyerDevKey = appDevKey
-        AppsFlyerTracker.shared().appleAppID = appId
+        guard let settings = settings else {
+            AppsFlyerTracker.shared().appsFlyerDevKey = appDevKey
+            AppsFlyerTracker.shared().appleAppID = appId
+            return
+        }
         if let debug = settings[AppsFlyerConstants.Configuration.debug] as? Bool {
             AppsFlyerTracker.shared().isDebug = debug
         }
@@ -138,7 +137,7 @@ public class AppsFlyerCommandTracker: NSObject, AppsFlyerTrackable, TealiumRegis
 
 extension AppsFlyerCommandTracker: AppsFlyerTrackerDelegate {
 
-    public func onConversionDataReceived(_ installData: [AnyHashable: Any]!) {
+    public func onConversionDataReceived(_ installData: [AnyHashable: Any]) {
         guard let tealium = tealium else { return }
         guard let installData = installData as? [String: Any] else {
             return tealium.track(title: "conversion_data_received",
@@ -157,9 +156,10 @@ extension AppsFlyerCommandTracker: AppsFlyerTrackerDelegate {
             return
         }
         
-        if(first_launch_flag == 1) {
-            if(status == "Non-organic") {
-                if let media_source = installData["media_source"] , let campaign = installData["campaign"]{
+        if (first_launch_flag == 1) {
+            if (status == "Non-organic") {
+                if let media_source = installData["media_source"],
+                    let campaign = installData["campaign"] {
                     print("This is a Non-Organic install. Media source: \(media_source) Campaign: \(campaign)")
                 }
             } else {
@@ -170,18 +170,18 @@ extension AppsFlyerCommandTracker: AppsFlyerTrackerDelegate {
         }
     }
 
-    public func onConversionDataRequestFailure(_ error: Error!) {
+    public func onConversionDataRequestFailure(_ error: Error) {
         tealium?.track(title: "appsflyer_error",
             data: ["error_name": "conversion_data_request_failure",
                 "error_description": error.localizedDescription],
             completion: nil)
     }
 
-    public func onAppOpenAttribution(_ attributionData: [AnyHashable: Any]!) {
+    public func onAppOpenAttribution(_ attributionData: [AnyHashable: Any]) {
         guard let tealium = tealium else { return }
         guard let attributionData = attributionData as? [String: Any] else {
             return tealium.track(title: "app_open_attribution",
-                data: [:],
+                data: nil,
                 completion: nil)
         }
         tealium.track(title: "app_open_attribution",
@@ -189,21 +189,21 @@ extension AppsFlyerCommandTracker: AppsFlyerTrackerDelegate {
             completion: nil)
     }
 
-    public func onAppOpenAttributionFailure(_ error: Error!) {
+    public func onAppOpenAttributionFailure(_ error: Error) {
         tealium?.track(title: "appsflyer_error",
             data: ["error_name": "app_open_attribution_failure",
                 "error_description": error.localizedDescription],
             completion: nil)
     }
 
-    public func onConversionDataSuccess(_ conversionInfo: [AnyHashable: Any]!) {
+    public func onConversionDataSuccess(_ conversionInfo: [AnyHashable: Any]) {
         let conversion = conversionInfo as? [String: Any] ?? [:]
         tealium?.track(title: "conversion_data_succsss",
             data: conversion,
             completion: nil)
     }
 
-    public func onConversionDataFail(_ error: Error!) {
+    public func onConversionDataFail(_ error: Error) {
         tealium?.track(title: "appsflyer_error",
             data: ["error_name": "conversion_data_failure",
                 "error_description": error.localizedDescription],

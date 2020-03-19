@@ -29,8 +29,12 @@ class MockAppsFlyerCommandTracker: AppsFlyerTrackable {
         initWithoutConfigCount += 1
     }
     
-    func initialize(appId: String, appDevKey: String, settings: [String : Any]) {
-        initWithConfigCount += 1
+    func initialize(appId: String, appDevKey: String, settings: [String : Any]?) {
+        if settings != nil {
+            initWithConfigCount += 1
+        } else {
+            initWithoutConfigCount += 1
+        }
     }
     
     func trackLaunch() {
