@@ -3,7 +3,7 @@ Pod::Spec.new do |s|
     # ―――  Spec Metadata  ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
     s.name         = "TealiumAppsFlyer"
     s.module_name  = "TealiumAppsFlyer"
-    s.version      = "0.0.1"
+    s.version      = "1.0.0"
     s.summary      = "Tealium Swift and AppsFlyer integration"
     s.description  = <<-DESC
     Tealium's integration with AppsFlyer for iOS.
@@ -30,10 +30,10 @@ Pod::Spec.new do |s|
     s.ios.source_files      = "Sources/*.{swift}"
 
     # ――― Dependencies ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
-    s.ios.dependency 'tealium-swift/Core'
-    s.ios.dependency 'tealium-swift/TealiumRemoteCommands'
-    s.ios.dependency 'tealium-swift/TealiumDelegate'
-    s.ios.dependency 'tealium-swift/TealiumTagManagement'
-    s.ios.dependency 'AppsFlyerFramework', '~> 5.1.0'
+    s.ios.dependency 'tealium-swift/Core', '~> 1.9'
+    s.ios.dependency 'tealium-swift/TealiumRemoteCommands', '~> 1.9'
+    s.ios.dependency 'tealium-swift/TealiumDelegate', '~> 1.9'
+    s.ios.dependency 'tealium-swift/TealiumTagManagement', '~> 1.9'
+    s.ios.dependency 'AppsFlyerFramework', '~> 5.1'
 
 end
