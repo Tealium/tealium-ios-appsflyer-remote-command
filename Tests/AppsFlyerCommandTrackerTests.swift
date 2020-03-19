@@ -11,14 +11,14 @@ import XCTest
 import TealiumRemoteCommands
 
 
-class AppsFlyerRemoteCommandTrackerTests: XCTestCase {
+class AppsFlyerCommandTrackerTests: XCTestCase {
 
     var appsFlyerCommandTracker = MockAppsFlyerCommandTracker()
-    var appsFlyerCommand: AppsFlyerCommand!
+    var appsFlyerCommand: AppsFlyerRemoteCommand!
     var remoteCommand: TealiumRemoteCommand!
     
     override func setUp() {
-        appsFlyerCommand = AppsFlyerCommand(appsFlyerCommandTracker: appsFlyerCommandTracker)
+        appsFlyerCommand = AppsFlyerRemoteCommand(appsFlyerCommandTracker: appsFlyerCommandTracker)
         remoteCommand = appsFlyerCommand.remoteCommand()
     }
     

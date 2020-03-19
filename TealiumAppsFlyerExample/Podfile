@@ -7,7 +7,7 @@ target 'TealiumAppsFlyerExample' do
 
   # Pods for TealiumAppsFlyerExample
   #!!!! Note: Change below to TealiumAppsflyer
-  pod 'TealiumAppsflyer', '1.0.0'
+  pod 'TealiumAppsFlyer', '~> 1.0'
   pod 'tealium-swift/TealiumLogger', '~> 1.9'
   pod 'tealium-swift/TealiumTagManagement', '~> 1.9'
   pod 'tealium-swift/TealiumAppData', '~> 1.9'

@@ -30,6 +30,7 @@ Pod::Spec.new do |s|
     s.ios.source_files      = "Sources/*.{swift}"
 
     # ――― Dependencies ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
+    s.static_framework = true
     s.ios.dependency 'tealium-swift/Core', '~> 1.9'
     s.ios.dependency 'tealium-swift/TealiumRemoteCommands', '~> 1.9'
     s.ios.dependency 'tealium-swift/TealiumDelegate', '~> 1.9'

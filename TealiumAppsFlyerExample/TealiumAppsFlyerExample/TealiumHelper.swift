@@ -8,6 +8,7 @@
 
 import Foundation
 import TealiumSwift
+import TealiumAppsFlyer
 
 // Note: Due to a current bug in WebKit, you will see the following console error repeatedly:
 // [Process] kill() returned unexpected error 1
@@ -42,7 +43,7 @@ class TealiumHelper {
                               }
                               // MARK: AppsFlyer
                               let appsFlyerCommandTracker = AppsFlyerCommandTracker()
-                              let appsFlyerCommand = AppsFlyerCommand(appsFlyerCommandTracker: appsFlyerCommandTracker)
+                              let appsFlyerCommand = AppsFlyerRemoteCommand(appsFlyerCommandTracker: appsFlyerCommandTracker)
                               let appsFlyerRemoteCommand = appsFlyerCommand.remoteCommand()
                               remoteCommands.add(appsFlyerRemoteCommand)
                               self.pushMessagingTrackers.append(appsFlyerCommandTracker)

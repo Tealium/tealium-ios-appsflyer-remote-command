@@ -1,5 +1,5 @@
 //
-//  AppsFlyerCommand.swift
+//  AppsFlyerRemoteCommand.swift
 //  AppsFlyerRemoteCommand
 //
 //  Created by Christina S on 5/29/19.
@@ -16,7 +16,7 @@ import TealiumTagManagement
 import TealiumRemoteCommands
 #endif
 
-public class AppsFlyerCommand {
+public class AppsFlyerRemoteCommand {
     
     let appsFlyerCommandTracker: AppsFlyerTrackable
     
