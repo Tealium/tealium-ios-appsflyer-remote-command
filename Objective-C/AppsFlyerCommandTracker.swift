@@ -85,7 +85,7 @@ public class AppsFlyerCommandTracker: NSObject, AppsFlyerTrackable, TealiumRegis
 
     /// Used to track push notification activity from native APNs or other push service
     /// Please refer to this for more information:
-    /// https://support.AppsFlyerConstants.com/hc/en-us/articles/207364076-Measuring-Push-Notification-Re-Engagement-Campaigns
+    /// https://support.appsflyer.com/hc/en-us/articles/207364076-Measuring-Push-Notification-Re-Engagement-Campaigns
     public func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
         AppsFlyerTracker.shared()?.handlePushNotification(userInfo)
         AppsFlyerTracker.shared()?.trackEvent(AppsFlyerConstants.Events.pushNotificationOpened, withValues: [:])
@@ -117,7 +117,7 @@ public class AppsFlyerCommandTracker: NSObject, AppsFlyerTrackable, TealiumRegis
 
     /// APNs and Push Messaging must be configured in order to track installs.
     /// Apple will not register the uninstall until 8 days after the user removes the app.
-    /// Instructions to set up: https://support.AppsFlyerConstants.com/hc/en-us/articles/210289286-Uninstall-Measurement#iOS-Uninstall
+    /// Instructions to set up: https://support.appsflyer.com/hc/en-us/articles/210289286-Uninstall-Measurement#iOS-Uninstall
     public func registerPushToken(_ token: String) {
         guard let dataToken = token.data(using: .utf8) else { return }
         AppsFlyerTracker.shared()?.registerUninstall(dataToken)
