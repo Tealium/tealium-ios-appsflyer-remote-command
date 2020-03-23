@@ -1,5 +1,5 @@
 //
-//  AppsFlyer.swift
+//  AppsFlyerConstants.swift
 //  AppsFlyerRemoteCommand
 //
 //  Created by Christina Sund on 5/29/19.
@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum AppsFlyer {
+public enum AppsFlyerConstants {
     
     /// Standard AppsFlyer events: https://support.appsflyer.com/hc/en-us/articles/115005544169#Event-Types
     public enum EventCommandNames: String, CaseIterable {

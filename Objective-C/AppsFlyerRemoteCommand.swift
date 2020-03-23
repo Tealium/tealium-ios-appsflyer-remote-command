@@ -1,5 +1,5 @@
 //
-//  AppsFlyerCommand.swift
+//  AppsFlyerRemoteCommand.swift
 //  AppsFlyerRemoteCommand
 //
 //  Created by Christina Sund on 5/29/19.
@@ -9,7 +9,7 @@
 import Foundation
 import TealiumIOS
 
-public class AppsFlyerCommand: NSObject {
+public class AppsFlyerRemoteCommand: NSObject {
 
     let appsFlyerCommandTracker: AppsFlyerTrackable
     
@@ -18,58 +18,58 @@ public class AppsFlyerCommand: NSObject {
         self.appsFlyerCommandTracker = appsFlyerCommandTracker
     }
     
-    let appsflyerEvent = EnumMap<AppsFlyer.EventCommandNames, String> { command in
+    let appsflyerEvent = EnumMap<AppsFlyerConstants.EventCommandNames, String> { command in
         switch command {
         case .achievelevel:
-            return AppsFlyer.Events.achievedLevel
+            return AppsFlyerConstants.Events.achievedLevel
         case .adclick:
-            return AppsFlyer.Events.adClick
+            return AppsFlyerConstants.Events.adClick
         case .adview:
-            return AppsFlyer.Events.adView
+            return AppsFlyerConstants.Events.adView
         case .addpaymentinfo:
-            return AppsFlyer.Events.addPaymentInfo
+            return AppsFlyerConstants.Events.addPaymentInfo
         case .addtocart:
-            return AppsFlyer.Events.addToCart
+            return AppsFlyerConstants.Events.addToCart
         case .addtowishlist:
-            return AppsFlyer.Events.addToWishlist
+            return AppsFlyerConstants.Events.addToWishlist
         case .completeregistration:
-            return AppsFlyer.Events.completeRegistration
+            return AppsFlyerConstants.Events.completeRegistration
         case .completetutorial:
-            return AppsFlyer.Events.completeTutorial
+            return AppsFlyerConstants.Events.completeTutorial
         case .viewedcontent:
-            return AppsFlyer.Events.contentView
+            return AppsFlyerConstants.Events.contentView
         case .search:
-            return AppsFlyer.Events.search
+            return AppsFlyerConstants.Events.search
         case .rate:
-            return AppsFlyer.Events.rate
+            return AppsFlyerConstants.Events.rate
         case .starttrial:
-            return AppsFlyer.Events.startTrial
+            return AppsFlyerConstants.Events.startTrial
         case .subscribe:
-            return AppsFlyer.Events.subscribe
+            return AppsFlyerConstants.Events.subscribe
         case .initiatecheckout:
-            return AppsFlyer.Events.initiateCheckout
+            return AppsFlyerConstants.Events.initiateCheckout
         case .purchase:
-            return AppsFlyer.Events.purchase
+            return AppsFlyerConstants.Events.purchase
         case .unlockachievement:
-            return AppsFlyer.Events.unlockAchievement
+            return AppsFlyerConstants.Events.unlockAchievement
         case .spentcredits:
-            return AppsFlyer.Events.spentCredits
+            return AppsFlyerConstants.Events.spentCredits
         case .listview:
-            return AppsFlyer.Events.listView
+            return AppsFlyerConstants.Events.listView
         case .travelbooking:
-            return AppsFlyer.Events.travelBooking
+            return AppsFlyerConstants.Events.travelBooking
         case .share:
-            return AppsFlyer.Events.share
+            return AppsFlyerConstants.Events.share
         case .invite:
-            return AppsFlyer.Events.invite
+            return AppsFlyerConstants.Events.invite
         case .reengage:
-            return AppsFlyer.Events.reEngage
+            return AppsFlyerConstants.Events.reEngage
         case .update:
-            return AppsFlyer.Events.update
+            return AppsFlyerConstants.Events.update
         case .login:
-            return AppsFlyer.Events.login
+            return AppsFlyerConstants.Events.login
         case .customersegment:
-            return AppsFlyer.Events.customerSegment
+            return AppsFlyerConstants.Events.customerSegment
         }
     }
     
@@ -80,14 +80,14 @@ public class AppsFlyerCommand: NSObject {
                 return
             }
             
-            if let disableTracking = payload[AppsFlyer.Parameters.stopTracking] as? Bool {
+            if let disableTracking = payload[AppsFlyerConstants.Parameters.stopTracking] as? Bool {
                 if disableTracking == true {
                     self.appsFlyerCommandTracker.disableTracking(true)
                     return
                 }
             }
             
-            guard let command = payload[AppsFlyer.commandName] as? String else {
+            guard let command = payload[AppsFlyerConstants.commandName] as? String else {
                 return
             }
             let commands = command.split(separator: ",")
@@ -106,63 +106,63 @@ public class AppsFlyerCommand: NSObject {
             guard let self = self else {
                 return
             }
-            if let appsFlyerEvent = AppsFlyer.EventCommandNames(rawValue: lowercasedCommand) {
+            if let appsFlyerEvent = AppsFlyerConstants.EventCommandNames(rawValue: lowercasedCommand) {
                 self.appsFlyerCommandTracker.trackEvent(self.appsflyerEvent[appsFlyerEvent], values: payload)
             } else {
                 switch lowercasedCommand {
-                case AppsFlyer.CommandNames.initialize:
-                    guard let appId = payload[AppsFlyer.appId] as? String,
-                        let appDevKey = payload[AppsFlyer.Configuration.appDevKey] as? String else {
+                case AppsFlyerConstants.CommandNames.initialize:
+                    guard let appId = payload[AppsFlyerConstants.appId] as? String,
+                        let appDevKey = payload[AppsFlyerConstants.Configuration.appDevKey] as? String else {
                             print("Appsflyer: Must set an app_id and api_key in AppsFlyer Mobile Remote Command tag to initialize")
                             return
                     }
-                    guard let config = payload[AppsFlyer.Configuration.config] as? [String: Any] else {
+                    guard let config = payload[AppsFlyerConstants.Configuration.config] as? [String: Any] else {
                         return self.appsFlyerCommandTracker.initialize(appId: appId, appDevKey: appDevKey)
                     }
                     return self.appsFlyerCommandTracker.initialize(appId: appId, appDevKey: appDevKey, config: config)
-                case AppsFlyer.CommandNames.launch:
+                case AppsFlyerConstants.CommandNames.launch:
                     self.appsFlyerCommandTracker.trackLaunch()
-                case AppsFlyer.CommandNames.trackLocation:
-                    guard let latitude = payload[AppsFlyer.Parameters.latitude] as? Double,
-                        let longitude = payload[AppsFlyer.Parameters.longitude]  as? Double else {
+                case AppsFlyerConstants.CommandNames.trackLocation:
+                    guard let latitude = payload[AppsFlyerConstants.Parameters.latitude] as? Double,
+                        let longitude = payload[AppsFlyerConstants.Parameters.longitude]  as? Double else {
                             print("Appsflyer: Must map af_lat and af_long in the AppsFlyer Mobile Remote Command tag to track location")
                             return
                     }
                     self.appsFlyerCommandTracker.trackLocation(longitude: longitude, latitude: latitude)
-                case AppsFlyer.CommandNames.setHost:
-                    guard let host = payload[AppsFlyer.Parameters.host] as? String,
-                        let hostPrefix = payload[AppsFlyer.Parameters.hostPrefix] as? String else {
+                case AppsFlyerConstants.CommandNames.setHost:
+                    guard let host = payload[AppsFlyerConstants.Parameters.host] as? String,
+                        let hostPrefix = payload[AppsFlyerConstants.Parameters.hostPrefix] as? String else {
                             print("Appsflyer: Must map host and host_prefix in the AppsFlyer Mobile Remote Command tag to set host")
                             return
                     }
                     self.appsFlyerCommandTracker.setHost(host, with: hostPrefix)
-                case AppsFlyer.CommandNames.setUserEmails:
-                    guard let emails = payload[AppsFlyer.Parameters.emails] as? [String],
-                        let cryptType = payload[AppsFlyer.Parameters.cryptType] as? Int else {
+                case AppsFlyerConstants.CommandNames.setUserEmails:
+                    guard let emails = payload[AppsFlyerConstants.Parameters.emails] as? [String],
+                        let cryptType = payload[AppsFlyerConstants.Parameters.cryptType] as? Int else {
                             print("Appsflyer: Must map customer_emails and cryptType in the AppsFlyer Mobile Remote Command tag to set user emails")
                             return
                     }
                     self.appsFlyerCommandTracker.setUserEmails(emails: emails, with: cryptType)
-                case AppsFlyer.CommandNames.setCurrencyCode:
-                    guard let currency = payload[AppsFlyer.Parameters.currency] as? String else {
+                case AppsFlyerConstants.CommandNames.setCurrencyCode:
+                    guard let currency = payload[AppsFlyerConstants.Parameters.currency] as? String else {
                         print("Appsflyer: Must map af_currency in the AppsFlyer Mobile Remote Command tag to call set currency")
                         return
                     }
                     self.appsFlyerCommandTracker.currencyCode(currency)
-                case AppsFlyer.CommandNames.setCustomerId:
-                    guard let customerId = payload[AppsFlyer.Parameters.customerId] as? String else {
+                case AppsFlyerConstants.CommandNames.setCustomerId:
+                    guard let customerId = payload[AppsFlyerConstants.Parameters.customerId] as? String else {
                         print("Appsflyer: Must map af_customer_user_id in the AppsFlyer Mobile Remote Command tag to call set customer id")
                         return
                     }
                     self.appsFlyerCommandTracker.customerId(customerId)
-                case AppsFlyer.CommandNames.disableTracking:
-                    guard let disable = payload[AppsFlyer.Parameters.stopTracking] as? Bool else {
+                case AppsFlyerConstants.CommandNames.disableTracking:
+                    guard let disable = payload[AppsFlyerConstants.Parameters.stopTracking] as? Bool else {
                         print("Appsflyer: If you would like to disable all tracking, please set the enabled/disabled flag in the configuration settings of the AppsFlyer Mobile Remote Command tag")
                         return self.appsFlyerCommandTracker.disableTracking(false)
                     }
                     self.appsFlyerCommandTracker.disableTracking(disable)
-                case AppsFlyer.CommandNames.resolveDeepLinkUrls:
-                    guard let deepLinkUrls = payload[AppsFlyer.Parameters.deepLinkUrls] as? [String] else {
+                case AppsFlyerConstants.CommandNames.resolveDeepLinkUrls:
+                    guard let deepLinkUrls = payload[AppsFlyerConstants.Parameters.deepLinkUrls] as? [String] else {
                         print("Appsflyer: If you would like to resolve deep link urls, please set the af_deep_link variable in the AppDelegate or AppsFlyer Mobile Remote Command tag")
                         return
                     }
