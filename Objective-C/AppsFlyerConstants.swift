@@ -110,6 +110,21 @@ public enum AppsFlyerConstants {
         static let customerSegment = "af_customer_segment"
         static let pushNotificationOpened = "af_opened_from_push_notification"
     }
+
+    public enum Attribution {
+        static let appOpen = "app_open_attribution"
+        static let appOpenFailure = "app_open_attribution_failure"
+        static let firstLaunch = "is_first_launch"
+        static let conversionReceived = "conversion_data_received"
+        static let conversionError = "appsflyer_error"
+        static let conversionFailure = "conversion_data_failure"
+        static let errorName = "error_name"
+        static let errorDescription = "error_description"
+        static let status = "af_status"
+        static let source = "source"
+        static let campaign = "campaign"
+        static let error = "appsflyer_error"
+    }
     
     static let commandName = "command_name"
     static let apiKey = "api_key"

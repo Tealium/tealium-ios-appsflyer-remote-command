@@ -131,51 +131,55 @@ public class AppsFlyerCommandTracker: NSObject, AppsFlyerTrackable, TealiumRegis
 
 extension AppsFlyerCommandTracker: AppsFlyerTrackerDelegate {
 
-public func onConversionDataSuccess(_ conversionInfo: [AnyHashable: Any]) {
+    public func onConversionDataSuccess(_ conversionInfo: [AnyHashable: Any]) {
         guard let tealium = tealium else { return }
         guard let conversionInfo = conversionInfo as? [String: Any],
-            let first_launch_flag = conversionInfo["is_first_launch"] as? Bool else {
-                tealium.trackEvent(withTitle: "conversion_data_received", dataSources: [:])
+            let firstLaunch = conversionInfo[AppsFlyerConstants.Attribution.firstLaunch] as? Bool else {
+                tealium.trackEvent(withTitle: AppsFlyerConstants.Attribution.conversionReceived,
+                    dataSources: [:])
                 return
         }
-        guard first_launch_flag else {
-            print("Not First Launch")
+        guard firstLaunch else {
+            print("Appsflyer Attribution: Not First Launch")
             return
         }
-        tealium.trackEvent(withTitle: "conversion_data_received", dataSources: conversionInfo)
-        
-        guard let status = conversionInfo["af_status"] as? String else {
+        tealium.trackEvent(withTitle: AppsFlyerConstants.Attribution.conversionReceived,
+            dataSources: conversionInfo)
+
+        guard let status = conversionInfo[AppsFlyerConstants.Attribution.status] as? String else {
             return
         }
+
         if (status == "Non-organic") {
-            if let media_source = conversionInfo["media_source"],
-                let campaign = conversionInfo["campaign"] {
-                print("This is a Non-Organic install. Media source: \(media_source) Campaign: \(campaign)")
+            if let mediaSource = conversionInfo[AppsFlyerConstants.Attribution.source],
+                let campaign = conversionInfo[AppsFlyerConstants.Attribution.campaign] {
+                print("Appsflyer Attribution: This is a Non-Organic install. Media source: \(mediaSource) Campaign: \(campaign)")
             }
         } else {
-            print("This is an organic install.")
+            print("Appsflyer Attribution: This is an organic install.")
         }
     }
 
     public func onConversionDataFail(_ error: Error) {
-        tealium?.trackEvent(withTitle: "appsflyer_error",
-            dataSources: ["error_name": "conversion_data_failure",
-            "error_description": error.localizedDescription])
+        tealium?.trackEvent(withTitle: AppsFlyerConstants.Attribution.error,
+            dataSources: [AppsFlyerConstants.Attribution.errorName: AppsFlyerConstants.Attribution.conversionFailure,
+                AppsFlyerConstants.Attribution.errorDescription: error.localizedDescription])
     }
 
     public func onAppOpenAttribution(_ attributionData: [AnyHashable: Any]) {
-        guard let tealium = tealium else { return }
+        guard let tealium = self.tealium else { return }
         guard let attributionData = attributionData as? [String: Any] else {
-            return tealium.trackEvent(withTitle: "app_open_attribution",
+            return tealium.trackEvent(withTitle: AppsFlyerConstants.Attribution.appOpen,
                 dataSources: [:])
         }
-        tealium.trackEvent(withTitle: "app_open_attribution", dataSources: attributionData)
+        tealium.trackEvent(withTitle: AppsFlyerConstants.Attribution.appOpen,
+            dataSources: attributionData)
     }
 
     public func onAppOpenAttributionFailure(_ error: Error) {
-        tealium?.trackEvent(withTitle: "appsflyer_error",
-            dataSources: ["error_name": "app_open_attribution_failure",
-                "error_description": error.localizedDescription])
+        tealium?.trackEvent(withRitle: AppsFlyerConstants.Attribution.error,
+            dataSources: [AppsFlyerConstants.Attribution.errorName: AppsFlyerConstants.Attribution.appOpenFailure,
+                AppsFlyerConstants.Attribution.errorDescription: error.localizedDescription])
     }
 
 }

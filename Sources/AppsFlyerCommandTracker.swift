@@ -139,56 +139,57 @@ extension AppsFlyerCommandTracker: AppsFlyerTrackerDelegate {
     public func onConversionDataSuccess(_ conversionInfo: [AnyHashable: Any]) {
         guard let tealium = tealium else { return }
         guard let conversionInfo = conversionInfo as? [String: Any],
-            let first_launch_flag = conversionInfo["is_first_launch"] as? Bool else {
-                tealium.track(title: "conversion_data_received",
+            let firstLaunch = conversionInfo[AppsFlyerConstants.Attribution.firstLaunch] as? Bool else {
+                tealium.track(title: AppsFlyerConstants.Attribution.conversionReceived,
                     data: nil,
                     completion: nil)
                 return
         }
-        guard first_launch_flag else {
-            print("Not First Launch")
+        guard firstLaunch else {
+            print("Appsflyer Attribution: Not First Launch")
             return
         }
-        tealium.track(title: "conversion_data_received",
+        tealium.track(title: AppsFlyerConstants.Attribution.conversionReceived,
             data: conversionInfo,
             completion: nil)
-        
-        guard let status = conversionInfo["af_status"] as? String else {
+
+        guard let status = conversionInfo[AppsFlyerConstants.Attribution.status] as? String else {
             return
         }
+
         if (status == "Non-organic") {
-            if let media_source = conversionInfo["media_source"],
-                let campaign = conversionInfo["campaign"] {
-                print("This is a Non-Organic install. Media source: \(media_source) Campaign: \(campaign)")
+            if let mediaSource = conversionInfo[AppsFlyerConstants.Attribution.source],
+                let campaign = conversionInfo[AppsFlyerConstants.Attribution.campaign] {
+                print("Appsflyer Attribution: This is a Non-Organic install. Media source: \(mediaSource) Campaign: \(campaign)")
             }
         } else {
-            print("This is an organic install.")
+            print("Appsflyer Attribution: This is an organic install.")
         }
     }
 
     public func onConversionDataFail(_ error: Error) {
-        tealium?.track(title: "appsflyer_error",
-            data: ["error_name": "conversion_data_failure",
-                "error_description": error.localizedDescription],
+        tealium?.track(title: AppsFlyerConstants.Attribution.error,
+            data: [AppsFlyerConstants.Attribution.errorName: AppsFlyerConstants.Attribution.conversionFailure,
+                AppsFlyerConstants.Attribution.errorDescription: error.localizedDescription],
             completion: nil)
     }
 
     public func onAppOpenAttribution(_ attributionData: [AnyHashable: Any]) {
-        guard let tealium = tealium else { return }
+        guard let tealium = self.tealium else { return }
         guard let attributionData = attributionData as? [String: Any] else {
-            return tealium.track(title: "app_open_attribution",
+            return tealium.track(title: AppsFlyerConstants.Attribution.appOpen,
                 data: nil,
                 completion: nil)
         }
-        tealium.track(title: "app_open_attribution",
+        tealium.track(title: AppsFlyerConstants.Attribution.appOpen,
             data: attributionData,
             completion: nil)
     }
 
     public func onAppOpenAttributionFailure(_ error: Error) {
-        tealium?.track(title: "appsflyer_error",
-            data: ["error_name": "app_open_attribution_failure",
-                "error_description": error.localizedDescription],
+        tealium?.track(title: AppsFlyerConstants.Attribution.error,
+            data: [AppsFlyerConstants.Attribution.errorName: AppsFlyerConstants.Attribution.appOpenFailure,
+                AppsFlyerConstants.Attribution.errorDescription: error.localizedDescription],
             completion: nil)
     }
 
