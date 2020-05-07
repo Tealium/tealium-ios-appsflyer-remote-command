@@ -140,7 +140,7 @@ extension AppsFlyerCommandTracker: AppsFlyerTrackerDelegate {
                 return
         }
         guard firstLaunch else {
-            print("Appsflyer Attribution: Not First Launch")
+            print("AppsFlyer Attribution: Not First Launch")
             return
         }
         tealium.trackEvent(withTitle: AppsFlyerConstants.Attribution.conversionReceived,
@@ -153,10 +153,10 @@ extension AppsFlyerCommandTracker: AppsFlyerTrackerDelegate {
         if (status == "Non-organic") {
             if let mediaSource = conversionInfo[AppsFlyerConstants.Attribution.source],
                 let campaign = conversionInfo[AppsFlyerConstants.Attribution.campaign] {
-                print("Appsflyer Attribution: This is a Non-Organic install. Media source: \(mediaSource) Campaign: \(campaign)")
+                print("AppsFlyer Attribution: This is a Non-Organic install. Media source: \(mediaSource) Campaign: \(campaign)")
             }
         } else {
-            print("Appsflyer Attribution: This is an organic install.")
+            print("AppsFlyer Attribution: This is an organic install.")
         }
     }
 
@@ -177,7 +177,7 @@ extension AppsFlyerCommandTracker: AppsFlyerTrackerDelegate {
     }
 
     public func onAppOpenAttributionFailure(_ error: Error) {
-        tealium?.trackEvent(withRitle: AppsFlyerConstants.Attribution.error,
+        tealium?.trackEvent(withTitle: AppsFlyerConstants.Attribution.error,
             dataSources: [AppsFlyerConstants.Attribution.errorName: AppsFlyerConstants.Attribution.appOpenFailure,
                 AppsFlyerConstants.Attribution.errorDescription: error.localizedDescription])
     }
