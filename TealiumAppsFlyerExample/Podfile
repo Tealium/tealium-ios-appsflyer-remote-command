@@ -6,7 +6,7 @@ target 'TealiumAppsFlyerExample' do
   use_frameworks!
 
   # Pods for TealiumAppsFlyerExample
-  pod 'TealiumAppsFlyer', '~> 0.0.1'
+  pod 'TealiumAppsFlyer', '~> 1.0'
   pod 'tealium-swift/TealiumLogger', '~> 1.9'
   pod 'tealium-swift/TealiumTagManagement', '~> 1.9'
   pod 'tealium-swift/TealiumAppData', '~> 1.9'

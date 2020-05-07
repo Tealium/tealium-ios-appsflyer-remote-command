@@ -7,11 +7,10 @@
 //
 
 import Foundation
+import AppsFlyerLib
 #if COCOAPODS
-    import AppsFlyerLib
     import TealiumSwift
 #else
-    import AppsFlyerTracker
     import TealiumCore
     import TealiumDelegate
     import TealiumTagManagement
@@ -67,7 +66,7 @@ public class AppsFlyerCommandTracker: NSObject, AppsFlyerTrackable, TealiumRegis
         if let anonymizeUser = settings[AppsFlyerConstants.Configuration.anonymizeUser] as? Bool {
             AppsFlyerTracker.shared().deviceTrackingDisabled = anonymizeUser
         }
-        
+
         // [ASK]
         if let shouldCollectDeviceName = settings[AppsFlyerConstants.Configuration.collectDeviceName] as? Bool {
             AppsFlyerTracker.shared().shouldCollectDeviceName = shouldCollectDeviceName
@@ -137,76 +136,60 @@ public class AppsFlyerCommandTracker: NSObject, AppsFlyerTrackable, TealiumRegis
 
 extension AppsFlyerCommandTracker: AppsFlyerTrackerDelegate {
 
-    public func onConversionDataReceived(_ installData: [AnyHashable: Any]) {
+    public func onConversionDataSuccess(_ conversionInfo: [AnyHashable: Any]) {
         guard let tealium = tealium else { return }
-        guard let installData = installData as? [String: Any] else {
-            return tealium.track(title: "conversion_data_received",
-                data: nil,
-                completion: nil)
+        guard let conversionInfo = conversionInfo as? [String: Any],
+            let firstLaunch = conversionInfo[AppsFlyerConstants.Attribution.firstLaunch] as? Bool else {
+                tealium.track(title: AppsFlyerConstants.Attribution.conversionReceived,
+                    data: nil,
+                    completion: nil)
+                return
         }
-        tealium.track(title: "conversion_data_received",
-            data: installData,
+        guard firstLaunch else {
+            print("AppsFlyer Attribution: Not First Launch")
+            return
+        }
+        tealium.track(title: AppsFlyerConstants.Attribution.conversionReceived,
+            data: conversionInfo,
             completion: nil)
-        
-        guard let first_launch_flag = installData["is_first_launch"] as? Int else {
+
+        guard let status = conversionInfo[AppsFlyerConstants.Attribution.status] as? String else {
             return
         }
-        
-        guard let status = installData["af_status"] as? String else {
-            return
-        }
-        
-        if (first_launch_flag == 1) {
-            if (status == "Non-organic") {
-                if let media_source = installData["media_source"],
-                    let campaign = installData["campaign"] {
-                    print("This is a Non-Organic install. Media source: \(media_source) Campaign: \(campaign)")
-                }
-            } else {
-                print("This is an organic install.")
+
+        if (status == "Non-organic") {
+            if let mediaSource = conversionInfo[AppsFlyerConstants.Attribution.source],
+                let campaign = conversionInfo[AppsFlyerConstants.Attribution.campaign] {
+                print("AppsFlyer Attribution: This is a Non-Organic install. Media source: \(mediaSource) Campaign: \(campaign)")
             }
         } else {
-            print("Not First Launch")
+            print("AppsFlyer Attribution: This is an organic install.")
         }
     }
 
-    public func onConversionDataRequestFailure(_ error: Error) {
-        tealium?.track(title: "appsflyer_error",
-            data: ["error_name": "conversion_data_request_failure",
-                "error_description": error.localizedDescription],
+    public func onConversionDataFail(_ error: Error) {
+        tealium?.track(title: AppsFlyerConstants.Attribution.error,
+            data: [AppsFlyerConstants.Attribution.errorName: AppsFlyerConstants.Attribution.conversionFailure,
+                AppsFlyerConstants.Attribution.errorDescription: error.localizedDescription],
             completion: nil)
     }
 
     public func onAppOpenAttribution(_ attributionData: [AnyHashable: Any]) {
-        guard let tealium = tealium else { return }
+        guard let tealium = self.tealium else { return }
         guard let attributionData = attributionData as? [String: Any] else {
-            return tealium.track(title: "app_open_attribution",
+            return tealium.track(title: AppsFlyerConstants.Attribution.appOpen,
                 data: nil,
                 completion: nil)
         }
-        tealium.track(title: "app_open_attribution",
+        tealium.track(title: AppsFlyerConstants.Attribution.appOpen,
             data: attributionData,
             completion: nil)
     }
 
     public func onAppOpenAttributionFailure(_ error: Error) {
-        tealium?.track(title: "appsflyer_error",
-            data: ["error_name": "app_open_attribution_failure",
-                "error_description": error.localizedDescription],
-            completion: nil)
-    }
-
-    public func onConversionDataSuccess(_ conversionInfo: [AnyHashable: Any]) {
-        let conversion = conversionInfo as? [String: Any] ?? [:]
-        tealium?.track(title: "conversion_data_succsss",
-            data: conversion,
-            completion: nil)
-    }
-
-    public func onConversionDataFail(_ error: Error) {
-        tealium?.track(title: "appsflyer_error",
-            data: ["error_name": "conversion_data_failure",
-                "error_description": error.localizedDescription],
+        tealium?.track(title: AppsFlyerConstants.Attribution.error,
+            data: [AppsFlyerConstants.Attribution.errorName: AppsFlyerConstants.Attribution.appOpenFailure,
+                AppsFlyerConstants.Attribution.errorDescription: error.localizedDescription],
             completion: nil)
     }
 

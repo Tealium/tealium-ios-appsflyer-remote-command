@@ -16,7 +16,7 @@ PODS:
   - tealium-swift/TealiumTagManagement (1.9.3):
     - tealium-swift/Core
   - TealiumAppsFlyer (1.0.0):
-    - AppsFlyerFramework (~> 5.1)
+    - AppsFlyerFramework (~> 5.2)
     - tealium-swift/Core (~> 1.9)
     - tealium-swift/TealiumDelegate (~> 1.9)
     - tealium-swift/TealiumRemoteCommands (~> 1.9)
@@ -28,7 +28,7 @@ DEPENDENCIES:
   - tealium-swift/TealiumLifecycle (~> 1.9)
   - tealium-swift/TealiumLogger (~> 1.9)
   - tealium-swift/TealiumTagManagement (~> 1.9)
-  - TealiumAppsFlyer (from `/Users/christina/Projects/work-repos/builds/tealium-ios-appsflyer-remote-command`)
+  - TealiumAppsFlyer (from `../`)
 
 SPEC REPOS:
   trunk:
@@ -37,13 +37,13 @@ SPEC REPOS:
 
 EXTERNAL SOURCES:
   TealiumAppsFlyer:
-    :path: "/Users/christina/Projects/work-repos/builds/tealium-ios-appsflyer-remote-command"
+    :path: "../"
 
 SPEC CHECKSUMS:
   AppsFlyerFramework: 9b2a932d826a278413dab7d59ffbe104a972132b
   tealium-swift: 8735caa69eeb0e7d834c290a6557c69c5f3667ee
-  TealiumAppsFlyer: a524e44e9727629c8490d142963ce20763309dbe
+  TealiumAppsFlyer: 5987443a2e06ede565a5bd5f6539efec13adacfd
 
-PODFILE CHECKSUM: e8f1683fbf4844f0601d933d098608b1641edf8a
+PODFILE CHECKSUM: 5895cbc6020327923843003bb7455e1b0a21aba3
 
 COCOAPODS: 1.9.1
