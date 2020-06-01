@@ -6,7 +6,7 @@
 //  Copyright © 2019 Tealium. All rights reserved.
 //
 
-import Foundation
+import UIKit
 import AppsFlyerLib
 #if COCOAPODS
     import TealiumSwift
@@ -51,27 +51,25 @@ public class AppsFlyerCommandTracker: NSObject, AppsFlyerTrackable, TealiumRegis
             AppsFlyerTracker.shared().appleAppID = appId
             return
         }
-        if let debug = settings[AppsFlyerConstants.Configuration.debug] as? Bool {
+        if let debug = settings[.debug] as? Bool {
             AppsFlyerTracker.shared().isDebug = debug
         }
-        if let disableAdTracking = settings[AppsFlyerConstants.Configuration.disableAdTracking] as? Bool {
+        if let disableAdTracking = settings[.disableAdTracking] as? Bool {
             AppsFlyerTracker.shared().disableIAdTracking = disableAdTracking
         }
-        if let disableAppleAdTracking = settings[AppsFlyerConstants.Configuration.disableAppleAdTracking] as? Bool {
+        if let disableAppleAdTracking = settings[.disableAppleAdTracking] as? Bool {
             AppsFlyerTracker.shared().disableAppleAdSupportTracking = disableAppleAdTracking
         }
-        if let minTimeBetweenSessions = settings[AppsFlyerConstants.Configuration.minTimeBetweenSessions] as? Int {
+        if let minTimeBetweenSessions = settings[.minTimeBetweenSessions] as? Int {
             AppsFlyerTracker.shared().minTimeBetweenSessions = UInt(minTimeBetweenSessions)
         }
-        if let anonymizeUser = settings[AppsFlyerConstants.Configuration.anonymizeUser] as? Bool {
+        if let anonymizeUser = settings[.anonymizeUser] as? Bool {
             AppsFlyerTracker.shared().deviceTrackingDisabled = anonymizeUser
         }
-
-        // [ASK]
-        if let shouldCollectDeviceName = settings[AppsFlyerConstants.Configuration.collectDeviceName] as? Bool {
+        if let shouldCollectDeviceName = settings[.collectDeviceName] as? Bool {
             AppsFlyerTracker.shared().shouldCollectDeviceName = shouldCollectDeviceName
         }
-        if let customData = settings[AppsFlyerConstants.Configuration.customData] as? [AnyHashable: Any] {
+        if let customData = settings[.customData] as? [AnyHashable: Any] {
             AppsFlyerTracker.shared().customData = customData
         }
     }
@@ -146,7 +144,7 @@ extension AppsFlyerCommandTracker: AppsFlyerTrackerDelegate {
                 return
         }
         guard firstLaunch else {
-            print("AppsFlyer Attribution: Not First Launch")
+            print("\(AppsFlyerConstants.attributionLog)Not First Launch")
             return
         }
         tealium.track(title: AppsFlyerConstants.Attribution.conversionReceived,
@@ -160,10 +158,10 @@ extension AppsFlyerCommandTracker: AppsFlyerTrackerDelegate {
         if (status == "Non-organic") {
             if let mediaSource = conversionInfo[AppsFlyerConstants.Attribution.source],
                 let campaign = conversionInfo[AppsFlyerConstants.Attribution.campaign] {
-                print("AppsFlyer Attribution: This is a Non-Organic install. Media source: \(mediaSource) Campaign: \(campaign)")
+                print("\(AppsFlyerConstants.attributionLog)This is a Non-Organic install. Media source: \(mediaSource) Campaign: \(campaign)")
             }
         } else {
-            print("AppsFlyer Attribution: This is an organic install.")
+            print("\(AppsFlyerConstants.attributionLog)This is an organic install.")
         }
     }
 
@@ -193,4 +191,15 @@ extension AppsFlyerCommandTracker: AppsFlyerTrackerDelegate {
             completion: nil)
     }
 
+}
+
+fileprivate extension Dictionary where Key: ExpressibleByStringLiteral {
+    subscript(key: AppsFlyerConstants.Configuration) -> Value? {
+        get {
+            return self[key.rawValue as! Key]
+        }
+        set {
+            self[key.rawValue as! Key] = newValue
+        }
+    }
 }

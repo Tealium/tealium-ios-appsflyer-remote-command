@@ -22,6 +22,7 @@ class OrderViewController: UIViewController {
 
 extension OrderViewController {
     static let screenClass = "screen_class"
+    static let orderCouponCode = "order_coupon_code"
     static let orderId = "order_id"
     static let orderCurrency = "order_currency"
     static let orderTotal = "order_total"

@@ -46,11 +46,12 @@ class EcommerceMainViewController: UIViewController {
         switch navigationControl.selectedSegmentIndex {
         case 1:
             hideAllViews(except: categoryView)
-            TealiumHelper.trackView(title: "category", data: [CategoryViewController.screenClass: "CategoryViewController", CategoryViewController.categoryName: "appliances"])
+            TealiumHelper.trackView(title: "category", data: [CategoryViewController.screenClass: "CategoryViewController", CategoryViewController.categoryName: "appliances", CategoryViewController.productId: CategoryViewController.products])
         case 2:
             hideAllViews(except: productView)
             TealiumHelper.trackView(title: "product", data: [ProductViewController.screenClass: "ProductViewController", ProductViewController.productId: ["PROD\(Int.random(in: 1...1000))"],
-                                                             ProductViewController.productPrice: [100],
+                                                             ProductViewController.productQuantity: [1],
+                                                             ProductViewController.productPrice: [200],
                                                              ProductViewController.productName: ["Fridge"],
                                                              ProductViewController.productCategory: ["appliances"]])
         case 3:
@@ -58,7 +59,17 @@ class EcommerceMainViewController: UIViewController {
             TealiumHelper.trackView(title: "checkout", data: [CheckoutViewController.screenClass: "CheckoutViewController"])
         case 4:
             hideAllViews(except: orderView)
-            let orderData: [String: Any] = [OrderViewController.orderId: Int.random(in: 0...1000) * 1000, OrderViewController.orderCurrency: "USD", OrderViewController.orderTotal: Int.random(in: 0...1000), OrderViewController.screenClass: "OrderViewController"]
+            let orderData: [String: Any] = [
+                ProductViewController.productId: ["PROD\(Int.random(in: 1...1000))", "PROD\(Int.random(in: 1...1000))"],
+                ProductViewController.productQuantity: [1, 2],
+                ProductViewController.productPrice: [200, 300],
+                ProductViewController.productName: ["Fridge", "Television"],
+                ProductViewController.productCategory: ["appliances", "electronics"],
+                OrderViewController.orderId: Int.random(in: 0...1000) * 1000,
+                OrderViewController.orderCurrency: "USD",
+                OrderViewController.orderCouponCode: "Summer2020",
+                OrderViewController.orderTotal: 800,
+                OrderViewController.screenClass: "OrderViewController"]
             TealiumHelper.trackView(title: "order", data: orderData)
         default:
             hideAllViews(except: homeStackView)
@@ -73,6 +84,13 @@ class EcommerceMainViewController: UIViewController {
     @IBAction func signUp(_ sender: Any) {
         TealiumHelper.trackEvent(title: "email_signup", data: [EcommerceMainViewController.signUpMethod: "shop homepage"])
         let ac = UIAlertController(title: "Congrats!", message: "You're all signed up. You will receive discounts right away!", preferredStyle: .alert)
+        ac.addAction(UIAlertAction(title: "OK", style: .default))
+        present(ac, animated: true)
+    }
+    
+    @IBAction func trackLocation(_ sender: Any) {
+        TealiumHelper.trackEvent(title: "track_location", data: [EcommerceMainViewController.latitude: 32.802353, EcommerceMainViewController.longitude: -117.241676])
+        let ac = UIAlertController(title: "Tracking Location", message: "Tracking your location as San Diego ☀️🏖, enjoy the beach!", preferredStyle: .actionSheet)
         ac.addAction(UIAlertAction(title: "OK", style: .default))
         present(ac, animated: true)
     }
@@ -110,6 +128,8 @@ extension EcommerceMainViewController: UITextFieldDelegate {
 }
 
 extension EcommerceMainViewController {
+    static let latitude = "latitude"
+    static let longitude = "longitude"
     static let contentType = "content_type"
     static let shareId = "share_id"
     static let signUpMethod = "signup_method"

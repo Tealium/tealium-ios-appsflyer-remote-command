@@ -76,6 +76,7 @@ class TravelViewController: UIViewController {
         data[TravelViewController.hotelScore] = 4.3
         data[TravelViewController.preferredPriceRange] = [400,500]
         data[TravelViewController.preferredNumberStops] = [0,1]
+        data[TravelViewController.ticketPrice] = [1000]
         TealiumHelper.trackEvent(title: "travel_order", data: data)
     }
 
@@ -96,6 +97,7 @@ extension TravelViewController: UITextFieldDelegate {
 
 extension TravelViewController {
     static let contentType = "content_type"
+    static let ticketPrice = "price"
     static let shareId = "share_id"
     static let passengers = "number_of_passengers"
     static let rooms = "number_of_rooms"

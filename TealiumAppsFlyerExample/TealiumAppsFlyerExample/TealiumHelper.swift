@@ -16,7 +16,7 @@ import TealiumAppsFlyer
 
 enum TealiumConfiguration {
     static let account = "tealiummobile"
-    static let profile = "appsflyer"
+    static let profile = "appsflyer-tag"
     static let environment = "dev"
 }
 
@@ -32,9 +32,8 @@ class TealiumHelper {
     var tealium: Tealium?
 
     private init() {
-        config.logLevel = .verbose
+        config.logLevel = TealiumLogLevel.none
         config.shouldUseRemotePublishSettings = false
-
         tealium = Tealium(config: config,
                           enableCompletion: { [weak self] _ in
                               guard let self = self else { return }

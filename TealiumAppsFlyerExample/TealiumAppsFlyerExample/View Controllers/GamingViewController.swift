@@ -36,11 +36,7 @@ class GamingViewController: UIViewController {
     }
     
     @IBAction func spendCurrency(_ sender: UIButton) {
-        TealiumHelper.trackEvent(title: "spend_currency", data: [GamingViewController.productName: ["jewels"], "currency_type": GamingViewController.tokens, "number_of_tokens": 50])
-    }
-    
-    @IBAction func earnCurrency(_ sender: UIButton) {
-        TealiumHelper.trackEvent(title: "earn_currency", data: [GamingViewController.currencyType: "tokens", GamingViewController.tokens: 100])
+        TealiumHelper.trackEvent(title: "spend_currency", data: [GamingViewController.productName: ["jewels"], "currency_type": GamingViewController.tokens, GamingViewController.creditPrice: [50.00]])
     }
     
     @IBAction func achievementSwitch(_ sender: UISwitch) {
@@ -61,17 +57,17 @@ class GamingViewController: UIViewController {
     }
     
     
-    @IBAction func startTutorial(_ sender: UIButton) {
-        TealiumHelper.trackEvent(title: "start_tutorial", data: ["tutorial_id": "123asdf"])
+    @IBAction func startTrial(_ sender: UIButton) {
+        TealiumHelper.trackEvent(title: "start_trial", data: [GamingViewController.trialPrice: [0.00]])
     }
     
     @IBAction func stopTutorial(_ sender: UIButton) {
         TealiumHelper.trackEvent(title: "stop_tutorial", data: ["tutorial_id": "123asdf"])
     }
     
-    @IBAction func postScore(_ sender: Any) {
+    @IBAction func reEngage(_ sender: Any) {
         data[GamingViewController.score] = Int.random(in: 1...1000) * 1000
-        TealiumHelper.trackEvent(title: "record_score", data: data)
+        TealiumHelper.trackEvent(title: "reengage", data: data)
     }
 
 }
@@ -79,11 +75,13 @@ class GamingViewController: UIViewController {
 extension GamingViewController {
     static let contentType = "content_type"
     static let shareId = "share_id"
-    static let productName = "number_of_passengers"
+    static let productName = "product_name"
     static let currencyType = "currency_type"
-    static let tokens = "travel_class"
-    static let achievementId = "travel_origin"
-    static let level = "travel_destination"
-    static let charachter = "travel_start_date"
-    static let score = "travel_end_date"
+    static let tokens = "tokens"
+    static let achievementId = "achievement_id"
+    static let level = "level"
+    static let charachter = "character"
+    static let score = "score"
+    static let creditPrice = "price"
+    static let trialPrice = "price"
 }

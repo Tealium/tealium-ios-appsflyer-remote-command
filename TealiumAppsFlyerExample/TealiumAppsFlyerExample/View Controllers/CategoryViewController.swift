@@ -16,9 +16,7 @@ class CategoryViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        products = ["1-blender","2-fan","3-iron","4-kettle","5-lamp",
-                    "6-oven","7-fridge","8-scale","9-stove", "10-toaster",
-                    "11-television","12-vacuum"]
+        products = CategoryViewController.products
         prices.shuffle()
     }
     
@@ -54,10 +52,14 @@ extension CategoryViewController: UICollectionViewDataSource {
 }
 
 extension CategoryViewController {
+    static let productId = "product_id"
     static let productClicked = "product_clicked"
     static let productImageName = "product_image_name"
     static let productName = "product_name"
-    static let productPrice = "product_price"
+    static let productPrice = "price"
     static let categoryName = "category_name"
     static let screenClass = "screen_class"
+    static let products = ["1-blender","2-fan","3-iron","4-kettle","5-lamp",
+    "6-oven","7-fridge","8-scale","9-stove", "10-toaster",
+    "11-television","12-vacuum"]
 }

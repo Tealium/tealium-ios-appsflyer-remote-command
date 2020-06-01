@@ -1,5 +1,5 @@
 PODS:
-  - AppsFlyerFramework (5.2.0)
+  - AppsFlyerFramework (5.3.0)
   - tealium-swift/Core (1.9.3)
   - tealium-swift/TealiumAppData (1.9.3):
     - tealium-swift/Core
@@ -15,7 +15,7 @@ PODS:
     - tealium-swift/Core
   - tealium-swift/TealiumTagManagement (1.9.3):
     - tealium-swift/Core
-  - TealiumAppsFlyer (1.0.0):
+  - TealiumAppsFlyer (1.0.1):
     - AppsFlyerFramework (~> 5.2)
     - tealium-swift/Core (~> 1.9)
     - tealium-swift/TealiumDelegate (~> 1.9)
@@ -40,9 +40,9 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  AppsFlyerFramework: 9b2a932d826a278413dab7d59ffbe104a972132b
+  AppsFlyerFramework: 122cc8b2de52f2b82ea739c2d9e57f919a9f5653
   tealium-swift: 8735caa69eeb0e7d834c290a6557c69c5f3667ee
-  TealiumAppsFlyer: 5987443a2e06ede565a5bd5f6539efec13adacfd
+  TealiumAppsFlyer: 228f04c251cf65f5e58d51b2d869be7e10e0cd93
 
 PODFILE CHECKSUM: 5895cbc6020327923843003bb7455e1b0a21aba3
 

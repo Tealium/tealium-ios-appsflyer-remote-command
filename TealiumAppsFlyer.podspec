@@ -3,7 +3,7 @@ Pod::Spec.new do |s|
     # ―――  Spec Metadata  ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
     s.name         = "TealiumAppsFlyer"
     s.module_name  = "TealiumAppsFlyer"
-    s.version      = "1.0.0"
+    s.version      = "1.0.1"
     s.summary      = "Tealium Swift and AppsFlyer integration"
     s.description  = <<-DESC
     Tealium's integration with AppsFlyer for iOS.

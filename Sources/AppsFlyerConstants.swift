@@ -12,8 +12,8 @@ public enum AppsFlyerConstants {
     
     static let commandName = "command_name"
     static let separator: Character = ","
-    static let apiKey = "api_key"
-    static let appId = "app_id"
+    static let errorPrefix = "AppsFlyer Error: "
+    static let attributionLog = "AppsFlyer Attribution: "
     
     /// Standard AppsFlyer events: https://support.appsflyer.com/hc/en-us/articles/115005544169#Event-Types
     public enum EventCommandNames: String, CaseIterable {
@@ -45,45 +45,46 @@ public enum AppsFlyerConstants {
     }
     
     /// Other events/methods
-    public enum CommandNames {
-        static let launch = "launch"
-        static let initialize = "initialize"
-        static let trackLocation = "tracklocation"
-        static let setHost = "sethost"
-        static let setUserEmails = "setuseremails"
-        static let setCurrencyCode = "setcurrencycode"
-        static let setCustomerId = "setcustomerid"
-        static let disableTracking = "disabletracking"
-        static let resolveDeepLinkUrls = "resolvedeeplinkurls"
+    public enum CommandNames: String {
+        case launch = "launch"
+        case initialize = "initialize"
+        case trackLocation = "tracklocation"
+        case setHost = "sethost"
+        case setUserEmails = "setuseremails"
+        case setCurrencyCode = "setcurrencycode"
+        case setCustomerId = "setcustomerid"
+        case disableTracking = "disabletracking"
+        case resolveDeepLinkUrls = "resolvedeeplinkurls"
     }
     
-    public enum Configuration {
-        static let appDevKey = "app_dev_key"
-        static let debug = "debug"
-        static let disableAdTracking = "disable_ad_tracking"
-        static let disableAppleAdTracking = "disable_apple_ad_tracking"
-        static let minTimeBetweenSessions = "time_between_sessions"
-        static let anonymizeUser = "anonymize_user"
-        static let collectDeviceName = "collect_device_name"
-        static let customData = "custom_data"
-        static let settings = "settings"
+    public enum Configuration: String {
+        case appId = "app_id"
+        case appDevKey = "app_dev_key"
+        case debug = "debug"
+        case disableAdTracking = "disable_ad_tracking"
+        case disableAppleAdTracking = "disable_apple_ad_tracking"
+        case minTimeBetweenSessions = "time_between_sessions"
+        case anonymizeUser = "anonymize_user"
+        case collectDeviceName = "collect_device_name"
+        case customData = "custom_data"
+        case settings = "settings"
     }
 
     /// These parameters are available to send with events and commands
     /// For more information about what to send with a particular event,
     /// please refer to this document: https://support.appsflyer.com/hc/en-us/articles/115005544169#Event-Types
-    public enum Parameters {
-        static let latitude = "af_lat"
-        static let longitude = "af_long"
-        static let pushPayload = "af_push_payload"
-        static let host = "host"
-        static let hostPrefix = "host_prefix"
-        static let emails = "customer_emails"
-        static let cryptType = "email_hash_type"
-        static let currency = "af_currency"
-        static let customerId = "af_customer_user_id"
-        static let stopTracking = "stop_tracking"
-        static let deepLinkUrls = "af_deep_link"
+    public enum Parameters: String {
+        case latitude = "af_lat"
+        case longitude = "af_long"
+        case pushPayload = "af_push_payload"
+        case host = "host"
+        case hostPrefix = "host_prefix"
+        case emails = "customer_emails"
+        case cryptType = "email_hash_type"
+        case currency = "af_currency"
+        case customerId = "af_customer_user_id"
+        case stopTracking = "stop_tracking"
+        case deepLinkUrls = "af_deep_link"
     }
     
     public enum Events {
@@ -120,7 +121,6 @@ public enum AppsFlyerConstants {
         static let appOpenFailure = "app_open_attribution_failure"
         static let firstLaunch = "is_first_launch"
         static let conversionReceived = "conversion_data_received"
-        static let conversionError = "appsflyer_error"
         static let conversionFailure = "conversion_data_failure"
         static let errorName = "error_name"
         static let errorDescription = "error_description"

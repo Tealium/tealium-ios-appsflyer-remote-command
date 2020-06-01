@@ -43,7 +43,10 @@ class ProductViewController: UIViewController {
         let ac = UIAlertController(title: "Added!", message: "\(String(describing: productName.text!)) was added to your cart", preferredStyle: .alert)
         ac.addAction(UIAlertAction(title: "OK", style: .default) { _ in
             self.data[ProductViewController.productName] = [self.productName.text]
-            self.data[ProductViewController.productQuantity] = [self.quantityLabel.text]
+            self.data[ProductViewController.productPrice] = [100.00]
+            if let quantityString = self.quantityLabel.text, let qty = Int(quantityString) {
+                self.data[ProductViewController.productQuantity] = [qty]
+            }
             TealiumHelper.trackEvent(title: "cart_add", data: self.data)
         })
         ac.addAction(UIAlertAction(title: "Cancel", style: .destructive))
@@ -99,7 +102,7 @@ extension ProductViewController {
     static let productName = "product_name"
     static let productQuantity = "product_quantity"
     static let productVariant = "product_variant"
-    static let productPrice = "product_price"
+    static let productPrice = "price"
     static let productCategory = "product_category"
     static let screenClass = "screen_class"
 }
