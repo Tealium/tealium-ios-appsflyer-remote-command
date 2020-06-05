@@ -51,25 +51,25 @@ public class AppsFlyerCommandTracker: NSObject, AppsFlyerTrackable, TealiumRegis
             AppsFlyerTracker.shared().appleAppID = appId
             return
         }
-        if let debug = settings[.debug] as? Bool {
+        if let debug = settings[AppsFlyerConstants.Configuration.debug] as? Bool {
             AppsFlyerTracker.shared().isDebug = debug
         }
-        if let disableAdTracking = settings[.disableAdTracking] as? Bool {
+        if let disableAdTracking = settings[AppsFlyerConstants.Configuration.disableAdTracking] as? Bool {
             AppsFlyerTracker.shared().disableIAdTracking = disableAdTracking
         }
-        if let disableAppleAdTracking = settings[.disableAppleAdTracking] as? Bool {
+        if let disableAppleAdTracking = settings[AppsFlyerConstants.Configuration.disableAppleAdTracking] as? Bool {
             AppsFlyerTracker.shared().disableAppleAdSupportTracking = disableAppleAdTracking
         }
-        if let minTimeBetweenSessions = settings[.minTimeBetweenSessions] as? Int {
+        if let minTimeBetweenSessions = settings[AppsFlyerConstants.Configuration.minTimeBetweenSessions] as? Int {
             AppsFlyerTracker.shared().minTimeBetweenSessions = UInt(minTimeBetweenSessions)
         }
-        if let anonymizeUser = settings[.anonymizeUser] as? Bool {
+        if let anonymizeUser = settings[AppsFlyerConstants.Configuration.anonymizeUser] as? Bool {
             AppsFlyerTracker.shared().deviceTrackingDisabled = anonymizeUser
         }
-        if let shouldCollectDeviceName = settings[.collectDeviceName] as? Bool {
+        if let shouldCollectDeviceName = settings[AppsFlyerConstants.Configuration.collectDeviceName] as? Bool {
             AppsFlyerTracker.shared().shouldCollectDeviceName = shouldCollectDeviceName
         }
-        if let customData = settings[.customData] as? [AnyHashable: Any] {
+        if let customData = settings[AppsFlyerConstants.Configuration.customData] as? [AnyHashable: Any] {
             AppsFlyerTracker.shared().customData = customData
         }
     }
@@ -191,15 +191,4 @@ extension AppsFlyerCommandTracker: AppsFlyerTrackerDelegate {
             completion: nil)
     }
 
-}
-
-fileprivate extension Dictionary where Key: ExpressibleByStringLiteral {
-    subscript(key: AppsFlyerConstants.Configuration) -> Value? {
-        get {
-            return self[key.rawValue as! Key]
-        }
-        set {
-            self[key.rawValue as! Key] = newValue
-        }
-    }
 }
