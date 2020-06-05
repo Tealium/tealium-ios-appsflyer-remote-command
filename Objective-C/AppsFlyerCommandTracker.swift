@@ -76,43 +76,43 @@ public class AppsFlyerCommandTracker: NSObject, AppsFlyerTrackable, TealiumRegis
     }
 
     public func trackEvent(_ eventName: String, values: [String: Any]) {
-        AppsFlyerTracker.shared()?.trackEvent(eventName, withValues: values)
+        AppsFlyerTracker.shared().trackEvent(eventName, withValues: values)
     }
 
     public func trackLocation(longitude: Double, latitude: Double) {
-        AppsFlyerTracker.shared()?.trackLocation(longitude, latitude: latitude)
+        AppsFlyerTracker.shared().trackLocation(longitude, latitude: latitude)
     }
 
     /// Used to track push notification activity from native APNs or other push service
     /// Please refer to this for more information:
     /// https://support.appsflyer.com/hc/en-us/articles/207364076-Measuring-Push-Notification-Re-Engagement-Campaigns
     public func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        AppsFlyerTracker.shared()?.handlePushNotification(userInfo)
-        AppsFlyerTracker.shared()?.trackEvent(AppsFlyerConstants.Events.pushNotificationOpened, withValues: [:])
+        AppsFlyerTracker.shared().handlePushNotification(userInfo)
+        AppsFlyerTracker.shared().trackEvent(AppsFlyerConstants.Events.pushNotificationOpened, withValues: [:])
     }
 
     public func handlePushNofification(payload: [String: Any]?) {
-        AppsFlyerTracker.shared()?.handlePushNotification(payload)
+        AppsFlyerTracker.shared().handlePushNotification(payload)
     }
 
     public func setHost(_ host: String, with prefix: String) {
-        AppsFlyerTracker.shared()?.setHost(host, withHostPrefix: prefix)
+        AppsFlyerTracker.shared().setHost(host, withHostPrefix: prefix)
     }
 
     public func setUserEmails(emails: [String], with cryptType: Int) {
-        AppsFlyerTracker.shared()?.setUserEmails(emails, with: EmailCryptType(rawValue: EmailCryptType.RawValue(cryptType)))
+        AppsFlyerTracker.shared().setUserEmails(emails, with: EmailCryptType(rawValue: EmailCryptType.RawValue(cryptType)))
     }
 
     public func currencyCode(_ currency: String) {
-        AppsFlyerTracker.shared()?.currencyCode = currency
+        AppsFlyerTracker.shared().currencyCode = currency
     }
 
     public func customerId(_ id: String) {
-        AppsFlyerTracker.shared()?.customerUserID = id
+        AppsFlyerTracker.shared().customerUserID = id
     }
 
     public func disableTracking(_ disable: Bool) {
-        AppsFlyerTracker.shared()?.isStopTracking = disable
+        AppsFlyerTracker.shared().isStopTracking = disable
     }
 
     /// APNs and Push Messaging must be configured in order to track installs.
@@ -120,11 +120,11 @@ public class AppsFlyerCommandTracker: NSObject, AppsFlyerTrackable, TealiumRegis
     /// Instructions to set up: https://support.appsflyer.com/hc/en-us/articles/210289286-Uninstall-Measurement#iOS-Uninstall
     public func registerPushToken(_ token: String) {
         guard let dataToken = token.data(using: .utf8) else { return }
-        AppsFlyerTracker.shared()?.registerUninstall(dataToken)
+        AppsFlyerTracker.shared().registerUninstall(dataToken)
     }
 
     public func resolveDeepLinkURLs(_ urls: [String]) {
-        AppsFlyerTracker.shared()?.resolveDeepLinkURLs = urls
+        AppsFlyerTracker.shared().resolveDeepLinkURLs = urls
     }
 
 }
@@ -140,7 +140,7 @@ extension AppsFlyerCommandTracker: AppsFlyerTrackerDelegate {
                 return
         }
         guard firstLaunch else {
-            print("AppsFlyer Attribution: Not First Launch")
+            print("\(AppsFlyerConstants.attributionLog)Not First Launch")
             return
         }
         tealium.trackEvent(withTitle: AppsFlyerConstants.Attribution.conversionReceived,
@@ -149,14 +149,13 @@ extension AppsFlyerCommandTracker: AppsFlyerTrackerDelegate {
         guard let status = conversionInfo[AppsFlyerConstants.Attribution.status] as? String else {
             return
         }
-
         if (status == "Non-organic") {
             if let mediaSource = conversionInfo[AppsFlyerConstants.Attribution.source],
                 let campaign = conversionInfo[AppsFlyerConstants.Attribution.campaign] {
-                print("AppsFlyer Attribution: This is a Non-Organic install. Media source: \(mediaSource) Campaign: \(campaign)")
+                print("\(AppsFlyerConstants.attributionLog)This is a Non-Organic install. Media source: \(mediaSource) Campaign: \(campaign)")
             }
         } else {
-            print("AppsFlyer Attribution: This is an organic install.")
+            print("\(AppsFlyerConstants.attributionLog)This is an organic install.")
         }
     }
 

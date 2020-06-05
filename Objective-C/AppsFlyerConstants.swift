@@ -1,14 +1,19 @@
 //
 //  AppsFlyerConstants.swift
-//  AppsFlyerRemoteCommand
+//  TealiumAppsFlyer
 //
-//  Created by Christina Sund on 5/29/19.
-//  Copyright © 2019 Christina. All rights reserved.
+//  Created by Christina S on 5/29/19.
+//  Copyright © 2019 Tealium. All rights reserved.
 //
 
 import Foundation
 
 public enum AppsFlyerConstants {
+    
+    static let commandName = "command_name"
+    static let separator: Character = ","
+    static let errorPrefix = "AppsFlyer Error: "
+    static let attributionLog = "AppsFlyer Attribution: "
     
     /// Standard AppsFlyer events: https://support.appsflyer.com/hc/en-us/articles/115005544169#Event-Types
     public enum EventCommandNames: String, CaseIterable {
@@ -39,21 +44,20 @@ public enum AppsFlyerConstants {
         case customersegment
     }
     
-    /// Other events/methods
-    public enum CommandNames {
-        static let launch = "launch"
-        static let initialize = "initialize"
-        static let inAppPurchase = "inapppurchase"
-        static let trackLocation = "tracklocation"
-        static let setHost = "sethost"
-        static let setUserEmails = "setuseremails"
-        static let setCurrencyCode = "setcurrencycode"
-        static let setCustomerId = "setcustomerid"
-        static let disableTracking = "disabletracking"
-        static let resolveDeepLinkUrls = "resolvedeeplinkurls"
+    public enum CommandNames: String {
+        case launch = "launch"
+        case initialize = "initialize"
+        case trackLocation = "tracklocation"
+        case setHost = "sethost"
+        case setUserEmails = "setuseremails"
+        case setCurrencyCode = "setcurrencycode"
+        case setCustomerId = "setcustomerid"
+        case disableTracking = "disabletracking"
+        case resolveDeepLinkUrls = "resolvedeeplinkurls"
     }
     
     public enum Configuration {
+        static let appId = "app_id"
         static let appDevKey = "app_dev_key"
         static let debug = "debug"
         static let disableAdTracking = "disable_ad_tracking"
@@ -62,12 +66,9 @@ public enum AppsFlyerConstants {
         static let anonymizeUser = "anonymize_user"
         static let collectDeviceName = "collect_device_name"
         static let customData = "custom_data"
-        static let config = "config"
+        static let settings = "settings"
     }
 
-    /// These parameters are available to send with events and commands
-    /// For more information about what to send with a particular event,
-    /// please refer to this document: https://support.appsflyer.com/hc/en-us/articles/115005544169#Event-Types
     public enum Parameters {
         static let latitude = "af_lat"
         static let longitude = "af_long"
@@ -110,13 +111,12 @@ public enum AppsFlyerConstants {
         static let customerSegment = "af_customer_segment"
         static let pushNotificationOpened = "af_opened_from_push_notification"
     }
-
+    
     public enum Attribution {
         static let appOpen = "app_open_attribution"
         static let appOpenFailure = "app_open_attribution_failure"
         static let firstLaunch = "is_first_launch"
         static let conversionReceived = "conversion_data_received"
-        static let conversionError = "appsflyer_error"
         static let conversionFailure = "conversion_data_failure"
         static let errorName = "error_name"
         static let errorDescription = "error_description"
@@ -125,9 +125,5 @@ public enum AppsFlyerConstants {
         static let campaign = "campaign"
         static let error = "appsflyer_error"
     }
-    
-    static let commandName = "command_name"
-    static let apiKey = "api_key"
-    static let appId = "app_id"
     
 }

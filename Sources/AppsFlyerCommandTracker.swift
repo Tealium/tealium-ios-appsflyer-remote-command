@@ -6,7 +6,7 @@
 //  Copyright © 2019 Tealium. All rights reserved.
 //
 
-import Foundation
+import UIKit
 import AppsFlyerLib
 #if COCOAPODS
     import TealiumSwift
@@ -66,8 +66,6 @@ public class AppsFlyerCommandTracker: NSObject, AppsFlyerTrackable, TealiumRegis
         if let anonymizeUser = settings[AppsFlyerConstants.Configuration.anonymizeUser] as? Bool {
             AppsFlyerTracker.shared().deviceTrackingDisabled = anonymizeUser
         }
-
-        // [ASK]
         if let shouldCollectDeviceName = settings[AppsFlyerConstants.Configuration.collectDeviceName] as? Bool {
             AppsFlyerTracker.shared().shouldCollectDeviceName = shouldCollectDeviceName
         }
@@ -146,7 +144,7 @@ extension AppsFlyerCommandTracker: AppsFlyerTrackerDelegate {
                 return
         }
         guard firstLaunch else {
-            print("AppsFlyer Attribution: Not First Launch")
+            print("\(AppsFlyerConstants.attributionLog)Not First Launch")
             return
         }
         tealium.track(title: AppsFlyerConstants.Attribution.conversionReceived,
@@ -160,10 +158,10 @@ extension AppsFlyerCommandTracker: AppsFlyerTrackerDelegate {
         if (status == "Non-organic") {
             if let mediaSource = conversionInfo[AppsFlyerConstants.Attribution.source],
                 let campaign = conversionInfo[AppsFlyerConstants.Attribution.campaign] {
-                print("AppsFlyer Attribution: This is a Non-Organic install. Media source: \(mediaSource) Campaign: \(campaign)")
+                print("\(AppsFlyerConstants.attributionLog)This is a Non-Organic install. Media source: \(mediaSource) Campaign: \(campaign)")
             }
         } else {
-            print("AppsFlyer Attribution: This is an organic install.")
+            print("\(AppsFlyerConstants.attributionLog)This is an organic install.")
         }
     }
 

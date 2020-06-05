@@ -34,7 +34,7 @@ class AccountViewController: UIViewController {
     }
     
     @IBAction func showOfferTapped(_ sender: UIButton) {
-        TealiumHelper.trackEvent(title: "show_offers", data: [AccountViewController.productId: ["12"], AccountViewController.productQuantity: ["1"], AccountViewController.productName: ["vacuum"], AccountViewController.productCategory: ["household"]])
+        TealiumHelper.trackEvent(title: "show_offers", data: [AccountViewController.adType: "popup", AccountViewController.adSize: "default", AccountViewController.adPlacementId: "abc123", AccountViewController.adMediatedName: "moneybags"])
         offersImage.image = UIImage(named: "bank")
         let ac = UIAlertController(title: "Offers", message: "You have a new offer, please shop and get 10% off a vacuum! This will be applied at checkout when you purchase this item.", preferredStyle: .alert)
         ac.addAction(UIAlertAction(title: "OK", style: .default))
@@ -85,10 +85,11 @@ extension AccountViewController: UITextFieldDelegate {
 extension AccountViewController {
     static let contentType = "content_type"
     static let shareId = "share_id"
-    static let productId = "product_id"
-    static let productQuantity = "product_quantity"
-    static let productName = "product_name"
-    static let productCategory = "product_category"
+    static let adType = "ad_type"
+    static let adNetworkName = "ad_network_name"
+    static let adPlacementId = "ad_placement_id"
+    static let adSize = "ad_size"
+    static let adMediatedName = "ad_mediated_name"
     static let groupName = "group_name"
     static let rating = "rating"
 }
