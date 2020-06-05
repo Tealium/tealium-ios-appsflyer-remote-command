@@ -44,7 +44,6 @@ public enum AppsFlyerConstants {
         case customersegment
     }
     
-    /// Other events/methods
     public enum CommandNames: String {
         case launch = "launch"
         case initialize = "initialize"
@@ -70,9 +69,6 @@ public enum AppsFlyerConstants {
         static let settings = "settings"
     }
 
-    /// These parameters are available to send with events and commands
-    /// For more information about what to send with a particular event,
-    /// please refer to this document: https://support.appsflyer.com/hc/en-us/articles/115005544169#Event-Types
     public enum Parameters {
         static let latitude = "af_lat"
         static let longitude = "af_long"

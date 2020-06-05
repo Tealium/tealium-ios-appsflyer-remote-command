@@ -48,25 +48,25 @@ public class AppsFlyerCommandTracker: NSObject, AppsFlyerTrackable, TealiumRegis
     public func initialize(appId: String, appDevKey: String, config: [String: Any]) {
         AppsFlyerTracker.shared().appsFlyerDevKey = appDevKey
         AppsFlyerTracker.shared().appleAppID = appId
-        if let debug = config[.debug] as? Bool {
+        if let debug = config[AppsFlyerConstants.Configuration.debug] as? Bool {
             AppsFlyerTracker.shared().isDebug = debug
         }
-        if let disableAdTracking = config[.disableAdTracking] as? Bool {
+        if let disableAdTracking = config[AppsFlyerConstants.Configuration.disableAdTracking] as? Bool {
             AppsFlyerTracker.shared().disableIAdTracking = disableAdTracking
         }
-        if let disableAppleAdTracking = config[.disableAppleAdTracking] as? Bool {
+        if let disableAppleAdTracking = config[AppsFlyerConstants.Configuration.disableAppleAdTracking] as? Bool {
             AppsFlyerTracker.shared().disableAppleAdSupportTracking = disableAppleAdTracking
         }
-        if let minTimeBetweenSessions = config[.minTimeBetweenSessions] as? Int {
+        if let minTimeBetweenSessions = config[AppsFlyerConstants.Configuration.minTimeBetweenSessions] as? Int {
             AppsFlyerTracker.shared().minTimeBetweenSessions = UInt(minTimeBetweenSessions)
         }
-        if let anonymizeUser = config[.anonymizeUser] as? Bool {
+        if let anonymizeUser = config[AppsFlyerConstants.Configuration.anonymizeUser] as? Bool {
             AppsFlyerTracker.shared().deviceTrackingDisabled = anonymizeUser
         }
-        if let shouldCollectDeviceName = config[.collectDeviceName] as? Bool {
+        if let shouldCollectDeviceName = config[AppsFlyerConstants.Configuration.collectDeviceName] as? Bool {
             AppsFlyerTracker.shared().shouldCollectDeviceName = shouldCollectDeviceName
         }
-        if let customData = config[.customData] as? [AnyHashable: Any] {
+        if let customData = config[AppsFlyerConstants.Configuration.customData] as? [AnyHashable: Any] {
             AppsFlyerTracker.shared().customData = customData
         }
     }
@@ -149,7 +149,6 @@ extension AppsFlyerCommandTracker: AppsFlyerTrackerDelegate {
         guard let status = conversionInfo[AppsFlyerConstants.Attribution.status] as? String else {
             return
         }
-
         if (status == "Non-organic") {
             if let mediaSource = conversionInfo[AppsFlyerConstants.Attribution.source],
                 let campaign = conversionInfo[AppsFlyerConstants.Attribution.campaign] {
@@ -182,15 +181,4 @@ extension AppsFlyerCommandTracker: AppsFlyerTrackerDelegate {
                 AppsFlyerConstants.Attribution.errorDescription: error.localizedDescription])
     }
 
-}
-
-fileprivate extension Dictionary where Key: ExpressibleByStringLiteral {
-    subscript(key: AppsFlyerConstants.Configuration) -> Value? {
-        get {
-            return self[key.rawValue as! Key]
-        }
-        set {
-            self[key.rawValue as! Key] = newValue
-        }
-    }
 }

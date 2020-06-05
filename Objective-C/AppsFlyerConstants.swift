@@ -1,9 +1,9 @@
 //
 //  AppsFlyerConstants.swift
-//  AppsFlyerRemoteCommand
+//  TealiumAppsFlyer
 //
-//  Created by Christina Sund on 5/29/19.
-//  Copyright © 2019 Christina. All rights reserved.
+//  Created by Christina S on 5/29/19.
+//  Copyright © 2019 Tealium. All rights reserved.
 //
 
 import Foundation
@@ -12,8 +12,8 @@ public enum AppsFlyerConstants {
     
     static let commandName = "command_name"
     static let separator: Character = ","
-    static let errorPrefix = "Appsflyer Error: "
-    static let attributionLog = "Appsflyer Attribution: "
+    static let errorPrefix = "AppsFlyer Error: "
+    static let attributionLog = "AppsFlyer Attribution: "
     
     /// Standard AppsFlyer events: https://support.appsflyer.com/hc/en-us/articles/115005544169#Event-Types
     public enum EventCommandNames: String, CaseIterable {
@@ -44,11 +44,9 @@ public enum AppsFlyerConstants {
         case customersegment
     }
     
-    /// Other events/methods
     public enum CommandNames: String {
         case launch = "launch"
         case initialize = "initialize"
-        case inAppPurchase = "inapppurchase"
         case trackLocation = "tracklocation"
         case setHost = "sethost"
         case setUserEmails = "setuseremails"
@@ -58,35 +56,31 @@ public enum AppsFlyerConstants {
         case resolveDeepLinkUrls = "resolvedeeplinkurls"
     }
     
-    public enum Configuration: String {
-        case appId = "app_id"
-        case apiKey = "api_key"
-        case appDevKey = "app_dev_key"
-        case debug = "debug"
-        case disableAdTracking = "disable_ad_tracking"
-        case disableAppleAdTracking = "disable_apple_ad_tracking"
-        case minTimeBetweenSessions = "time_between_sessions"
-        case anonymizeUser = "anonymize_user"
-        case collectDeviceName = "collect_device_name"
-        case customData = "custom_data"
-        case config = "config"
+    public enum Configuration {
+        static let appId = "app_id"
+        static let appDevKey = "app_dev_key"
+        static let debug = "debug"
+        static let disableAdTracking = "disable_ad_tracking"
+        static let disableAppleAdTracking = "disable_apple_ad_tracking"
+        static let minTimeBetweenSessions = "time_between_sessions"
+        static let anonymizeUser = "anonymize_user"
+        static let collectDeviceName = "collect_device_name"
+        static let customData = "custom_data"
+        static let settings = "settings"
     }
 
-    /// These parameters are available to send with events and commands
-    /// For more information about what to send with a particular event,
-    /// please refer to this document: https://support.appsflyer.com/hc/en-us/articles/115005544169#Event-Types
-    public enum Parameters: String {
-        case latitude = "af_lat"
-        case longitude = "af_long"
-        case pushPayload = "af_push_payload"
-        case host = "host"
-        case hostPrefix = "host_prefix"
-        case emails = "customer_emails"
-        case cryptType = "email_hash_type"
-        case currency = "af_currency"
-        case customerId = "af_customer_user_id"
-        case stopTracking = "stop_tracking"
-        case deepLinkUrls = "af_deep_link"
+    public enum Parameters {
+        static let latitude = "af_lat"
+        static let longitude = "af_long"
+        static let pushPayload = "af_push_payload"
+        static let host = "host"
+        static let hostPrefix = "host_prefix"
+        static let emails = "customer_emails"
+        static let cryptType = "email_hash_type"
+        static let currency = "af_currency"
+        static let customerId = "af_customer_user_id"
+        static let stopTracking = "stop_tracking"
+        static let deepLinkUrls = "af_deep_link"
     }
     
     public enum Events {
@@ -117,7 +111,7 @@ public enum AppsFlyerConstants {
         static let customerSegment = "af_customer_segment"
         static let pushNotificationOpened = "af_opened_from_push_notification"
     }
-
+    
     public enum Attribution {
         static let appOpen = "app_open_attribution"
         static let appOpenFailure = "app_open_attribution_failure"
