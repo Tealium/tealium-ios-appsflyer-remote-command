@@ -12,6 +12,8 @@ public enum AppsFlyerConstants {
     
     static let commandName = "command_name"
     static let separator: Character = ","
+    static let commandId = "appsflyer"
+    static let description = "AppsFlyer Remote Command"
     static let errorPrefix = "AppsFlyer Error: "
     static let attributionLog = "AppsFlyer Attribution: "
     
@@ -81,6 +83,7 @@ public enum AppsFlyerConstants {
         static let customerId = "af_customer_user_id"
         static let stopTracking = "stop_tracking"
         static let deepLinkUrls = "af_deep_link"
+        static let event = "event"
     }
     
     public enum Events {

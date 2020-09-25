@@ -12,7 +12,6 @@ import AppsFlyerLib
     import TealiumSwift
 #else
     import TealiumCore
-    import TealiumDelegate
     import TealiumTagManagement
     import TealiumRemoteCommands
 #endif
@@ -135,21 +134,16 @@ public class AppsFlyerCommandTracker: NSObject, AppsFlyerTrackable, TealiumRegis
 extension AppsFlyerCommandTracker: AppsFlyerTrackerDelegate {
 
     public func onConversionDataSuccess(_ conversionInfo: [AnyHashable: Any]) {
-        guard let tealium = tealium else { return }
         guard let conversionInfo = conversionInfo as? [String: Any],
             let firstLaunch = conversionInfo[AppsFlyerConstants.Attribution.firstLaunch] as? Bool else {
-                tealium.track(title: AppsFlyerConstants.Attribution.conversionReceived,
-                    data: nil,
-                    completion: nil)
+            tealiumTrack(title: AppsFlyerConstants.Attribution.conversionReceived)
                 return
         }
         guard firstLaunch else {
             print("\(AppsFlyerConstants.attributionLog)Not First Launch")
             return
         }
-        tealium.track(title: AppsFlyerConstants.Attribution.conversionReceived,
-            data: conversionInfo,
-            completion: nil)
+        tealiumTrack(title: AppsFlyerConstants.Attribution.conversionReceived)
 
         guard let status = conversionInfo[AppsFlyerConstants.Attribution.status] as? String else {
             return
@@ -166,29 +160,28 @@ extension AppsFlyerCommandTracker: AppsFlyerTrackerDelegate {
     }
 
     public func onConversionDataFail(_ error: Error) {
-        tealium?.track(title: AppsFlyerConstants.Attribution.error,
+        tealiumTrack(title: AppsFlyerConstants.Attribution.error,
             data: [AppsFlyerConstants.Attribution.errorName: AppsFlyerConstants.Attribution.conversionFailure,
-                AppsFlyerConstants.Attribution.errorDescription: error.localizedDescription],
-            completion: nil)
+                AppsFlyerConstants.Attribution.errorDescription: error.localizedDescription])
     }
 
     public func onAppOpenAttribution(_ attributionData: [AnyHashable: Any]) {
-        guard let tealium = self.tealium else { return }
         guard let attributionData = attributionData as? [String: Any] else {
-            return tealium.track(title: AppsFlyerConstants.Attribution.appOpen,
-                data: nil,
-                completion: nil)
+            return tealiumTrack(title: AppsFlyerConstants.Attribution.appOpen)
         }
-        tealium.track(title: AppsFlyerConstants.Attribution.appOpen,
-            data: attributionData,
-            completion: nil)
+        tealiumTrack(title: AppsFlyerConstants.Attribution.appOpen,
+            data: attributionData)
     }
 
     public func onAppOpenAttributionFailure(_ error: Error) {
-        tealium?.track(title: AppsFlyerConstants.Attribution.error,
+        tealiumTrack(title: AppsFlyerConstants.Attribution.error,
             data: [AppsFlyerConstants.Attribution.errorName: AppsFlyerConstants.Attribution.appOpenFailure,
-                AppsFlyerConstants.Attribution.errorDescription: error.localizedDescription],
-            completion: nil)
+                AppsFlyerConstants.Attribution.errorDescription: error.localizedDescription])
+    }
+    
+    private func tealiumTrack(title: String, data: [String: Any]? = nil) {
+        let event = TealiumEvent(title, dataLayer: data)
+        tealium?.track(event)
     }
 
 }

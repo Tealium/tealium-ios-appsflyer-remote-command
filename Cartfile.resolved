@@ -1,3 +1,0 @@
-binary "https://raw.githubusercontent.com/AppsFlyerSDK/AppsFlyerFramework/master/AppsFlyerLib.json" "5.2.0"
-binary "https://tags.tiqcdn.com/dle/tealiummobile/tealium-ios-carthage/tealium-carthage-plcrashreporter.json?_cb=2" "1.4.0"
-github "tealium/tealium-swift" "1.9.4"
