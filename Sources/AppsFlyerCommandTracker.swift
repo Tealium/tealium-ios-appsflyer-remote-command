@@ -19,9 +19,8 @@ import AppsFlyerLib
 
 public protocol AppsFlyerTrackable {
     func initialize(appId: String, appDevKey: String, settings: [String: Any]?)
-    func trackLaunch()
-    func trackEvent(_ eventName: String, values: [String: Any])
-    func trackLocation(longitude: Double, latitude: Double)
+    func logEvent(_ eventName: String, values: [String: Any])
+    func logLocation(longitude: Double, latitude: Double)
     func setHost(_ host: String, with prefix: String)
     func setUserEmails(emails: [String], with cryptType: Int)
     func currencyCode(_ currency: String)
@@ -39,82 +38,79 @@ public class AppsFlyerCommandTracker: NSObject, AppsFlyerTrackable, TealiumRegis
     public init(tealium: Tealium) {
         super.init()
         self.tealium = tealium
-        AppsFlyerTracker.shared().delegate = self
+        AppsFlyerLib.shared().delegate = self
     }
 
     public func initialize(appId: String, appDevKey: String, settings: [String: Any]?) {
-        AppsFlyerTracker.shared().appsFlyerDevKey = appDevKey
-        AppsFlyerTracker.shared().appleAppID = appId
+        AppsFlyerLib.shared().appsFlyerDevKey = appDevKey
+        AppsFlyerLib.shared().appleAppID = appId
         guard let settings = settings else {
-            AppsFlyerTracker.shared().appsFlyerDevKey = appDevKey
-            AppsFlyerTracker.shared().appleAppID = appId
+            AppsFlyerLib.shared().appsFlyerDevKey = appDevKey
+            AppsFlyerLib.shared().appleAppID = appId
             return
         }
         if let debug = settings[AppsFlyerConstants.Configuration.debug] as? Bool {
-            AppsFlyerTracker.shared().isDebug = debug
+            AppsFlyerLib.shared().isDebug = debug
         }
         if let disableAdTracking = settings[AppsFlyerConstants.Configuration.disableAdTracking] as? Bool {
-            AppsFlyerTracker.shared().disableIAdTracking = disableAdTracking
+            AppsFlyerLib.shared().disableAdvertisingIdentifier = disableAdTracking
+            AppsFlyerLib.shared().disableIDFVCollection = disableAdTracking
         }
         if let disableAppleAdTracking = settings[AppsFlyerConstants.Configuration.disableAppleAdTracking] as? Bool {
-            AppsFlyerTracker.shared().disableAppleAdSupportTracking = disableAppleAdTracking
+            AppsFlyerLib.shared().disableSKAdNetwork = disableAppleAdTracking
         }
         if let minTimeBetweenSessions = settings[AppsFlyerConstants.Configuration.minTimeBetweenSessions] as? Int {
-            AppsFlyerTracker.shared().minTimeBetweenSessions = UInt(minTimeBetweenSessions)
+            AppsFlyerLib.shared().minTimeBetweenSessions = UInt(minTimeBetweenSessions)
         }
         if let anonymizeUser = settings[AppsFlyerConstants.Configuration.anonymizeUser] as? Bool {
-            AppsFlyerTracker.shared().deviceTrackingDisabled = anonymizeUser
+            AppsFlyerLib.shared().anonymizeUser = anonymizeUser
         }
         if let shouldCollectDeviceName = settings[AppsFlyerConstants.Configuration.collectDeviceName] as? Bool {
-            AppsFlyerTracker.shared().shouldCollectDeviceName = shouldCollectDeviceName
+            AppsFlyerLib.shared().shouldCollectDeviceName = shouldCollectDeviceName
         }
         if let customData = settings[AppsFlyerConstants.Configuration.customData] as? [AnyHashable: Any] {
-            AppsFlyerTracker.shared().customData = customData
+            AppsFlyerLib.shared().customData = customData
         }
     }
 
-    public func trackLaunch() {
-        AppsFlyerTracker.shared().trackAppLaunch()
+    public func logEvent(_ eventName: String, values: [String: Any]) {
+        AppsFlyerLib.shared().logEvent(eventName, withValues: values)
     }
 
-    public func trackEvent(_ eventName: String, values: [String: Any]) {
-        AppsFlyerTracker.shared().trackEvent(eventName, withValues: values)
-    }
-
-    public func trackLocation(longitude: Double, latitude: Double) {
-        AppsFlyerTracker.shared().trackLocation(longitude, latitude: latitude)
+    public func logLocation(longitude: Double, latitude: Double) {
+        AppsFlyerLib.shared().logLocation(longitude: longitude, latitude: latitude)
     }
 
     /// Used to track push notification activity from native APNs or other push service
     /// Please refer to this for more information:
     /// https://support.appsflyer.com/hc/en-us/articles/207364076-Measuring-Push-Notification-Re-Engagement-Campaigns
     public func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        AppsFlyerTracker.shared().handlePushNotification(userInfo)
-        AppsFlyerTracker.shared().trackEvent(AppsFlyerConstants.Events.pushNotificationOpened, withValues: [:])
+        AppsFlyerLib.shared().handlePushNotification(userInfo)
+        AppsFlyerLib.shared().logEvent(AppsFlyerConstants.Events.pushNotificationOpened, withValues: [:])
     }
 
     public func handlePushNofification(payload: [String: Any]?) {
-        AppsFlyerTracker.shared().handlePushNotification(payload)
+        AppsFlyerLib.shared().handlePushNotification(payload)
     }
 
     public func setHost(_ host: String, with prefix: String) {
-        AppsFlyerTracker.shared().setHost(host, withHostPrefix: prefix)
+        AppsFlyerLib.shared().setHost(host, withHostPrefix: prefix)
     }
 
     public func setUserEmails(emails: [String], with cryptType: Int) {
-        AppsFlyerTracker.shared().setUserEmails(emails, with: EmailCryptType(rawValue: EmailCryptType.RawValue(cryptType)))
+        AppsFlyerLib.shared().setUserEmails(emails, with: EmailCryptType(rawValue: EmailCryptType.RawValue(cryptType)))
     }
 
     public func currencyCode(_ currency: String) {
-        AppsFlyerTracker.shared().currencyCode = currency
+        AppsFlyerLib.shared().currencyCode = currency
     }
 
     public func customerId(_ id: String) {
-        AppsFlyerTracker.shared().customerUserID = id
+        AppsFlyerLib.shared().customerUserID = id
     }
 
     public func disableTracking(_ disable: Bool) {
-        AppsFlyerTracker.shared().isStopTracking = disable
+        AppsFlyerLib.shared().isStopped = disable
     }
 
     /// APNs and Push Messaging must be configured in order to track installs.
@@ -122,16 +118,16 @@ public class AppsFlyerCommandTracker: NSObject, AppsFlyerTrackable, TealiumRegis
     /// Instructions to set up: https://support.appsflyer.com/hc/en-us/articles/210289286-Uninstall-Measurement#iOS-Uninstall
     public func registerPushToken(_ token: String) {
         guard let dataToken = token.data(using: .utf8) else { return }
-        AppsFlyerTracker.shared().registerUninstall(dataToken)
+        AppsFlyerLib.shared().registerUninstall(dataToken)
     }
 
     public func resolveDeepLinkURLs(_ urls: [String]) {
-        AppsFlyerTracker.shared().resolveDeepLinkURLs = urls
+        AppsFlyerLib.shared().resolveDeepLinkURLs = urls
     }
 
 }
 
-extension AppsFlyerCommandTracker: AppsFlyerTrackerDelegate {
+extension AppsFlyerCommandTracker: AppsFlyerLibDelegate {
 
     public func onConversionDataSuccess(_ conversionInfo: [AnyHashable: Any]) {
         guard let conversionInfo = conversionInfo as? [String: Any],

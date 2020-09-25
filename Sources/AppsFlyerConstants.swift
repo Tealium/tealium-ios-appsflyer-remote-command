@@ -47,7 +47,6 @@ public enum AppsFlyerConstants {
     }
     
     public enum CommandNames: String {
-        case launch = "launch"
         case initialize = "initialize"
         case trackLocation = "tracklocation"
         case setHost = "sethost"

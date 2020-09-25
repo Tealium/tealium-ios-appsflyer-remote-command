@@ -15,51 +15,43 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
 
     var appsFlyerCommandTracker = MockAppsFlyerCommandTracker()
     var appsFlyerCommand: AppsFlyerRemoteCommand!
-    var remoteCommand: TealiumRemoteCommand!
     
     override func setUp() {
         appsFlyerCommand = AppsFlyerRemoteCommand(appsFlyerCommandTracker: appsFlyerCommandTracker)
-        remoteCommand = appsFlyerCommand.remoteCommand()
-    }
-    
-    func createRemoteCommandResponse(commandId: String, payload: [String: Any]) -> TealiumRemoteCommandResponse? {
-        let responseDescription = HttpTestHelpers.httpRequestDescription(commandId: commandId, config: [:], payload: payload)
-        if let description = responseDescription {
-            return TealiumRemoteCommandResponse(urlString: description)
-        }
-        XCTFail("Could not create Remote Command Response description from stubs provided")
-        return nil
     }
 
     override func tearDown() { }
 
+    
+    // MARK: Webview Remote Command Tests
+    
     func testInitWithoutConfig() {
         let expect = expectation(description: "AppsFlyerRunner initialize(appId:appDevKey:) method run")
         let payload: [String: Any] = ["command_name": "initialize",
                                       "app_id": "test",
                                       "app_dev_key": "test"]
         
-        if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
-            remoteCommand.remoteCommandCompletion(response)
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
             XCTAssertEqual(1, self.appsFlyerCommandTracker.initWithoutConfigCount)
         }
         
-        expect.fulfill()
-        wait(for: [expect], timeout: 5.0)
+        wait(for: [expect], timeout: 2.0)
     }
     
     func testInitWithoutConfigNotRun() {
         let expect = expectation(description: "AppsFlyerRunner initialize(appId:appDevKey:) method does not run")
         let payload: [String: Any] = ["command_name": "initialize"]
         
-        if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
-            remoteCommand.remoteCommandCompletion(response)
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
             XCTAssertEqual(0, self.appsFlyerCommandTracker.initWithoutConfigCount)
             XCTAssertEqual(0, self.appsFlyerCommandTracker.initWithConfigCount)
         }
         
-        expect.fulfill()
-        wait(for: [expect], timeout: 5.0)
+        wait(for: [expect], timeout: 2.0)
     }
     
     func testInitWithConfig() {
@@ -69,13 +61,13 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
                                       "app_dev_key": "test",
                                       "settings": ["test": "test"]]
         
-        if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
-            remoteCommand.remoteCommandCompletion(response)
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
             XCTAssertEqual(1, self.appsFlyerCommandTracker.initWithConfigCount)
         }
         
-        expect.fulfill()
-        wait(for: [expect], timeout: 5.0)
+        wait(for: [expect], timeout: 2.0)
     }
     
     func testInitWithConfigNotRun() {
@@ -83,94 +75,83 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         let payload: [String: Any] = ["command_name": "initialize",
                                       "settings": ["test": "test"]]
         
-        if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
-            remoteCommand.remoteCommandCompletion(response)
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
             XCTAssertEqual(0, self.appsFlyerCommandTracker.initWithConfigCount)
             XCTAssertEqual(0, self.appsFlyerCommandTracker.initWithConfigCount)
         }
         
-        expect.fulfill()
-        wait(for: [expect], timeout: 5.0)
-    }
-
-    func testTrackLaunch() {
-        let expect = expectation(description: "AppsFlyerRunner trackLaunch() method run")
-        let payload: [String: Any] = ["command_name": "launch"]
-        
-        if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
-            remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(1, self.appsFlyerCommandTracker.trackLaunchCount)
-        }
-        
-        expect.fulfill()
-        wait(for: [expect], timeout: 5.0)
-    }
-    
-    func testTrackLaunchNotRun() {
-        let expect = expectation(description: "AppsFlyerRunner trackLaunch() method does not run")
-        let payload: [String: Any] = ["command_name": "tracklaunch"]
-        
-        if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
-            remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.trackLaunchCount)
-        }
-        
-        expect.fulfill()
-        wait(for: [expect], timeout: 5.0)
+        wait(for: [expect], timeout: 2.0)
     }
     
     func testTrackEvent() {
         let expect = expectation(description: "AppsFlyerRunner trackEvent(eventName:values:) method run")
         let payload: [String: Any] = ["command_name": "viewedcontent,rate,login"]
         
-        if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
-            remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(3, self.appsFlyerCommandTracker.trackEventCount)
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(3, self.appsFlyerCommandTracker.logEventCount)
         }
         
-        expect.fulfill()
-        wait(for: [expect], timeout: 5.0)
+        wait(for: [expect], timeout: 2.0)
     }
     
     func testTrackEventNotRun() {
         let expect = expectation(description: "AppsFlyerRunner trackEvent(eventName:values:) method run")
         let payload: [String: Any] = ["command_name": "unrecognized,nope,test"]
         
-        if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
-            remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.trackEventCount)
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.logEventCount)
         }
         
-        expect.fulfill()
-        wait(for: [expect], timeout: 5.0)
+        wait(for: [expect], timeout: 2.0)
     }
     
-    func testTrackLocation() {
+    func testTrackLocationWithLatLongInts() {
         let expect = expectation(description: "AppsFlyerRunner trackLocation(longitude:latitude:) method run")
         let payload: [String: Any] = ["command_name": "tracklocation",
                                       "af_lat": 33,
                                       "af_long": 122]
         
-        if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
-            remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(1, self.appsFlyerCommandTracker.trackLocationCount)
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(1, self.appsFlyerCommandTracker.logLocationCount)
         }
         
-        expect.fulfill()
-        wait(for: [expect], timeout: 5.0)
+        wait(for: [expect], timeout: 2.0)
+    }
+    
+    func testTrackLocationWithLatLongDoubles() {
+        let expect = expectation(description: "AppsFlyerRunner trackLocation(longitude:latitude:) method run")
+        let payload: [String: Any] = ["command_name": "tracklocation",
+                                      "af_lat": 33.0,
+                                      "af_long": -122.0]
+        
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(1, self.appsFlyerCommandTracker.logLocationCount)
+        }
+        
+        wait(for: [expect], timeout: 2.0)
     }
     
     func testTrackLocationNotRun() {
         let expect = expectation(description: "AppsFlyerRunner trackLocation(longitude:latitude:) method has not run")
         let payload: [String: Any] = ["command_name": "tracklocation"]
         
-        if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
-            remoteCommand.remoteCommandCompletion(response)
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.trackLocationCount)
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.logLocationCount)
         }
         
-        expect.fulfill()
-        wait(for: [expect], timeout: 5.0)
+        wait(for: [expect], timeout: 2.0)
     }
     
     func testSetHost() {
@@ -179,13 +160,13 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
                                       "host": "test.com",
                                       "host_prefix": "test"]
         
-        if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
-            remoteCommand.remoteCommandCompletion(response)
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
             XCTAssertEqual(1, self.appsFlyerCommandTracker.setHostCount)
         }
         
-        expect.fulfill()
-        wait(for: [expect], timeout: 5.0)
+        wait(for: [expect], timeout: 2.0)
     }
     
     func testSetHostNotRun() {
@@ -193,13 +174,13 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         let payload: [String: Any] = ["command_name": "sethost",
                                       "host_prefix": "test"]
         
-        if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
-            remoteCommand.remoteCommandCompletion(response)
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
             XCTAssertEqual(0, self.appsFlyerCommandTracker.setHostCount)
         }
         
-        expect.fulfill()
-        wait(for: [expect], timeout: 5.0)
+        wait(for: [expect], timeout: 2.0)
     }
     
     func testSetUserEmails() {
@@ -208,13 +189,13 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
                                       "customer_emails": ["blah", "blah2"],
                                       "email_hash_type": 1]
         
-        if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
-            remoteCommand.remoteCommandCompletion(response)
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
             XCTAssertEqual(1, self.appsFlyerCommandTracker.setUserEmailsCount)
         }
         
-        expect.fulfill()
-        wait(for: [expect], timeout: 5.0)
+        wait(for: [expect], timeout: 2.0)
     }
     
     func testSetUserEmailsWNotRun() {
@@ -222,131 +203,435 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         let payload: [String: Any] = ["command_name": "setuseremails",
                                       "email_hash_type": 1]
         
-        if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
-            remoteCommand.remoteCommandCompletion(response)
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
             XCTAssertEqual(0, self.appsFlyerCommandTracker.setUserEmailsCount)
         }
         
-        expect.fulfill()
-        wait(for: [expect], timeout: 5.0)
+        wait(for: [expect], timeout: 2.0)
     }
     
     func testSetCurrencyCode() {
         let expect = expectation(description: "AppsFlyerRunner currencyCode(currency:) method run")
         let payload: [String: Any] = ["command_name": "setcurrencycode", "af_currency": "USD"]
         
-        if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
-            remoteCommand.remoteCommandCompletion(response)
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
             XCTAssertEqual(1, self.appsFlyerCommandTracker.setCurrencyCodeCount)
         }
         
-        expect.fulfill()
-        wait(for: [expect], timeout: 5.0)
+        wait(for: [expect], timeout: 2.0)
     }
     
     func testSetCurrencyCodeNotRun() {
         let expect = expectation(description: "AppsFlyerRunner currencyCode(currency:) method has not run")
         let payload: [String: Any] = ["command_name": "setcurrencycode"]
         
-        if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
-            remoteCommand.remoteCommandCompletion(response)
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
             XCTAssertEqual(0, self.appsFlyerCommandTracker.setCurrencyCodeCount)
         }
         
-        expect.fulfill()
-        wait(for: [expect], timeout: 5.0)
+        wait(for: [expect], timeout: 2.0)
     }
     
     func testSetCustomerId() {
         let expect = expectation(description: "AppsFlyerRunner customerId(id:) method run")
         let payload: [String: Any] = ["command_name": "setcustomerid", "af_customer_user_id": "ABC123"]
         
-        if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
-            remoteCommand.remoteCommandCompletion(response)
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
             XCTAssertEqual(1, self.appsFlyerCommandTracker.setCustomerIdCount)
         }
         
-        expect.fulfill()
-        wait(for: [expect], timeout: 5.0)
+        wait(for: [expect], timeout: 2.0)
     }
     
     func testSetCustomerIdNotRun() {
         let expect = expectation(description: "AppsFlyerRunner customerId(id:) method has not run")
         let payload: [String: Any] = ["command_name": "setcustomerid"]
         
-        if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
-            remoteCommand.remoteCommandCompletion(response)
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
             XCTAssertEqual(0, self.appsFlyerCommandTracker.setCustomerIdCount)
         }
         
-        expect.fulfill()
-        wait(for: [expect], timeout: 5.0)
+        wait(for: [expect], timeout: 2.0)
     }
     
     func testDisableTrackingCommandName() {
         let expect = expectation(description: "AppsFlyerRunner disableTracking(disable:) method run")
         let payload: [String: Any] = ["command_name": "disabletracking"]
         
-        if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
-            remoteCommand.remoteCommandCompletion(response)
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
             XCTAssertEqual(1, self.appsFlyerCommandTracker.disableTrackingCount)
         }
         
-        expect.fulfill()
-        wait(for: [expect], timeout: 5.0)
+        wait(for: [expect], timeout: 2.0)
     }
     
     func testDisableTrackingNotRun() {
         let expect = expectation(description: "AppsFlyerRunner disableTracking(disable:) method has not run")
         let payload: [String: Any] = ["command_name": "disable"]
         
-        if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
-            remoteCommand.remoteCommandCompletion(response)
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
             XCTAssertEqual(0, self.appsFlyerCommandTracker.disableTrackingCount)
         }
         
-        expect.fulfill()
-        wait(for: [expect], timeout: 5.0)
+        wait(for: [expect], timeout: 2.0)
     }
     
     func testDisableTrackingVariable() {
         let expect = expectation(description: "AppsFlyerRunner disableTracking(disable:) method run")
         let payload: [String: Any] = ["command_name": "disabletracking"]
         
-        if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
-            remoteCommand.remoteCommandCompletion(response)
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
             XCTAssertEqual(1, self.appsFlyerCommandTracker.disableTrackingCount)
         }
         
-        expect.fulfill()
-        wait(for: [expect], timeout: 5.0)
+        wait(for: [expect], timeout: 2.0)
     }
     
     func testResolveDeepLinkURLs() {
         let expect = expectation(description: "AppsFlyerRunner resolveDeepLinkURLs(urls:) method run")
         let payload: [String: Any] = ["command_name": "resolvedeeplinkurls", "af_deep_link": ["app://test.com", "app://test?home=true"]]
         
-        if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
-            remoteCommand.remoteCommandCompletion(response)
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
             XCTAssertEqual(1, self.appsFlyerCommandTracker.resolveDeepLinkURLsCount)
         }
         
-        expect.fulfill()
-        wait(for: [expect], timeout: 5.0)
+        wait(for: [expect], timeout: 2.0)
     }
     
     func testResolveDeepLinkURLsNotRun() {
         let expect = expectation(description: "AppsFlyerRunner resolveDeepLinkURLs(urls:) method has not run")
         let payload: [String: Any] = ["command_name": "resolvedeeplinkurls"]
         
-        if let response = createRemoteCommandResponse(commandId: "appsflyer", payload: payload) {
-            remoteCommand.remoteCommandCompletion(response)
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
             XCTAssertEqual(0, self.appsFlyerCommandTracker.resolveDeepLinkURLsCount)
         }
         
-        expect.fulfill()
-        wait(for: [expect], timeout: 5.0)
+        wait(for: [expect], timeout: 2.0)
     }
     
+    // MARK: JSON Remote Command Tests
     
+    func testInitWithoutConfigJSON() {
+        let expect = expectation(description: "AppsFlyerRunner initialize(appId:appDevKey:) method run")
+        let payload: [String: Any] = ["command_name": "initialize",
+                                      "app_id": "test",
+                                      "app_dev_key": "test"]
+        
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(1, self.appsFlyerCommandTracker.initWithoutConfigCount)
+        }
+        
+        wait(for: [expect], timeout: 2.0)
+    }
+    
+    func testInitWithoutConfigNotRunJSON() {
+        let expect = expectation(description: "AppsFlyerRunner initialize(appId:appDevKey:) method does not run")
+        let payload: [String: Any] = ["command_name": "initialize"]
+        
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.initWithoutConfigCount)
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.initWithConfigCount)
+        }
+        
+        wait(for: [expect], timeout: 2.0)
+    }
+    
+    func testInitWithConfigJSON() {
+        let expect = expectation(description: "AppsFlyerRunner initialize(appId:appDevKey:settings:) method run")
+        let payload: [String: Any] = ["command_name": "initialize",
+                                      "app_id": "test",
+                                      "app_dev_key": "test",
+                                      "settings": ["test": "test"]]
+        
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(1, self.appsFlyerCommandTracker.initWithConfigCount)
+        }
+        
+        wait(for: [expect], timeout: 2.0)
+    }
+    
+    func testInitWithConfigNotRunJSON() {
+        let expect = expectation(description: "AppsFlyerRunner initialize(appId:appDevKey:settings:) method does not run")
+        let payload: [String: Any] = ["command_name": "initialize",
+                                      "settings": ["test": "test"]]
+        
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.initWithConfigCount)
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.initWithConfigCount)
+        }
+        
+        wait(for: [expect], timeout: 2.0)
+    }
+    
+    func testTrackEventJSON() {
+        let expect = expectation(description: "AppsFlyerRunner trackEvent(eventName:values:) method run")
+        let payload: [String: Any] = ["command_name": "viewedcontent,rate,login"]
+        
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(3, self.appsFlyerCommandTracker.logEventCount)
+        }
+        
+        wait(for: [expect], timeout: 2.0)
+    }
+    
+    func testTrackEventNotRunJSON() {
+        let expect = expectation(description: "AppsFlyerRunner trackEvent(eventName:values:) method does not run")
+        let payload: [String: Any] = ["command_name": "unrecognized,nope,test"]
+        
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.logEventCount)
+        }
+        
+        wait(for: [expect], timeout: 2.0)
+    }
+    
+    func testTrackLocationWithLatLongIntsJSON() {
+        let expect = expectation(description: "AppsFlyerRunner trackLocation(longitude:latitude:) method run")
+        let payload: [String: Any] = ["command_name": "tracklocation",
+                                      "af_lat": 33,
+                                      "af_long": 122]
+        
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(1, self.appsFlyerCommandTracker.logLocationCount)
+        }
+        
+        wait(for: [expect], timeout: 2.0)
+    }
+    
+    func testTrackLocationWithLatLongDoublesJSON() {
+        let expect = expectation(description: "AppsFlyerRunner trackLocation(longitude:latitude:) method run")
+        let payload: [String: Any] = ["command_name": "tracklocation",
+                                      "af_lat": 33.0,
+                                      "af_long": -122.0]
+        
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(1, self.appsFlyerCommandTracker.logLocationCount)
+        }
+        
+        wait(for: [expect], timeout: 2.0)
+    }
+    
+    func testTrackLocationNotRunJSON() {
+        let expect = expectation(description: "AppsFlyerRunner trackLocation(longitude:latitude:) method has not run")
+        let payload: [String: Any] = ["command_name": "tracklocation"]
+        
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.logLocationCount)
+        }
+        
+        wait(for: [expect], timeout: 2.0)
+    }
+    
+    func testSetHostJSON() {
+        let expect = expectation(description: "AppsFlyerRunner setHost(_ host:with:) method run")
+        let payload: [String: Any] = ["command_name": "sethost",
+                                      "host": "test.com",
+                                      "host_prefix": "test"]
+        
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(1, self.appsFlyerCommandTracker.setHostCount)
+        }
+        
+        wait(for: [expect], timeout: 2.0)
+    }
+    
+    func testSetHostNotRunJSON() {
+        let expect = expectation(description: "AppsFlyerRunner setHost(_ host:with:) method has not run")
+        let payload: [String: Any] = ["command_name": "sethost",
+                                      "host_prefix": "test"]
+        
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.setHostCount)
+        }
+        
+        wait(for: [expect], timeout: 2.0)
+    }
+    
+    func testSetUserEmailsJSON() {
+        let expect = expectation(description: "AppsFlyerRunner setUserEmails(emails:with:) method run")
+        let payload: [String: Any] = ["command_name": "setuseremails",
+                                      "customer_emails": ["blah", "blah2"],
+                                      "email_hash_type": 1]
+        
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(1, self.appsFlyerCommandTracker.setUserEmailsCount)
+        }
+        
+        wait(for: [expect], timeout: 2.0)
+    }
+    
+    func testSetUserEmailsWNotRunJSON() {
+        let expect = expectation(description: "AppsFlyerRunner setUserEmails(emails:with:) method has not run")
+        let payload: [String: Any] = ["command_name": "setuseremails",
+                                      "email_hash_type": 1]
+        
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.setUserEmailsCount)
+        }
+        
+        wait(for: [expect], timeout: 2.0)
+    }
+    
+    func testSetCurrencyCodeJSON() {
+        let expect = expectation(description: "AppsFlyerRunner currencyCode(currency:) method run")
+        let payload: [String: Any] = ["command_name": "setcurrencycode", "af_currency": "USD"]
+        
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(1, self.appsFlyerCommandTracker.setCurrencyCodeCount)
+        }
+        
+        wait(for: [expect], timeout: 2.0)
+    }
+    
+    func testSetCurrencyCodeNotRunJSON() {
+        let expect = expectation(description: "AppsFlyerRunner currencyCode(currency:) method has not run")
+        let payload: [String: Any] = ["command_name": "setcurrencycode"]
+        
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.setCurrencyCodeCount)
+        }
+        
+        wait(for: [expect], timeout: 2.0)
+    }
+    
+    func testSetCustomerIdJSON() {
+        let expect = expectation(description: "AppsFlyerRunner customerId(id:) method run")
+        let payload: [String: Any] = ["command_name": "setcustomerid", "af_customer_user_id": "ABC123"]
+        
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(1, self.appsFlyerCommandTracker.setCustomerIdCount)
+        }
+        
+        wait(for: [expect], timeout: 2.0)
+    }
+    
+    func testSetCustomerIdNotRunJSON() {
+        let expect = expectation(description: "AppsFlyerRunner customerId(id:) method has not run")
+        let payload: [String: Any] = ["command_name": "setcustomerid"]
+        
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.setCustomerIdCount)
+        }
+        
+        wait(for: [expect], timeout: 2.0)
+    }
+    
+    func testDisableTrackingCommandNameJSON() {
+        let expect = expectation(description: "AppsFlyerRunner disableTracking(disable:) method run")
+        let payload: [String: Any] = ["command_name": "disabletracking"]
+        
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(1, self.appsFlyerCommandTracker.disableTrackingCount)
+        }
+        
+        wait(for: [expect], timeout: 2.0)
+    }
+    
+    func testDisableTrackingNotRunJSON() {
+        let expect = expectation(description: "AppsFlyerRunner disableTracking(disable:) method has not run")
+        let payload: [String: Any] = ["command_name": "disable"]
+        
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.disableTrackingCount)
+        }
+        
+        wait(for: [expect], timeout: 2.0)
+    }
+    
+    func testDisableTrackingVariableJSON() {
+        let expect = expectation(description: "AppsFlyerRunner disableTracking(disable:) method run")
+        let payload: [String: Any] = ["command_name": "disabletracking"]
+        
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(1, self.appsFlyerCommandTracker.disableTrackingCount)
+        }
+        
+        wait(for: [expect], timeout: 2.0)
+    }
+    
+    func testResolveDeepLinkURLsJSON() {
+        let expect = expectation(description: "AppsFlyerRunner resolveDeepLinkURLs(urls:) method run")
+        let payload: [String: Any] = ["command_name": "resolvedeeplinkurls", "af_deep_link": ["app://test.com", "app://test?home=true"]]
+        
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(1, self.appsFlyerCommandTracker.resolveDeepLinkURLsCount)
+        }
+        
+        wait(for: [expect], timeout: 2.0)
+    }
+    
+    func testResolveDeepLinkURLsNotRunJSON() {
+        let expect = expectation(description: "AppsFlyerRunner resolveDeepLinkURLs(urls:) method has not run")
+        let payload: [String: Any] = ["command_name": "resolvedeeplinkurls"]
+        
+        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
+            appsFlyerCommand.completion(response)
+            expect.fulfill()
+            XCTAssertEqual(0, self.appsFlyerCommandTracker.resolveDeepLinkURLsCount)
+        }
+        
+        wait(for: [expect], timeout: 2.0)
+    }
 }

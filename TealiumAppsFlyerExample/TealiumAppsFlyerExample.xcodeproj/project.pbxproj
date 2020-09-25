@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CF030DAA251E853F002999B0 /* appsflyer.json in Resources */ = {isa = PBXBuildFile; fileRef = CF030DA9251E853F002999B0 /* appsflyer.json */; };
 		CF1400C323036575002AC330 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF1400C223036575002AC330 /* AppDelegate.swift */; };
 		CF1400CA23036576002AC330 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CF1400C923036576002AC330 /* Assets.xcassets */; };
 		CF1400D5230365B9002AC330 /* TealiumHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF1400D4230365B9002AC330 /* TealiumHelper.swift */; };
@@ -32,6 +33,7 @@
 /* Begin PBXFileReference section */
 		7D8F35250D16429EB06B1AC3 /* Pods-TealiumAppsFlyerExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TealiumAppsFlyerExample.debug.xcconfig"; path = "Target Support Files/Pods-TealiumAppsFlyerExample/Pods-TealiumAppsFlyerExample.debug.xcconfig"; sourceTree = "<group>"; };
 		CC351B32C456A094340F9628 /* Pods-TealiumAppsFlyerExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TealiumAppsFlyerExample.release.xcconfig"; path = "Target Support Files/Pods-TealiumAppsFlyerExample/Pods-TealiumAppsFlyerExample.release.xcconfig"; sourceTree = "<group>"; };
+		CF030DA9251E853F002999B0 /* appsflyer.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = appsflyer.json; sourceTree = "<group>"; };
 		CF1400BF23036575002AC330 /* TealiumAppsFlyerExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TealiumAppsFlyerExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CF1400C223036575002AC330 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CF1400C923036576002AC330 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -112,6 +114,7 @@
 				CF1400D6230365C2002AC330 /* DateExtensions.swift */,
 				CF1400D7230365C3002AC330 /* ProductCell.swift */,
 				CF1400C223036575002AC330 /* AppDelegate.swift */,
+				CF030DA9251E853F002999B0 /* appsflyer.json */,
 				CF140183230366C0002AC330 /* Storyboard */,
 				CF1400DA230365E4002AC330 /* View Controllers */,
 				CF1400C923036576002AC330 /* Assets.xcassets */,
@@ -212,6 +215,7 @@
 				CF140182230366B7002AC330 /* Main.storyboard in Resources */,
 				CF140181230366B7002AC330 /* LaunchScreen.storyboard in Resources */,
 				CF14017C230366A8002AC330 /* Activities.storyboard in Resources */,
+				CF030DAA251E853F002999B0 /* appsflyer.json in Resources */,
 				CF14017E230366AF002AC330 /* Ecommerce.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

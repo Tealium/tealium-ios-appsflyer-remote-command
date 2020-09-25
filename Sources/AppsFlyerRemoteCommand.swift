@@ -11,7 +11,6 @@ import Foundation
     import TealiumSwift
 #else
     import TealiumCore
-    import TealiumDelegate
     import TealiumTagManagement
     import TealiumRemoteCommands
 #endif
@@ -63,18 +62,20 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 }
                 print("💜 init w settings: \(settings)")
                 return appsFlyerCommandTracker.initialize(appId: appId, appDevKey: appDevKey, settings: settings)
-            case .launch:
-                appsFlyerCommandTracker.trackLaunch()
             case .trackLocation:
                 guard let latitude = payload[AppsFlyerConstants.Parameters.latitude] as? Double,
                     let longitude = payload[AppsFlyerConstants.Parameters.longitude] as? Double else {
-                    if debug {
-                        print("\(AppsFlyerConstants.errorPrefix)Must map af_lat and af_long in the AppsFlyer Mobile Remote Command tag to track location")
+                    guard let latitude = payload[AppsFlyerConstants.Parameters.latitude] as? Int,
+                          let longitude = payload[AppsFlyerConstants.Parameters.longitude] as? Int else {
+                        if debug {
+                            print("\(AppsFlyerConstants.errorPrefix)Must map af_lat and af_long in the AppsFlyer Mobile Remote Command tag to track location")
+                        }
+                        return
                     }
-                    return
+                    return appsFlyerCommandTracker.logLocation(longitude: Double(longitude), latitude: Double(latitude))
                 }
                 print("💜 trackLocation longitude: \(longitude) latitude: \(latitude)")
-                appsFlyerCommandTracker.trackLocation(longitude: longitude, latitude: latitude)
+                appsFlyerCommandTracker.logLocation(longitude: longitude, latitude: latitude)
             case .setHost:
                 guard let host = payload[AppsFlyerConstants.Parameters.host] as? String,
                     let hostPrefix = payload[AppsFlyerConstants.Parameters.hostPrefix] as? String else {
@@ -135,14 +136,14 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 }
                 appsFlyerCommandTracker.resolveDeepLinkURLs(deepLinkUrls)
             default:
-                if let appsFlyerEvent = AppsFlyerConstants.EventCommandNames(rawValue: command.lowercased()) {
+                if let appsFlyerEvent = AppsFlyerConstants.EventCommandNames(rawValue: $0.lowercased()) {
                     let eventName = String(standardEventName: appsFlyerEvent)
                     guard let eventParameters = payload[AppsFlyerConstants.Parameters.event] as? [String: Any] else {
                         print("💜 trackEvent eventName: \(eventName) payload: \(payload.filterVariables())")
-                        return appsFlyerCommandTracker.trackEvent(eventName, values: payload.filterVariables())
+                        return appsFlyerCommandTracker.logEvent(eventName, values: payload.filterVariables())
                     }
                     print("💜 trackEvent eventName: \(eventName) payload: \(eventParameters)")
-                    appsFlyerCommandTracker.trackEvent(eventName, values: eventParameters)
+                    appsFlyerCommandTracker.logEvent(eventName, values: eventParameters)
                 }
                 break
             }
