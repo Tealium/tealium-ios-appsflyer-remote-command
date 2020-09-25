@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		CF030D83251E7B81002999B0 /* TealiumRemoteCommands.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF030D80251E7B81002999B0 /* TealiumRemoteCommands.xcframework */; };
 		CF030D84251E7B81002999B0 /* TealiumTagManagement.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF030D81251E7B81002999B0 /* TealiumTagManagement.xcframework */; };
 		CF030D85251E7B81002999B0 /* TealiumCore.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF030D82251E7B81002999B0 /* TealiumCore.xcframework */; };
 		CF030DB5251E93EA002999B0 /* AppsFlyerLib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CFEDA03024626EEC004C9ED3 /* AppsFlyerLib.framework */; };
@@ -17,6 +16,7 @@
 		CF0D0211232AB848005BFE15 /* AppsFlyerCommandTrackerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF0D020C232AB841005BFE15 /* AppsFlyerCommandTrackerTests.swift */; };
 		CF0D0212232AB84B005BFE15 /* MockAppsFlyerCommandTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF0D020B232AB841005BFE15 /* MockAppsFlyerCommandTracker.swift */; };
 		CF3F5C1223E258D10007C9B1 /* AppsFlyerCommandTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF3F5C1123E258D10007C9B1 /* AppsFlyerCommandTracker.swift */; };
+		CF9A3737251E971400F3615B /* TealiumRemoteCommands.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF9A3734251E971400F3615B /* TealiumRemoteCommands.xcframework */; };
 		CF9B51B8232AF23C003019F9 /* HttpTestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF0D020F232AB847005BFE15 /* HttpTestHelpers.swift */; };
 /* End PBXBuildFile section */
 
@@ -45,6 +45,9 @@
 		CF0D020C232AB841005BFE15 /* AppsFlyerCommandTrackerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppsFlyerCommandTrackerTests.swift; sourceTree = "<group>"; };
 		CF0D020F232AB847005BFE15 /* HttpTestHelpers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HttpTestHelpers.swift; sourceTree = "<group>"; };
 		CF3F5C1123E258D10007C9B1 /* AppsFlyerCommandTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppsFlyerCommandTracker.swift; sourceTree = "<group>"; };
+		CF9A3732251E970800F3615B /* TealiumTagManagement.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = TealiumTagManagement.xcframework; sourceTree = "<group>"; };
+		CF9A3733251E971300F3615B /* TealiumCore.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = TealiumCore.xcframework; sourceTree = "<group>"; };
+		CF9A3734251E971400F3615B /* TealiumRemoteCommands.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = TealiumRemoteCommands.xcframework; sourceTree = "<group>"; };
 		CFEDA03024626EEC004C9ED3 /* AppsFlyerLib.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppsFlyerLib.framework; path = Carthage/Build/iOS/AppsFlyerLib.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -53,8 +56,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CF030D83251E7B81002999B0 /* TealiumRemoteCommands.xcframework in Frameworks */,
 				CF030D84251E7B81002999B0 /* TealiumTagManagement.xcframework in Frameworks */,
+				CF9A3737251E971400F3615B /* TealiumRemoteCommands.xcframework in Frameworks */,
 				CF030D85251E7B81002999B0 /* TealiumCore.xcframework in Frameworks */,
 				CF030DB5251E93EA002999B0 /* AppsFlyerLib.framework in Frameworks */,
 			);
@@ -73,6 +76,9 @@
 		CF0D01E1232AB7CB005BFE15 = {
 			isa = PBXGroup;
 			children = (
+				CF9A3733251E971300F3615B /* TealiumCore.xcframework */,
+				CF9A3734251E971400F3615B /* TealiumRemoteCommands.xcframework */,
+				CF9A3732251E970800F3615B /* TealiumTagManagement.xcframework */,
 				CF0D01ED232AB7CB005BFE15 /* Sources */,
 				CF0D01F8232AB7CB005BFE15 /* Tests */,
 				CF0D01EC232AB7CB005BFE15 /* Products */,
