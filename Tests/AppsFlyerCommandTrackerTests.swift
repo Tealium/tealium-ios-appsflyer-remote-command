@@ -1,9 +1,9 @@
 //
 //  AppsFlyerRemoteCommandTests.swift
-//  AppsFlyerRemoteCommandTests
+//  TealiumAppsFlyerTests
 //
 //  Created by Christina S on 5/24/19.
-//  Copyright © 2019 Christina. All rights reserved.
+//  Copyright © 2019 Tealium. All rights reserved.
 //
 
 import XCTest

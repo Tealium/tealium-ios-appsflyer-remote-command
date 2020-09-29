@@ -1,9 +1,9 @@
 //
 //  MockAppsFlyerCommandRunner.swift
-//  AppsFlyerRemoteCommandTests
+//  TealiumAppsFlyerTests
 //
 //  Created by Christina S on 5/30/19.
-//  Copyright © 2019 Christina. All rights reserved.
+//  Copyright © 2019 Tealium. All rights reserved.
 //
 
 import Foundation
