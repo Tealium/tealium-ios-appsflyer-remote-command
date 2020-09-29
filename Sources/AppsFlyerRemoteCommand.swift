@@ -48,7 +48,6 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
             let commandName = AppsFlyerConstants.CommandNames(rawValue: $0.lowercased())
             switch commandName {
             case .initialize:
-                print("💜 APPSFLYER COMMAND: \(commandName)")
                 guard let appId = payload[AppsFlyerConstants.Configuration.appId] as? String,
                     let appDevKey = payload[AppsFlyerConstants.Configuration.appDevKey] as? String else {
                         print("\(AppsFlyerConstants.errorPrefix) Must set an app_id and api_key in AppsFlyer Mobile Remote Command tag to initialize")
@@ -60,7 +59,6 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 if let settingsDebug = settings[AppsFlyerConstants.Configuration.debug] as? Bool {
                     debug = settingsDebug
                 }
-                print("💜 init w settings: \(settings)")
                 return appsFlyerCommandTracker.initialize(appId: appId, appDevKey: appDevKey, settings: settings)
             case .trackLocation:
                 guard let latitude = payload[AppsFlyerConstants.Parameters.latitude] as? Double,
@@ -74,7 +72,6 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     }
                     return appsFlyerCommandTracker.logLocation(longitude: Double(longitude), latitude: Double(latitude))
                 }
-                print("💜 trackLocation longitude: \(longitude) latitude: \(latitude)")
                 appsFlyerCommandTracker.logLocation(longitude: longitude, latitude: latitude)
             case .setHost:
                 guard let host = payload[AppsFlyerConstants.Parameters.host] as? String,
@@ -85,7 +82,6 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     }
                     return
                 }
-                print("💜 setHost host: \(host) hostPrefix: \(hostPrefix)")
                 appsFlyerCommandTracker.setHost(host, with: hostPrefix)
             case .setUserEmails:
                 var payload = payload
@@ -99,7 +95,6 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     }
                         return
                 }
-                print("💜 setUserEmails emails: \(emails) cryptType: \(cryptType)")
                 appsFlyerCommandTracker.setUserEmails(emails: emails, with: cryptType)
             case .setCurrencyCode:
                 guard let currency = payload[AppsFlyerConstants.Parameters.currency] as? String else {
@@ -108,7 +103,6 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     }
                     return
                 }
-                print("💜 setCurrencyCode currency: \(currency)")
                 appsFlyerCommandTracker.currencyCode(currency)
             case .setCustomerId:
                 guard let customerId = payload[AppsFlyerConstants.Parameters.customerId] as? String else {
@@ -117,7 +111,6 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     }
                     return
                 }
-                print("💜 setCustomerId customerId: \(customerId)")
                 appsFlyerCommandTracker.customerId(customerId)
             case .disableTracking:
                 guard let disable = payload[AppsFlyerConstants.Parameters.stopTracking] as? Bool else {
@@ -139,10 +132,8 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 if let appsFlyerEvent = AppsFlyerConstants.EventCommandNames(rawValue: $0.lowercased()) {
                     let eventName = String(standardEventName: appsFlyerEvent)
                     guard let eventParameters = payload[AppsFlyerConstants.Parameters.event] as? [String: Any] else {
-                        print("💜 trackEvent eventName: \(eventName) payload: \(payload.filterVariables())")
                         return appsFlyerCommandTracker.logEvent(eventName, values: payload.filterVariables())
                     }
-                    print("💜 trackEvent eventName: \(eventName) payload: \(eventParameters)")
                     appsFlyerCommandTracker.logEvent(eventName, values: eventParameters)
                 }
                 break
