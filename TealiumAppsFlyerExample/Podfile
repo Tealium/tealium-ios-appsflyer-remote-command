@@ -8,5 +8,5 @@ target 'TealiumAppsFlyerExample' do
   # Pods for TealiumAppsFlyerExample
   pod 'TealiumAppsFlyer', :path=> '../'
   pod 'tealium-swift/Lifecycle', '~> 2.1'
-  
+
 end

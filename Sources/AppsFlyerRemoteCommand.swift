@@ -211,4 +211,5 @@ fileprivate extension String {
             self = AppsFlyerConstants.Events.customerSegment
         }
     }
+
 }
