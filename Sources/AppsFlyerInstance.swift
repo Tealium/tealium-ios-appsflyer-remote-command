@@ -1,5 +1,5 @@
 //
-//  AppsFlyerCommandTracker.swift
+//  AppsFlyerInstance.swift
 //  TealiumAppsFlyer
 //
 //  Created by Christina S on 5/29/19.
@@ -17,7 +17,7 @@ import AppsFlyerLib
 #endif
 
 
-public protocol AppsFlyerTrackable {
+public protocol AppsFlyerCommand {
     func initialize(appId: String, appDevKey: String, settings: [String: Any]?)
     func logEvent(_ eventName: String, values: [String: Any])
     func logLocation(longitude: Double, latitude: Double)
@@ -29,7 +29,7 @@ public protocol AppsFlyerTrackable {
     func resolveDeepLinkURLs(_ urls: [String])
 }
 
-public class AppsFlyerCommandTracker: NSObject, AppsFlyerTrackable, TealiumRegistration {
+public class AppsFlyerInstance: NSObject, AppsFlyerCommand, TealiumRegistration {
 
     weak var tealium: Tealium?
 
@@ -127,7 +127,7 @@ public class AppsFlyerCommandTracker: NSObject, AppsFlyerTrackable, TealiumRegis
 
 }
 
-extension AppsFlyerCommandTracker: AppsFlyerLibDelegate {
+extension AppsFlyerInstance: AppsFlyerLibDelegate {
 
     public func onConversionDataSuccess(_ conversionInfo: [AnyHashable: Any]) {
         guard let conversionInfo = conversionInfo as? [String: Any],

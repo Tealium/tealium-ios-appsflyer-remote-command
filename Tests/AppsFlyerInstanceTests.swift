@@ -11,13 +11,13 @@ import XCTest
 import TealiumRemoteCommands
 
 
-class AppsFlyerCommandTrackerTests: XCTestCase {
+class AppsFlyerInstanceTests: XCTestCase {
 
-    var appsFlyerCommandTracker = MockAppsFlyerCommandTracker()
+    var appsFlyerInstance = MockAppsFlyerInstance()
     var appsFlyerCommand: AppsFlyerRemoteCommand!
     
     override func setUp() {
-        appsFlyerCommand = AppsFlyerRemoteCommand(appsFlyerCommandTracker: appsFlyerCommandTracker)
+        appsFlyerCommand = AppsFlyerRemoteCommand(appsFlyerInstance: appsFlyerInstance)
     }
 
     override func tearDown() { }
@@ -34,7 +34,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(1, self.appsFlyerCommandTracker.initWithoutConfigCount)
+            XCTAssertEqual(1, self.appsFlyerInstance.initWithoutConfigCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -47,8 +47,8 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.initWithoutConfigCount)
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.initWithConfigCount)
+            XCTAssertEqual(0, self.appsFlyerInstance.initWithoutConfigCount)
+            XCTAssertEqual(0, self.appsFlyerInstance.initWithConfigCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -64,7 +64,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(1, self.appsFlyerCommandTracker.initWithConfigCount)
+            XCTAssertEqual(1, self.appsFlyerInstance.initWithConfigCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -78,8 +78,8 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.initWithConfigCount)
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.initWithConfigCount)
+            XCTAssertEqual(0, self.appsFlyerInstance.initWithConfigCount)
+            XCTAssertEqual(0, self.appsFlyerInstance.initWithConfigCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -92,7 +92,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(3, self.appsFlyerCommandTracker.logEventCount)
+            XCTAssertEqual(3, self.appsFlyerInstance.logEventCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -105,7 +105,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.logEventCount)
+            XCTAssertEqual(0, self.appsFlyerInstance.logEventCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -120,7 +120,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(1, self.appsFlyerCommandTracker.logLocationCount)
+            XCTAssertEqual(1, self.appsFlyerInstance.logLocationCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -135,7 +135,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(1, self.appsFlyerCommandTracker.logLocationCount)
+            XCTAssertEqual(1, self.appsFlyerInstance.logLocationCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -148,7 +148,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.logLocationCount)
+            XCTAssertEqual(0, self.appsFlyerInstance.logLocationCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -163,7 +163,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(1, self.appsFlyerCommandTracker.setHostCount)
+            XCTAssertEqual(1, self.appsFlyerInstance.setHostCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -177,7 +177,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.setHostCount)
+            XCTAssertEqual(0, self.appsFlyerInstance.setHostCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -192,7 +192,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(1, self.appsFlyerCommandTracker.setUserEmailsCount)
+            XCTAssertEqual(1, self.appsFlyerInstance.setUserEmailsCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -206,7 +206,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.setUserEmailsCount)
+            XCTAssertEqual(0, self.appsFlyerInstance.setUserEmailsCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -219,7 +219,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(1, self.appsFlyerCommandTracker.setCurrencyCodeCount)
+            XCTAssertEqual(1, self.appsFlyerInstance.setCurrencyCodeCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -232,7 +232,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.setCurrencyCodeCount)
+            XCTAssertEqual(0, self.appsFlyerInstance.setCurrencyCodeCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -245,7 +245,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(1, self.appsFlyerCommandTracker.setCustomerIdCount)
+            XCTAssertEqual(1, self.appsFlyerInstance.setCustomerIdCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -258,7 +258,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.setCustomerIdCount)
+            XCTAssertEqual(0, self.appsFlyerInstance.setCustomerIdCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -271,7 +271,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(1, self.appsFlyerCommandTracker.disableTrackingCount)
+            XCTAssertEqual(1, self.appsFlyerInstance.disableTrackingCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -284,7 +284,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.disableTrackingCount)
+            XCTAssertEqual(0, self.appsFlyerInstance.disableTrackingCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -297,7 +297,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(1, self.appsFlyerCommandTracker.disableTrackingCount)
+            XCTAssertEqual(1, self.appsFlyerInstance.disableTrackingCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -310,7 +310,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(1, self.appsFlyerCommandTracker.resolveDeepLinkURLsCount)
+            XCTAssertEqual(1, self.appsFlyerInstance.resolveDeepLinkURLsCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -323,7 +323,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.resolveDeepLinkURLsCount)
+            XCTAssertEqual(0, self.appsFlyerInstance.resolveDeepLinkURLsCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -340,7 +340,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(1, self.appsFlyerCommandTracker.initWithoutConfigCount)
+            XCTAssertEqual(1, self.appsFlyerInstance.initWithoutConfigCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -353,8 +353,8 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.initWithoutConfigCount)
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.initWithConfigCount)
+            XCTAssertEqual(0, self.appsFlyerInstance.initWithoutConfigCount)
+            XCTAssertEqual(0, self.appsFlyerInstance.initWithConfigCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -370,7 +370,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(1, self.appsFlyerCommandTracker.initWithConfigCount)
+            XCTAssertEqual(1, self.appsFlyerInstance.initWithConfigCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -384,8 +384,8 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.initWithConfigCount)
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.initWithConfigCount)
+            XCTAssertEqual(0, self.appsFlyerInstance.initWithConfigCount)
+            XCTAssertEqual(0, self.appsFlyerInstance.initWithConfigCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -398,7 +398,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(3, self.appsFlyerCommandTracker.logEventCount)
+            XCTAssertEqual(3, self.appsFlyerInstance.logEventCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -411,7 +411,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.logEventCount)
+            XCTAssertEqual(0, self.appsFlyerInstance.logEventCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -426,7 +426,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(1, self.appsFlyerCommandTracker.logLocationCount)
+            XCTAssertEqual(1, self.appsFlyerInstance.logLocationCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -441,7 +441,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(1, self.appsFlyerCommandTracker.logLocationCount)
+            XCTAssertEqual(1, self.appsFlyerInstance.logLocationCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -454,7 +454,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.logLocationCount)
+            XCTAssertEqual(0, self.appsFlyerInstance.logLocationCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -469,7 +469,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(1, self.appsFlyerCommandTracker.setHostCount)
+            XCTAssertEqual(1, self.appsFlyerInstance.setHostCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -483,7 +483,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.setHostCount)
+            XCTAssertEqual(0, self.appsFlyerInstance.setHostCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -498,7 +498,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(1, self.appsFlyerCommandTracker.setUserEmailsCount)
+            XCTAssertEqual(1, self.appsFlyerInstance.setUserEmailsCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -512,7 +512,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.setUserEmailsCount)
+            XCTAssertEqual(0, self.appsFlyerInstance.setUserEmailsCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -525,7 +525,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(1, self.appsFlyerCommandTracker.setCurrencyCodeCount)
+            XCTAssertEqual(1, self.appsFlyerInstance.setCurrencyCodeCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -538,7 +538,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.setCurrencyCodeCount)
+            XCTAssertEqual(0, self.appsFlyerInstance.setCurrencyCodeCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -551,7 +551,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(1, self.appsFlyerCommandTracker.setCustomerIdCount)
+            XCTAssertEqual(1, self.appsFlyerInstance.setCustomerIdCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -564,7 +564,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.setCustomerIdCount)
+            XCTAssertEqual(0, self.appsFlyerInstance.setCustomerIdCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -577,7 +577,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(1, self.appsFlyerCommandTracker.disableTrackingCount)
+            XCTAssertEqual(1, self.appsFlyerInstance.disableTrackingCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -590,7 +590,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.disableTrackingCount)
+            XCTAssertEqual(0, self.appsFlyerInstance.disableTrackingCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -603,7 +603,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(1, self.appsFlyerCommandTracker.disableTrackingCount)
+            XCTAssertEqual(1, self.appsFlyerInstance.disableTrackingCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -616,7 +616,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(1, self.appsFlyerCommandTracker.resolveDeepLinkURLsCount)
+            XCTAssertEqual(1, self.appsFlyerInstance.resolveDeepLinkURLsCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -629,7 +629,7 @@ class AppsFlyerCommandTrackerTests: XCTestCase {
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(0, self.appsFlyerCommandTracker.resolveDeepLinkURLsCount)
+            XCTAssertEqual(0, self.appsFlyerInstance.resolveDeepLinkURLsCount)
         }
         
         wait(for: [expect], timeout: 2.0)

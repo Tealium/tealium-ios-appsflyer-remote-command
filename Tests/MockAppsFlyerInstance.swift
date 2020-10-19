@@ -1,5 +1,5 @@
 //
-//  MockAppsFlyerCommandRunner.swift
+//  MockAppsFlyerInstance.swift
 //  TealiumAppsFlyerTests
 //
 //  Created by Christina S on 5/30/19.
@@ -9,7 +9,7 @@
 import Foundation
 @testable import TealiumAppsFlyer
 
-class MockAppsFlyerCommandTracker: AppsFlyerTrackable {
+class MockAppsFlyerInstance: AppsFlyerCommand {
     
     var initWithoutConfigCount = 0
     var initWithConfigCount = 0

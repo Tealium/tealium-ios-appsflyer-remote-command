@@ -17,10 +17,10 @@ import Foundation
 
 public class AppsFlyerRemoteCommand: RemoteCommand {
 
-    let appsFlyerCommandTracker: AppsFlyerTrackable?
+    let appsFlyerInstance: AppsFlyerCommand?
 
-    public init(appsFlyerCommandTracker: AppsFlyerTrackable = AppsFlyerCommandTracker(), type: RemoteCommandType = .webview) {
-        self.appsFlyerCommandTracker = appsFlyerCommandTracker
+    public init(appsFlyerInstance: AppsFlyerCommand = AppsFlyerInstance(), type: RemoteCommandType = .webview) {
+        self.appsFlyerInstance = appsFlyerInstance
         weak var selfWorkaround: AppsFlyerRemoteCommand?
         super.init(commandId: AppsFlyerConstants.commandId,
                    description: AppsFlyerConstants.description,
@@ -35,7 +35,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     }
 
     func processRemoteCommand(with payload: [String: Any]) {
-        guard let appsFlyerCommandTracker = appsFlyerCommandTracker,
+        guard let appsFlyerInstance = appsFlyerInstance,
               let command = payload[AppsFlyerConstants.commandName] as? String else {
                 return
         }
@@ -54,12 +54,12 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                         return
                 }
                 guard let settings = payload[AppsFlyerConstants.Configuration.settings] as? [String: Any] else {
-                    return appsFlyerCommandTracker.initialize(appId: appId, appDevKey: appDevKey, settings: nil)
+                    return appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: nil)
                 }
                 if let settingsDebug = settings[AppsFlyerConstants.Configuration.debug] as? Bool {
                     debug = settingsDebug
                 }
-                return appsFlyerCommandTracker.initialize(appId: appId, appDevKey: appDevKey, settings: settings)
+                return appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: settings)
             case .trackLocation:
                 guard let latitude = payload[AppsFlyerConstants.Parameters.latitude] as? Double,
                     let longitude = payload[AppsFlyerConstants.Parameters.longitude] as? Double else {
@@ -70,9 +70,9 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                         }
                         return
                     }
-                    return appsFlyerCommandTracker.logLocation(longitude: Double(longitude), latitude: Double(latitude))
+                    return appsFlyerInstance.logLocation(longitude: Double(longitude), latitude: Double(latitude))
                 }
-                appsFlyerCommandTracker.logLocation(longitude: longitude, latitude: latitude)
+                appsFlyerInstance.logLocation(longitude: longitude, latitude: latitude)
             case .setHost:
                 guard let host = payload[AppsFlyerConstants.Parameters.host] as? String,
                     let hostPrefix = payload[AppsFlyerConstants.Parameters.hostPrefix] as? String else {
@@ -82,7 +82,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     }
                     return
                 }
-                appsFlyerCommandTracker.setHost(host, with: hostPrefix)
+                appsFlyerInstance.setHost(host, with: hostPrefix)
             case .setUserEmails:
                 var payload = payload
                 if let email = payload[AppsFlyerConstants.Parameters.emails] as? String {
@@ -95,7 +95,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     }
                         return
                 }
-                appsFlyerCommandTracker.setUserEmails(emails: emails, with: cryptType)
+                appsFlyerInstance.setUserEmails(emails: emails, with: cryptType)
             case .setCurrencyCode:
                 guard let currency = payload[AppsFlyerConstants.Parameters.currency] as? String else {
                     if debug {
@@ -103,7 +103,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     }
                     return
                 }
-                appsFlyerCommandTracker.currencyCode(currency)
+                appsFlyerInstance.currencyCode(currency)
             case .setCustomerId:
                 guard let customerId = payload[AppsFlyerConstants.Parameters.customerId] as? String else {
                     if debug {
@@ -111,15 +111,15 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     }
                     return
                 }
-                appsFlyerCommandTracker.customerId(customerId)
+                appsFlyerInstance.customerId(customerId)
             case .disableTracking:
                 guard let disable = payload[AppsFlyerConstants.Parameters.stopTracking] as? Bool else {
                     if debug {
                         print("\(AppsFlyerConstants.errorPrefix)If you would like to disable all tracking, please set the enabled/disabled flag in the configuration settings of the AppsFlyer Mobile Remote Command tag")
                     }
-                    return appsFlyerCommandTracker.disableTracking(false)
+                    return appsFlyerInstance.disableTracking(false)
                 }
-                appsFlyerCommandTracker.disableTracking(disable)
+                appsFlyerInstance.disableTracking(disable)
             case .resolveDeepLinkUrls:
                 guard let deepLinkUrls = payload[AppsFlyerConstants.Parameters.deepLinkUrls] as? [String] else {
                     if debug {
@@ -127,14 +127,14 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     }
                     return
                 }
-                appsFlyerCommandTracker.resolveDeepLinkURLs(deepLinkUrls)
+                appsFlyerInstance.resolveDeepLinkURLs(deepLinkUrls)
             default:
                 if let appsFlyerEvent = AppsFlyerConstants.EventCommandNames(rawValue: $0.lowercased()) {
                     let eventName = String(standardEventName: appsFlyerEvent)
                     guard let eventParameters = payload[AppsFlyerConstants.Parameters.event] as? [String: Any] else {
-                        return appsFlyerCommandTracker.logEvent(eventName, values: payload.filterVariables())
+                        return appsFlyerInstance.logEvent(eventName, values: payload.filterVariables())
                     }
-                    appsFlyerCommandTracker.logEvent(eventName, values: eventParameters)
+                    appsFlyerInstance.logEvent(eventName, values: eventParameters)
                 }
                 break
             }
