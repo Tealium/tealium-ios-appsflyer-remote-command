@@ -30,8 +30,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let deviceTokenString = String(format: "%@", deviceToken as CVarArg)
         
         // Use rc to register push token
-        tealiumHelper.pushMessagingTrackers.forEach { tracker in
-            tracker.registerPushToken(deviceTokenString)
+        tealiumHelper.pushMessaging.forEach {
+            $0.registerPushToken(deviceTokenString)
         }
     }
 
@@ -47,8 +47,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
         // Use rc to log push notification receipt/open
-        tealiumHelper.pushMessagingTrackers.forEach { tracker in
-            tracker.application(application, didReceiveRemoteNotification: userInfo, fetchCompletionHandler: completionHandler)
+        tealiumHelper.pushMessaging.forEach {
+            $0.application(application, didReceiveRemoteNotification: userInfo, fetchCompletionHandler: completionHandler)
         }
     }
 
@@ -58,8 +58,8 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
 
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         // Use rc to log push notification receipt/open
-        tealiumHelper.pushMessagingTrackers.forEach { tracker in
-            tracker.userNotificationCenter(center, didReceive: response, withCompletionHandler: completionHandler)
+        tealiumHelper.pushMessaging.forEach {
+            $0.userNotificationCenter(center, didReceive: response, withCompletionHandler: completionHandler)
         }
     }
     
@@ -72,8 +72,8 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
                 if granted {
                     DispatchQueue.main.async {
                         // use rc to log remote notification opt-in/out
-                        self?.tealiumHelper.pushMessagingTrackers.forEach { tracker in
-                            tracker.pushAuthorization(fromUserNotificationCenter: granted)
+                        self?.tealiumHelper.pushMessaging.forEach {
+                            $0.pushAuthorization(fromUserNotificationCenter: granted)
                         }
                         application.registerForRemoteNotifications()
                     }
