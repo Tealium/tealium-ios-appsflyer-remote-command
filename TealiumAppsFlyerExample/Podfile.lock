@@ -1,33 +1,20 @@
 PODS:
-  - AppsFlyerFramework (5.3.0)
-  - tealium-swift/Core (1.9.3)
-  - tealium-swift/TealiumAppData (1.9.3):
+  - AppsFlyerFramework (6.0.5)
+  - tealium-swift/Core (2.1.0)
+  - tealium-swift/Lifecycle (2.1.0):
     - tealium-swift/Core
-  - tealium-swift/TealiumDelegate (1.9.3):
+  - tealium-swift/RemoteCommands (2.1.0):
     - tealium-swift/Core
-  - tealium-swift/TealiumDeviceData (1.9.3):
+  - tealium-swift/TagManagement (2.1.0):
     - tealium-swift/Core
-  - tealium-swift/TealiumLifecycle (1.9.3):
-    - tealium-swift/Core
-  - tealium-swift/TealiumLogger (1.9.3):
-    - tealium-swift/Core
-  - tealium-swift/TealiumRemoteCommands (1.9.3):
-    - tealium-swift/Core
-  - tealium-swift/TealiumTagManagement (1.9.3):
-    - tealium-swift/Core
-  - TealiumAppsFlyer (1.0.1):
-    - AppsFlyerFramework (~> 5.2)
-    - tealium-swift/Core (~> 1.9)
-    - tealium-swift/TealiumDelegate (~> 1.9)
-    - tealium-swift/TealiumRemoteCommands (~> 1.9)
-    - tealium-swift/TealiumTagManagement (~> 1.9)
+  - TealiumAppsFlyer (2.0.0):
+    - AppsFlyerFramework (~> 6.0)
+    - tealium-swift/Core (~> 2.1)
+    - tealium-swift/RemoteCommands (~> 2.1)
+    - tealium-swift/TagManagement (~> 2.1)
 
 DEPENDENCIES:
-  - tealium-swift/TealiumAppData (~> 1.9)
-  - tealium-swift/TealiumDeviceData (~> 1.9)
-  - tealium-swift/TealiumLifecycle (~> 1.9)
-  - tealium-swift/TealiumLogger (~> 1.9)
-  - tealium-swift/TealiumTagManagement (~> 1.9)
+  - tealium-swift/Lifecycle (~> 2.1)
   - TealiumAppsFlyer (from `../`)
 
 SPEC REPOS:
@@ -40,10 +27,10 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  AppsFlyerFramework: 122cc8b2de52f2b82ea739c2d9e57f919a9f5653
-  tealium-swift: 8735caa69eeb0e7d834c290a6557c69c5f3667ee
-  TealiumAppsFlyer: 228f04c251cf65f5e58d51b2d869be7e10e0cd93
+  AppsFlyerFramework: 3ae29222e2cb7d11cd176c71c780542979eb0c08
+  tealium-swift: a670c2c6f3e7e5d775d9507387e8858a8541e526
+  TealiumAppsFlyer: cdcb28677db8bb9db32d9a4b9d959325931560b8
 
-PODFILE CHECKSUM: 68d8c4712b44e4f174d0e596dbfbb3d13a666208
+PODFILE CHECKSUM: 5e5d01c67f2960f8dacbcbb4534dd06d2f20397e
 
-COCOAPODS: 1.9.1
+COCOAPODS: 1.10.0

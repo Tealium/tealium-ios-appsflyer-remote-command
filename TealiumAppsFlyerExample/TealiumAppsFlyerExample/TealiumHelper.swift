@@ -10,10 +10,6 @@ import Foundation
 import TealiumSwift
 import TealiumAppsFlyer
 
-// Note: Due to a current bug in WebKit, you will see the following console error repeatedly:
-// [Process] kill() returned unexpected error 1
-// Reference: https://bugs.webkit.org/show_bug.cgi?id=202173 and https://www.mail-archive.com/webkit-changes@lists.webkit.org/msg146193.html
-
 enum TealiumConfiguration {
     static let account = "tealiummobile"
     static let profile = "appsflyer-tag"
@@ -23,50 +19,46 @@ enum TealiumConfiguration {
 class TealiumHelper {
 
     static let shared = TealiumHelper()
-    var pushMessagingTrackers = [TealiumRegistration]()
+    var pushMessaging = [TealiumRegistration]()
 
     let config = TealiumConfig(account: TealiumConfiguration.account,
                                profile: TealiumConfiguration.profile,
                                environment: TealiumConfiguration.environment)
 
     var tealium: Tealium?
+    
+    // JSON Remote Command
+    let appsFlyerRemoteCommand = AppsFlyerRemoteCommand(type: .remote(url: "https://tags.tiqcdn.com/dle/tealiummobile/demo/appsflyer.json"))
 
     private init() {
-        config.logLevel = TealiumLogLevel.none
         config.shouldUseRemotePublishSettings = false
-        tealium = Tealium(config: config,
-                          enableCompletion: { [weak self] _ in
-                              guard let self = self else { return }
-                              guard let remoteCommands = self.tealium?.remoteCommands() else {
-                                  return
-                              }
-                              // MARK: AppsFlyer
-                              let appsFlyerCommandTracker = AppsFlyerCommandTracker()
-                              let appsFlyerCommand = AppsFlyerRemoteCommand(appsFlyerCommandTracker: appsFlyerCommandTracker)
-                              let appsFlyerRemoteCommand = appsFlyerCommand.remoteCommand()
-                              remoteCommands.add(appsFlyerRemoteCommand)
-                              self.pushMessagingTrackers.append(appsFlyerCommandTracker)
-                          })
-
+        config.batchingEnabled = false
+        config.remoteAPIEnabled = true
+        config.logLevel = .info
+        config.collectors = [Collectors.Lifecycle]
+        config.dispatchers = [Dispatchers.TagManagement, Dispatchers.RemoteCommands]
+        
+        config.addRemoteCommand(appsFlyerRemoteCommand)
+        
+        tealium = Tealium(config: config)
     }
-
 
     public func start() {
         _ = TealiumHelper.shared
     }
 
     class func trackView(title: String, data: [String: Any]?) {
-        TealiumHelper.shared.tealium?.track(title: title, data: data, completion: nil)
+        let tealiumView = TealiumView(title, dataLayer: data)
+        TealiumHelper.shared.tealium?.track(tealiumView)
     }
 
     class func trackScreen(_ view: UIViewController, name: String) {
-        TealiumHelper.trackView(title: "screen_view",
-                                data: ["screen_name": name,
-                                       "screen_class": "\(view.classForCoder)"])
+        TealiumHelper.trackView(title: "screen_view", data: ["screen_name": name, "screen_class": "\(view.classForCoder)"])
     }
 
     class func trackEvent(title: String, data: [String: Any]?) {
-        TealiumHelper.shared.tealium?.track(title: title, data: data, completion: nil)
+        let tealiumEvent = TealiumEvent(title, dataLayer: data)
+        TealiumHelper.shared.tealium?.track(tealiumEvent)
     }
 
 }

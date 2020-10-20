@@ -1,21 +1,20 @@
 //
-//  MockAppsFlyerCommandRunner.swift
-//  AppsFlyerRemoteCommandTests
+//  MockAppsFlyerInstance.swift
+//  TealiumAppsFlyerTests
 //
 //  Created by Christina S on 5/30/19.
-//  Copyright © 2019 Christina. All rights reserved.
+//  Copyright © 2019 Tealium. All rights reserved.
 //
 
 import Foundation
 @testable import TealiumAppsFlyer
 
-class MockAppsFlyerCommandTracker: AppsFlyerTrackable {
+class MockAppsFlyerInstance: AppsFlyerCommand {
     
     var initWithoutConfigCount = 0
     var initWithConfigCount = 0
-    var trackLaunchCount = 0
-    var trackEventCount = 0
-    var trackLocationCount = 0
+    var logEventCount = 0
+    var logLocationCount = 0
     var handlePushNotificationCount = 0
     var setHostCount = 0
     var setUserEmailsCount = 0
@@ -37,16 +36,12 @@ class MockAppsFlyerCommandTracker: AppsFlyerTrackable {
         }
     }
     
-    func trackLaunch() {
-        trackLaunchCount += 1
+    func logEvent(_ eventName: String, values: [String : Any]) {
+        logEventCount += 1
     }
     
-    func trackEvent(_ eventName: String, values: [String : Any]) {
-        trackEventCount += 1
-    }
-    
-    func trackLocation(longitude: Double, latitude: Double) {
-        trackLocationCount += 1
+    func logLocation(longitude: Double, latitude: Double) {
+        logLocationCount += 1
     }
     
     func handlePushNofification(payload: [String : Any]?) {
