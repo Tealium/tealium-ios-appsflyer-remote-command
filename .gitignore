@@ -2,6 +2,8 @@
 # Created by https://www.gitignore.io/api/xcode,swift,carthage,cocoapods,swiftpackagemanager
 # Edit at https://www.gitignore.io/?templates=xcode,swift,carthage,cocoapods,swiftpackagemanager
 
+.DS_Store
+
 ### Carthage ###
 # Carthage
 #

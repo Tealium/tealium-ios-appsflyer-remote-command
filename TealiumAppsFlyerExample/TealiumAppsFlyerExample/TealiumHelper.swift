@@ -6,7 +6,7 @@
 //  Copyright © 2019 Tealium. All rights reserved.
 //
 
-import Foundation
+import UIKit
 import TealiumSwift
 import TealiumAppsFlyer
 
