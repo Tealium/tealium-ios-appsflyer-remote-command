@@ -1,0 +1,25 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "AppsFlyerLib",
+        "repositoryURL": "https://github.com/AppsFlyerSDK/AppsFlyerFramework",
+        "state": {
+          "branch": null,
+          "revision": "3e8a25ec64433001287e2ff135d5ed3dbc634ad2",
+          "version": "6.5.0"
+        }
+      },
+      {
+        "package": "TealiumSwift",
+        "repositoryURL": "https://github.com/tealium/tealium-swift",
+        "state": {
+          "branch": null,
+          "revision": "9bd74f09c780862de61101bd147b1c6b232f98ce",
+          "version": "2.5.1"
+        }
+      }
+    ]
+  },
+  "version": 1
+}

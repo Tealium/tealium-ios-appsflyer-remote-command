@@ -1,38 +1,47 @@
 PODS:
-  - AppsFlyerFramework (6.3.1):
-    - AppsFlyerFramework/Main (= 6.3.1)
-  - AppsFlyerFramework/Main (6.3.1)
-  - tealium-swift/Core (2.3.1)
-  - tealium-swift/Lifecycle (2.3.1):
+  - AppsFlyerFramework (6.5.0):
+    - AppsFlyerFramework/Main (= 6.5.0)
+  - AppsFlyerFramework/Main (6.5.0)
+  - tealium-swift/Core (2.5.1)
+  - tealium-swift/Lifecycle (2.5.1):
     - tealium-swift/Core
-  - tealium-swift/RemoteCommands (2.3.1):
+  - tealium-swift/RemoteCommands (2.5.1):
     - tealium-swift/Core
-  - tealium-swift/TagManagement (2.3.1):
+  - tealium-swift/TagManagement (2.5.1):
     - tealium-swift/Core
-  - TealiumAppsFlyer (2.0.1):
-    - AppsFlyerFramework (~> 6.3)
-    - tealium-swift/Core (~> 2.3)
-    - tealium-swift/RemoteCommands (~> 2.3)
-    - tealium-swift/TagManagement (~> 2.3)
+  - TealiumAppsFlyer (2.1.0):
+    - AppsFlyerFramework (~> 6.4)
+    - tealium-swift/Core (~> 2.5)
+    - tealium-swift/RemoteCommands (~> 2.5)
 
 DEPENDENCIES:
-  - tealium-swift/Lifecycle (~> 2.1)
+  - tealium-swift/Core (from `https://github.com/Tealium/tealium-swift.git`, branch `mt-779`)
+  - tealium-swift/Lifecycle (from `https://github.com/Tealium/tealium-swift.git`, branch `mt-779`)
+  - tealium-swift/RemoteCommands (from `https://github.com/Tealium/tealium-swift.git`, branch `mt-779`)
+  - tealium-swift/TagManagement (from `https://github.com/Tealium/tealium-swift.git`, branch `mt-779`)
   - TealiumAppsFlyer (from `../`)
 
 SPEC REPOS:
   trunk:
     - AppsFlyerFramework
-    - tealium-swift
 
 EXTERNAL SOURCES:
+  tealium-swift:
+    :branch: mt-779
+    :git: https://github.com/Tealium/tealium-swift.git
   TealiumAppsFlyer:
     :path: "../"
 
-SPEC CHECKSUMS:
-  AppsFlyerFramework: ea0232bd216ee54622da396479d95ad13d1dd2c3
-  tealium-swift: 755e1ab63dc619709ec550c868ee5c293b05c10c
-  TealiumAppsFlyer: 6f8defb5f247d8d90bee008b407c17034d6518de
+CHECKOUT OPTIONS:
+  tealium-swift:
+    :commit: db174d69eb581f944268257038cfde8b54fc4b43
+    :git: https://github.com/Tealium/tealium-swift.git
 
-PODFILE CHECKSUM: 5e5d01c67f2960f8dacbcbb4534dd06d2f20397e
+SPEC CHECKSUMS:
+  AppsFlyerFramework: a5686a38cd5e5a9aa077fc83e3a4d0c4b052d6a6
+  tealium-swift: a7c0f2b6bff641abb1818efbcf22598c99af0517
+  TealiumAppsFlyer: c92f1112233a29c35ed350ea6d898325aeee2700
+
+PODFILE CHECKSUM: 948d711ac46deaac4214f2d009a42e573190f000
 
 COCOAPODS: 1.10.1

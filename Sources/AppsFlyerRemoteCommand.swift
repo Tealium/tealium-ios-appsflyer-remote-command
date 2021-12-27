@@ -17,6 +17,10 @@ import Foundation
 public class AppsFlyerRemoteCommand: RemoteCommand {
 
     let appsFlyerInstance: AppsFlyerCommand?
+    
+    public override var version: String? {
+        return AppsFlyerConstants.version
+    }
 
     public init(appsFlyerInstance: AppsFlyerCommand = AppsFlyerInstance(), type: RemoteCommandType = .webview) {
         self.appsFlyerInstance = appsFlyerInstance
