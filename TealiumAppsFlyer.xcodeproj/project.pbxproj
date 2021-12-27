@@ -50,11 +50,11 @@
 		15914AD4277A12F50051BCB2 /* TealiumCore.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = TealiumCore.xcframework; path = Carthage/Build/TealiumCore.xcframework; sourceTree = "<group>"; };
 		15914AD5277A12F50051BCB2 /* TealiumRemoteCommands.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = TealiumRemoteCommands.xcframework; path = Carthage/Build/TealiumRemoteCommands.xcframework; sourceTree = "<group>"; };
 		15914AD6277A12F50051BCB2 /* AppsFlyerLib.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = AppsFlyerLib.xcframework; path = Carthage/Build/AppsFlyerLib.xcframework; sourceTree = "<group>"; };
+		15914ADF277A28170051BCB2 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		15914AE1277A28250051BCB2 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CF0D01EB232AB7CB005BFE15 /* TealiumAppsFlyer.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TealiumAppsFlyer.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		CF0D01EE232AB7CB005BFE15 /* TealiumAppsFlyer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TealiumAppsFlyer.h; sourceTree = "<group>"; };
-		CF0D01EF232AB7CB005BFE15 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CF0D01F4232AB7CB005BFE15 /* TealiumAppsFlyerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TealiumAppsFlyerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		CF0D01FB232AB7CB005BFE15 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CF0D0205232AB81A005BFE15 /* AppsFlyerRemoteCommand.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppsFlyerRemoteCommand.swift; sourceTree = "<group>"; };
 		CF0D0206232AB81A005BFE15 /* AppsFlyerConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppsFlyerConstants.swift; sourceTree = "<group>"; };
 		CF0D020B232AB841005BFE15 /* MockAppsFlyerInstance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockAppsFlyerInstance.swift; sourceTree = "<group>"; };
@@ -85,6 +85,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		15914ADE277A28170051BCB2 /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				15914ADF277A28170051BCB2 /* Info.plist */,
+			);
+			path = Support;
+			sourceTree = "<group>";
+		};
+		15914AE0277A28250051BCB2 /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				15914AE1277A28250051BCB2 /* Info.plist */,
+			);
+			path = Support;
+			sourceTree = "<group>";
+		};
 		CF0D01E1232AB7CB005BFE15 = {
 			isa = PBXGroup;
 			children = (
@@ -107,11 +123,11 @@
 		CF0D01ED232AB7CB005BFE15 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				15914ADE277A28170051BCB2 /* Support */,
 				CF0D0206232AB81A005BFE15 /* AppsFlyerConstants.swift */,
 				CF0D0205232AB81A005BFE15 /* AppsFlyerRemoteCommand.swift */,
 				CF3F5C1123E258D10007C9B1 /* AppsFlyerInstance.swift */,
 				CF0D01EE232AB7CB005BFE15 /* TealiumAppsFlyer.h */,
-				CF0D01EF232AB7CB005BFE15 /* Info.plist */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -119,10 +135,10 @@
 		CF0D01F8232AB7CB005BFE15 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				15914AE0277A28250051BCB2 /* Support */,
 				CF0D020C232AB841005BFE15 /* AppsFlyerInstanceTests.swift */,
 				CF0D020B232AB841005BFE15 /* MockAppsFlyerInstance.swift */,
 				CF0D020F232AB847005BFE15 /* HttpTestHelpers.swift */,
-				CF0D01FB232AB7CB005BFE15 /* Info.plist */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -409,7 +425,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 				);
-				INFOPLIST_FILE = "$(SRCROOT)/Sources/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/Sources/Support/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -444,7 +460,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 				);
-				INFOPLIST_FILE = "$(SRCROOT)/Sources/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/Sources/Support/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -471,7 +487,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 				);
-				INFOPLIST_FILE = Tests/Info.plist;
+				INFOPLIST_FILE = Tests/Support/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -498,7 +514,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 				);
-				INFOPLIST_FILE = Tests/Info.plist;
+				INFOPLIST_FILE = Tests/Support/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

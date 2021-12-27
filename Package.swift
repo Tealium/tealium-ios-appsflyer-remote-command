@@ -1,4 +1,4 @@
-// swift-tools-version:5.1
+// swift-tools-version:5.3
 import PackageDescription
 
 let package = Package(
@@ -19,12 +19,14 @@ let package = Package(
             dependencies: [
                 .product(name: "TealiumCore", package: "tealium-swift"),
                 .product(name: "TealiumRemoteCommands", package: "tealium-swift"),
-                .product(name: "AppsFlyerLib", package: "AppsFlyerLib")
+                .product(name: "AppsFlyerLib", package: "AppsFlyerFramework")
             ],
-            path: "./Sources"),
+            path: "./Sources",
+            exclude: ["Support"]),
         .testTarget(
             name: "TealiumAppsFlyerTests",
             dependencies: ["TealiumAppsFlyer"],
-            path: "./Tests")
+            path: "./Tests",
+            exclude: ["Support"])
     ]
 )
