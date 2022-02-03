@@ -12,7 +12,6 @@ import AppsFlyerLib
     import TealiumSwift
 #else
     import TealiumCore
-    import TealiumTagManagement
     import TealiumRemoteCommands
 #endif
 
