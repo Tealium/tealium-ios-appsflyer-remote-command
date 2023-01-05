@@ -138,6 +138,11 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                         return appsFlyerInstance.logEvent(eventName, values: payload.filterVariables())
                     }
                     appsFlyerInstance.logEvent(eventName, values: eventParameters)
+                } else {
+                    guard let eventParameters = payload[AppsFlyerConstants.Parameters.event] as? [String: Any] else {
+                        return appsFlyerInstance.logEvent($0, values: payload.filterVariables())
+                    }
+                    appsFlyerInstance.logEvent($0, values: eventParameters)                    
                 }
                 break
             }

@@ -14,6 +14,7 @@ class GamingViewController: UIViewController {
     @IBOutlet weak var stopTutorialButton: UIButton!
     @IBOutlet weak var achievementLabel: UILabel!
     @IBOutlet weak var levelLabel: UILabel!
+    @IBOutlet weak var customEventButton: UIButton!
 
     var data = [String: Any]()
     
@@ -68,6 +69,10 @@ class GamingViewController: UIViewController {
     @IBAction func reEngage(_ sender: Any) {
         data[GamingViewController.score] = Int.random(in: 1...1000) * 1000
         TealiumHelper.trackEvent(title: "reengage", data: data)
+    }
+    
+    @IBAction func customEvent(_ sender: Any) {
+        TealiumHelper.trackEvent(title: "custom_event", data: [:])
     }
 
 }

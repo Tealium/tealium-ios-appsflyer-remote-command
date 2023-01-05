@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Cri-jq-wIj">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Cri-jq-wIj">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -31,7 +31,7 @@
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits"/>
                                     </textField>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8tD-Pp-YHd">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8tD-Pp-YHd">
                                         <rect key="frame" x="30" y="200" width="215" height="30"/>
                                         <inset key="titleEdgeInsets" minX="1" minY="0.0" maxX="0.0" maxY="0.0"/>
                                         <state key="normal" title="Join group"/>
@@ -39,7 +39,7 @@
                                             <action selector="joinGroupTapped:" destination="VTH-Z2-qN1" eventType="touchUpInside" id="5lu-8D-gsT"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Z4H-eo-K0s">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Z4H-eo-K0s">
                                         <rect key="frame" x="83" y="253" width="109" height="30"/>
                                         <state key="normal" title="See your offers!"/>
                                         <connections>
@@ -53,7 +53,7 @@
                                             <constraint firstAttribute="width" constant="120" id="y6o-HC-sQw"/>
                                         </constraints>
                                     </imageView>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6mR-xa-QVd">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6mR-xa-QVd">
                                         <rect key="frame" x="99.5" y="449" width="76" height="30"/>
                                         <state key="normal" title="Add Rating"/>
                                         <connections>
@@ -69,13 +69,13 @@
                                 </constraints>
                             </stackView>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="xty-ts-7AC"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="bAc-nl-Rpy" firstAttribute="top" secondItem="xty-ts-7AC" secondAttribute="top" constant="50" id="kvi-dE-qio"/>
                             <constraint firstItem="xty-ts-7AC" firstAttribute="trailing" secondItem="bAc-nl-Rpy" secondAttribute="trailing" constant="50" id="v0J-tc-nUL"/>
                             <constraint firstItem="bAc-nl-Rpy" firstAttribute="leading" secondItem="xty-ts-7AC" secondAttribute="leading" constant="50" id="w09-3h-7wb"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="xty-ts-7AC"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="Account" image="user" id="fct-kz-HyN"/>
                     <connections>
@@ -96,22 +96,29 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="30" translatesAutoresizingMaskIntoConstraints="NO" id="XfQ-Qr-n9Q">
-                                <rect key="frame" x="109" y="91.5" width="157" height="484.5"/>
+                                <rect key="frame" x="109.5" y="61.5" width="156" height="544.5"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="yam-U5-fFr">
-                                        <rect key="frame" x="40.5" y="0.0" width="76" height="30"/>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="yam-U5-fFr">
+                                        <rect key="frame" x="40" y="0.0" width="76" height="30"/>
                                         <state key="normal" title="Re-engage"/>
                                         <connections>
                                             <action selector="reEngage:" destination="0H7-Ps-lXL" eventType="touchUpInside" id="OfY-go-EuI"/>
                                         </connections>
                                     </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zyR-re-xzZ">
+                                        <rect key="frame" x="30" y="60" width="96" height="30"/>
+                                        <state key="normal" title="Custom Event"/>
+                                        <connections>
+                                            <action selector="customEvent:" destination="0H7-Ps-lXL" eventType="touchUpInside" id="SRd-aT-ETC"/>
+                                        </connections>
+                                    </button>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="n7a-Ww-kDC">
-                                        <rect key="frame" x="23" y="60" width="111" height="30"/>
+                                        <rect key="frame" x="22.5" y="120" width="111" height="30"/>
                                         <subviews>
                                             <stackView opaque="NO" contentMode="scaleToFill" spacing="28" translatesAutoresizingMaskIntoConstraints="NO" id="3PB-OV-Jih">
                                                 <rect key="frame" x="0.0" y="0.0" width="111" height="30"/>
                                                 <subviews>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LlT-VH-9jT">
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LlT-VH-9jT">
                                                         <rect key="frame" x="0.0" y="0.0" width="111" height="30"/>
                                                         <state key="normal" title="Spend Currency"/>
                                                         <connections>
@@ -122,46 +129,46 @@
                                             </stackView>
                                         </subviews>
                                     </stackView>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="orc-sS-LTN">
-                                        <rect key="frame" x="45" y="120" width="67" height="30"/>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="orc-sS-LTN">
+                                        <rect key="frame" x="44.5" y="180" width="67" height="30"/>
                                         <state key="normal" title="Start Trial"/>
                                         <connections>
                                             <action selector="startTrial:" destination="0H7-Ps-lXL" eventType="touchUpInside" id="EzV-Vw-mrj"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oiV-2u-88F">
-                                        <rect key="frame" x="17.5" y="180" width="122" height="30"/>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oiV-2u-88F">
+                                        <rect key="frame" x="17" y="240" width="122" height="30"/>
                                         <state key="normal" title="Complete Tutorial"/>
                                         <connections>
                                             <action selector="stopTutorial:" destination="0H7-Ps-lXL" eventType="touchUpInside" id="27x-nj-zIe"/>
                                         </connections>
                                     </button>
                                     <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="drj-X6-Igh">
-                                        <rect key="frame" x="54" y="240" width="51" height="31"/>
+                                        <rect key="frame" x="53.5" y="300" width="51" height="31"/>
                                         <connections>
                                             <action selector="achievementSwitch:" destination="0H7-Ps-lXL" eventType="valueChanged" id="V9l-L2-Nvv"/>
                                         </connections>
                                     </switch>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Unlock Achievement" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TkC-0z-98a">
-                                        <rect key="frame" x="0.0" y="301" width="157" height="20.5"/>
+                                        <rect key="frame" x="0.0" y="361" width="156" height="20.5"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Vbf-DA-uvG">
-                                        <rect key="frame" x="73.5" y="351.5" width="10.5" height="20.5"/>
+                                        <rect key="frame" x="73" y="411.5" width="10.5" height="20.5"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <stepper opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="1" maximumValue="10" translatesAutoresizingMaskIntoConstraints="NO" id="O5t-D6-lAv">
-                                        <rect key="frame" x="31.5" y="402" width="94" height="32"/>
+                                        <rect key="frame" x="31" y="462" width="94" height="32"/>
                                         <connections>
                                             <action selector="levelStepper:" destination="0H7-Ps-lXL" eventType="valueChanged" id="CkD-4H-8bu"/>
                                         </connections>
                                     </stepper>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Level Up" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="biH-lX-sk1">
-                                        <rect key="frame" x="45.5" y="464" width="66.5" height="20.5"/>
+                                        <rect key="frame" x="45" y="524" width="66" height="20.5"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
@@ -169,16 +176,17 @@
                                 </subviews>
                             </stackView>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="93Y-Qt-mX6"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="XfQ-Qr-n9Q" firstAttribute="centerX" secondItem="6rO-Qd-IHv" secondAttribute="centerX" id="Dby-bf-x1Q"/>
                             <constraint firstItem="XfQ-Qr-n9Q" firstAttribute="centerY" secondItem="6rO-Qd-IHv" secondAttribute="centerY" id="lNP-Qf-M2T"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="93Y-Qt-mX6"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="Gaming" image="game" id="91O-Pc-evq"/>
                     <connections>
                         <outlet property="achievementLabel" destination="TkC-0z-98a" id="d79-Le-O6c"/>
+                        <outlet property="customEventButton" destination="zyR-re-xzZ" id="Pkn-Pp-UZH"/>
                         <outlet property="levelLabel" destination="Vbf-DA-uvG" id="wMm-ab-rRx"/>
                         <outlet property="startTutorialButton" destination="orc-sS-LTN" id="taz-Sf-uvv"/>
                         <outlet property="stopTutorialButton" destination="oiV-2u-88F" id="8dh-WV-6kb"/>
@@ -230,14 +238,14 @@
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits"/>
                                     </textField>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LaJ-vN-dv2">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LaJ-vN-dv2">
                                         <rect key="frame" x="30" y="238" width="255" height="30"/>
                                         <state key="normal" title="Sign up for discounts!"/>
                                         <connections>
                                             <action selector="signUp:" destination="Z3m-zV-96N" eventType="touchUpInside" id="NO1-cX-lxw"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YdB-3w-n4r">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YdB-3w-n4r">
                                         <rect key="frame" x="107" y="288" width="101" height="30"/>
                                         <state key="normal" title="Track Location"/>
                                         <connections>
@@ -279,6 +287,7 @@
                                 </connections>
                             </containerView>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="zCY-ni-HZX"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="zCY-ni-HZX" firstAttribute="trailing" secondItem="Oyd-ye-4c4" secondAttribute="trailing" constant="16" id="0sQ-R3-Bb4"/>
@@ -305,7 +314,6 @@
                             <constraint firstItem="6gf-rY-S9l" firstAttribute="centerY" secondItem="Oyd-ye-4c4" secondAttribute="centerY" id="oJE-6A-IHr"/>
                             <constraint firstItem="6gf-rY-S9l" firstAttribute="bottom" secondItem="HQt-te-US9" secondAttribute="bottom" id="omI-ar-JHw"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="zCY-ni-HZX"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="E-commerce" image="shopping-cart" id="yJR-nq-22G"/>
                     <connections>
@@ -416,7 +424,7 @@
                                                         </connections>
                                                     </stepper>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Rooms" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="05f-Ly-LNs">
-                                                        <rect key="frame" x="20.5" y="68.5" width="53" height="20.5"/>
+                                                        <rect key="frame" x="21" y="68.5" width="52.5" height="20.5"/>
                                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                         <nil key="textColor"/>
                                                         <nil key="highlightedColor"/>
@@ -426,7 +434,7 @@
                                         </subviews>
                                     </stackView>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Travel class" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VVG-en-wl2">
-                                        <rect key="frame" x="149.5" y="375" width="89" height="20.5"/>
+                                        <rect key="frame" x="150" y="375" width="88.5" height="20.5"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
@@ -442,7 +450,7 @@
                                             <action selector="changeTravelClass:" destination="WOD-70-LHq" eventType="valueChanged" id="zgu-CT-QUG"/>
                                         </connections>
                                     </segmentedControl>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gEI-my-eYB">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gEI-my-eYB">
                                         <rect key="frame" x="169.5" y="486.5" width="49" height="30"/>
                                         <state key="normal" title="Submit"/>
                                         <connections>
@@ -462,12 +470,12 @@
                                 </constraints>
                             </stackView>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="cVd-aR-nuj"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="Y14-nD-QFZ" firstAttribute="centerX" secondItem="LXu-5D-QMH" secondAttribute="centerX" id="Efy-jv-pRT"/>
                             <constraint firstItem="Y14-nD-QFZ" firstAttribute="centerY" secondItem="LXu-5D-QMH" secondAttribute="centerY" id="wKU-re-uf9"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="cVd-aR-nuj"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="Travel" image="black-plane" id="pIB-0y-HeV"/>
                     <connections>
