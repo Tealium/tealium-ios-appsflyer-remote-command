@@ -34,8 +34,8 @@ Pod::Spec.new do |s|
 
     # ――― Dependencies ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
     s.static_framework = true
-    s.ios.dependency 'tealium-swift/Core', '~> 2.8'
-    s.ios.dependency 'tealium-swift/RemoteCommands', '~> 2.8'
+    s.ios.dependency 'tealium-swift/Core', '~> 2.9'
+    s.ios.dependency 'tealium-swift/RemoteCommands', '~> 2.9'
     s.ios.dependency 'AppsFlyerFramework', '~> 6.9'
 
 end
