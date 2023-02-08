@@ -98,14 +98,14 @@ class AppsFlyerInstanceTests: XCTestCase {
         wait(for: [expect], timeout: 2.0)
     }
     
-    func testTrackEventNotRun() {
-        let expect = expectation(description: "AppsFlyerRunner trackEvent(eventName:values:) method run")
-        let payload: [String: Any] = ["command_name": "unrecognized,nope,test"]
+    func testTrackCustomEvent() {
+        let expect = expectation(description: "AppsFlyerRunner trackEvent(eventName:values:) custom event runs")
+        let payload: [String: Any] = ["command_name": "custom_command_name"]
         
         if let response = HttpTestHelpers.createRemoteCommandResponse(type: .webview, commandId: "appsflyer", payload: payload) {
             appsFlyerCommand.completion(response)
             expect.fulfill()
-            XCTAssertEqual(0, self.appsFlyerInstance.logEventCount)
+            XCTAssertEqual(1, self.appsFlyerInstance.logEventCount)
         }
         
         wait(for: [expect], timeout: 2.0)
@@ -399,19 +399,6 @@ class AppsFlyerInstanceTests: XCTestCase {
             appsFlyerCommand.completion(response)
             expect.fulfill()
             XCTAssertEqual(3, self.appsFlyerInstance.logEventCount)
-        }
-        
-        wait(for: [expect], timeout: 2.0)
-    }
-    
-    func testTrackEventNotRunJSON() {
-        let expect = expectation(description: "AppsFlyerRunner trackEvent(eventName:values:) method does not run")
-        let payload: [String: Any] = ["command_name": "unrecognized,nope,test"]
-        
-        if let response = HttpTestHelpers.createRemoteCommandResponse(type: .JSON, commandId: "appsflyer", payload: payload) {
-            appsFlyerCommand.completion(response)
-            expect.fulfill()
-            XCTAssertEqual(0, self.appsFlyerInstance.logEventCount)
         }
         
         wait(for: [expect], timeout: 2.0)

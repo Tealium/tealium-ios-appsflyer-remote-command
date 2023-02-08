@@ -28,7 +28,7 @@ class TealiumHelper {
     var tealium: Tealium?
     
     // JSON Remote Command
-    let appsFlyerRemoteCommand = AppsFlyerRemoteCommand(type: .remote(url: "https://tags.tiqcdn.com/dle/tealiummobile/demo/appsflyer.json"))
+    let appsFlyerRemoteCommand = AppsFlyerRemoteCommand(type: .local(file: "appsflyer"))
 
     private init() {
         config.shouldUseRemotePublishSettings = false

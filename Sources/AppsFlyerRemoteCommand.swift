@@ -132,16 +132,25 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 }
                 appsFlyerInstance.resolveDeepLinkURLs(deepLinkUrls)
             default:
-                if let appsFlyerEvent = AppsFlyerConstants.EventCommandNames(rawValue: $0.lowercased()) {
-                    let eventName = String(standardEventName: appsFlyerEvent)
-                    guard let eventParameters = payload[AppsFlyerConstants.Parameters.event] as? [String: Any] else {
-                        return appsFlyerInstance.logEvent(eventName, values: payload.filterVariables())
-                    }
-                    appsFlyerInstance.logEvent(eventName, values: eventParameters)
-                }
+                appsFlyerInstance.logEvent(getEventName(command: $0), values: getEventParameters(payload: payload))
                 break
             }
         }
+    }
+    
+    func getEventParameters(payload: [String: Any]) -> [String: Any] {
+        guard let eventParameters = payload[AppsFlyerConstants.Parameters.event] as? [String: Any] else {
+            return payload.filterVariables()
+        }
+        return eventParameters
+    }
+    
+    func getEventName(command: String) -> String {
+        if let appsFlyerEvent = AppsFlyerConstants.EventCommandNames(rawValue: command.lowercased()) {
+            let eventName = String(standardEventName: appsFlyerEvent)
+            return eventName
+        }
+        return command
     }
 
 }

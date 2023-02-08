@@ -64,6 +64,7 @@
         "rate": "rate",
         "search": "search",
         "checkout": "initiatecheckout",
-        "order":"purchase"
+        "order":"purchase",
+        "custom_event": "custom_event"
     }
 }
