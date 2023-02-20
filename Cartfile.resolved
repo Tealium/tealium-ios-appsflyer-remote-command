@@ -1,2 +1,2 @@
-binary "https://raw.githubusercontent.com/AppsFlyerSDK/AppsFlyerFramework/6.5.0/Carthage/appsflyer-ios.json" "6.4.4"
-github "tealium/tealium-swift" "2.5.1"
+binary "https://raw.githubusercontent.com/AppsFlyerSDK/AppsFlyerFramework/master/Carthage/appsflyer-ios.json" "6.10.0"
+github "tealium/tealium-swift" "2.9.1"
