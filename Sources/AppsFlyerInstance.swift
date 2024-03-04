@@ -41,19 +41,24 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     }
     
     public func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {
-        let appsFlyer = AppsFlyerLib.shared()
-        guard appsFlyer.appsFlyerDevKey.isEmpty && appsFlyer.appleAppID.isEmpty else {
-            onReady(appsFlyer)
+        defer { _onReady.subscribeOnce(onReady) }
+        let appsFlyerAlreadyPublished = _onReady.last() != nil
+        guard !appsFlyerAlreadyPublished else {
             return
         }
-        _onReady.subscribeOnce(onReady)
+        let appsFlyer = AppsFlyerLib.shared()
+        let appsFlyerManuallyInitialized = !appsFlyer.appsFlyerDevKey.isEmpty || !appsFlyer.appleAppID.isEmpty
+        guard !appsFlyerManuallyInitialized else {
+            return
+        }
+        _onReady.publish(appsFlyer)
     }
 
     public func initialize(appId: String, appDevKey: String, settings: [String: Any]?) {
         TealiumQueues.backgroundSerialQueue.async {
             let appsFlyer = AppsFlyerLib.shared()
             defer { self._onReady.publish(appsFlyer) }
-            appsFlyer.isDebug = true
+            appsFlyer.appsFlyerDevKey = appDevKey
             appsFlyer.appleAppID = appId
             guard let settings = settings else {
                 return
