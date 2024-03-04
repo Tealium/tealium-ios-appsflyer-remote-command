@@ -15,8 +15,8 @@ import AppsFlyerLib
     import TealiumRemoteCommands
 #endif
 
-
 public protocol AppsFlyerCommand {
+    func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void)
     func initialize(appId: String, appDevKey: String, settings: [String: Any]?)
     func logEvent(_ eventName: String, values: [String: Any])
     func logLocation(longitude: Double, latitude: Double)
@@ -28,10 +28,10 @@ public protocol AppsFlyerCommand {
     func resolveDeepLinkURLs(_ urls: [String])
 }
 
-public class AppsFlyerInstance: NSObject, AppsFlyerCommand, TealiumRegistration {
+public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
 
     weak var tealium: Tealium?
-
+    private let _onReady = TealiumReplaySubject<AppsFlyerLib>(cacheSize: 1)
     public override init() { }
 
     public init(tealium: Tealium) {
@@ -39,57 +39,61 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand, TealiumRegistration 
         self.tealium = tealium
         AppsFlyerLib.shared().delegate = self
     }
-
-    public func initialize(appId: String, appDevKey: String, settings: [String: Any]?) {
-        AppsFlyerLib.shared().appsFlyerDevKey = appDevKey
-        AppsFlyerLib.shared().appleAppID = appId
-        guard let settings = settings else {
-            AppsFlyerLib.shared().appsFlyerDevKey = appDevKey
-            AppsFlyerLib.shared().appleAppID = appId
+    
+    public func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {
+        let appsFlyer = AppsFlyerLib.shared()
+        guard appsFlyer.appsFlyerDevKey.isEmpty && appsFlyer.appleAppID.isEmpty else {
+            onReady(appsFlyer)
             return
         }
-        if let debug = settings[AppsFlyerConstants.Configuration.debug] as? Bool {
-            AppsFlyerLib.shared().isDebug = debug
-        }
-        if let disableAdTracking = settings[AppsFlyerConstants.Configuration.disableAdTracking] as? Bool {
-            AppsFlyerLib.shared().disableAdvertisingIdentifier = disableAdTracking
-            AppsFlyerLib.shared().disableIDFVCollection = disableAdTracking
-        }
-        if let disableAppleAdTracking = settings[AppsFlyerConstants.Configuration.disableAppleAdTracking] as? Bool {
-            AppsFlyerLib.shared().disableSKAdNetwork = disableAppleAdTracking
-        }
-        if let minTimeBetweenSessions = settings[AppsFlyerConstants.Configuration.minTimeBetweenSessions] as? Int {
-            AppsFlyerLib.shared().minTimeBetweenSessions = UInt(minTimeBetweenSessions)
-        }
-        if let anonymizeUser = settings[AppsFlyerConstants.Configuration.anonymizeUser] as? Bool {
-            AppsFlyerLib.shared().anonymizeUser = anonymizeUser
-        }
-        if let shouldCollectDeviceName = settings[AppsFlyerConstants.Configuration.collectDeviceName] as? Bool {
-            AppsFlyerLib.shared().shouldCollectDeviceName = shouldCollectDeviceName
-        }
-        if let customData = settings[AppsFlyerConstants.Configuration.customData] as? [AnyHashable: Any] {
-            AppsFlyerLib.shared().customData = customData
+        _onReady.subscribeOnce(onReady)
+    }
+
+    public func initialize(appId: String, appDevKey: String, settings: [String: Any]?) {
+        TealiumQueues.backgroundSerialQueue.async {
+            let appsFlyer = AppsFlyerLib.shared()
+            defer { self._onReady.publish(appsFlyer) }
+            appsFlyer.isDebug = true
+            appsFlyer.appleAppID = appId
+            guard let settings = settings else {
+                return
+            }
+            if let debug = settings[AppsFlyerConstants.Configuration.debug] as? Bool {
+                appsFlyer.isDebug = debug
+            }
+            if let disableAdTracking = settings[AppsFlyerConstants.Configuration.disableAdTracking] as? Bool {
+                appsFlyer.disableAdvertisingIdentifier = disableAdTracking
+                appsFlyer.disableIDFVCollection = disableAdTracking
+            }
+            if let disableAppleAdTracking = settings[AppsFlyerConstants.Configuration.disableAppleAdTracking] as? Bool {
+                appsFlyer.disableSKAdNetwork = disableAppleAdTracking
+            }
+            if let minTimeBetweenSessions = settings[AppsFlyerConstants.Configuration.minTimeBetweenSessions] as? Int {
+                appsFlyer.minTimeBetweenSessions = UInt(minTimeBetweenSessions)
+            }
+            if let anonymizeUser = settings[AppsFlyerConstants.Configuration.anonymizeUser] as? Bool {
+                appsFlyer.anonymizeUser = anonymizeUser
+            }
+            if let shouldCollectDeviceName = settings[AppsFlyerConstants.Configuration.collectDeviceName] as? Bool {
+                appsFlyer.shouldCollectDeviceName = shouldCollectDeviceName
+            }
+            if let customData = settings[AppsFlyerConstants.Configuration.customData] as? [AnyHashable: Any] {
+                appsFlyer.customData = customData
+            }
         }
     }
 
     public func logEvent(_ eventName: String, values: [String: Any]) {
-        AppsFlyerLib.shared().logEvent(eventName, withValues: values)
+        onReady { appsFlyer in
+            appsFlyer.logEvent(eventName, withValues: values)
+        }
     }
 
     public func logLocation(longitude: Double, latitude: Double) {
-        AppsFlyerLib.shared().logLocation(longitude: longitude, latitude: latitude)
-    }
-
-    /// Used to track push notification activity from native APNs or other push service
-    /// Please refer to this for more information:
-    /// https://support.appsflyer.com/hc/en-us/articles/207364076-Measuring-Push-Notification-Re-Engagement-Campaigns
-    public func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        AppsFlyerLib.shared().handlePushNotification(userInfo)
-        AppsFlyerLib.shared().logEvent(AppsFlyerConstants.Events.pushNotificationOpened, withValues: [:])
-    }
-
-    public func handlePushNofification(payload: [String: Any]?) {
-        AppsFlyerLib.shared().handlePushNotification(payload)
+        onReady { appsFlyer in
+            appsFlyer.logLocation(longitude: longitude, latitude: latitude)
+        }
+        
     }
 
     public func setHost(_ host: String, with prefix: String) {
@@ -110,14 +114,6 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand, TealiumRegistration 
 
     public func disableTracking(_ disable: Bool) {
         AppsFlyerLib.shared().isStopped = disable
-    }
-
-    /// APNs and Push Messaging must be configured in order to track installs.
-    /// Apple will not register the uninstall until 8 days after the user removes the app.
-    /// Instructions to set up: https://support.appsflyer.com/hc/en-us/articles/210289286-Uninstall-Measurement#iOS-Uninstall
-    public func registerPushToken(_ token: String) {
-        guard let dataToken = token.data(using: .utf8) else { return }
-        AppsFlyerLib.shared().registerUninstall(dataToken)
     }
 
     public func resolveDeepLinkURLs(_ urls: [String]) {
@@ -178,5 +174,4 @@ extension AppsFlyerInstance: AppsFlyerLibDelegate {
         let event = TealiumEvent(title, dataLayer: data)
         tealium?.track(event)
     }
-
 }

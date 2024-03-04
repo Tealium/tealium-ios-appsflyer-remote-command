@@ -45,7 +45,7 @@
         "currency_type": "event.currency_type"
     },
     "commands": {
-        "launch": "initialize,launch",
+        "launch": "initialize",
         "geofence_entered": "tracklocation",
         "geofence_exited": "tracklocation",
         "track_location": "tracklocation",
@@ -65,6 +65,7 @@
         "search": "search",
         "checkout": "initiatecheckout",
         "order":"purchase",
+        "notification_open": "pushnotificationopened",
         "custom_event": "custom_event"
     }
 }

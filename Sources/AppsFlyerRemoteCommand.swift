@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import AppsFlyerLib
 #if COCOAPODS
     import TealiumSwift
 #else
@@ -16,10 +17,16 @@ import Foundation
 
 public class AppsFlyerRemoteCommand: RemoteCommand {
 
-    let appsFlyerInstance: AppsFlyerCommand?
+    let appsFlyerInstance: AppsFlyerCommand
     
     public override var version: String? {
         return AppsFlyerConstants.version
+    }
+    
+    public func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {
+        TealiumQueues.backgroundSerialQueue.async {
+            self.appsFlyerInstance.onReady(onReady)
+        }
     }
 
     public init(appsFlyerInstance: AppsFlyerCommand = AppsFlyerInstance(), type: RemoteCommandType = .webview) {
@@ -38,8 +45,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     }
 
     func processRemoteCommand(with payload: [String: Any]) {
-        guard let appsFlyerInstance = appsFlyerInstance,
-              let command = payload[AppsFlyerConstants.commandName] as? String else {
+        guard let command = payload[AppsFlyerConstants.commandName] as? String else {
                 return
         }
         let commands = command.split(separator: AppsFlyerConstants.separator)
@@ -158,13 +164,13 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
 fileprivate extension Dictionary where Key == String, Value == Any {
     func filterVariables() -> [String: Any] {
         self.filter {
-                $0.key != "debug" &&
-                    $0.key != "method" &&
-                    $0.key != "app_dev_key" &&
-                    $0.key != "app_id" &&
-                    $0.key != AppsFlyerConstants.commandName &&
-                    $0.key != "settings"
-            }
+            $0.key != "debug" &&
+            $0.key != "method" &&
+            $0.key != "app_dev_key" &&
+            $0.key != "app_id" &&
+            $0.key != AppsFlyerConstants.commandName &&
+            $0.key != "settings"
+        }
     }
 }
 
@@ -221,6 +227,8 @@ fileprivate extension String {
             self = AppsFlyerConstants.Events.login
         case .customersegment:
             self = AppsFlyerConstants.Events.customerSegment
+        case .pushnotificationopened:
+            self = AppsFlyerConstants.Events.pushNotificationOpened
         }
     }
 
