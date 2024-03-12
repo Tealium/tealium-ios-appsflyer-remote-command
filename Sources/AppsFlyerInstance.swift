@@ -48,43 +48,43 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         }
         let appsFlyer = AppsFlyerLib.shared()
         let appsFlyerManuallyInitialized = !appsFlyer.appsFlyerDevKey.isEmpty || !appsFlyer.appleAppID.isEmpty
-        guard !appsFlyerManuallyInitialized else {
+        guard appsFlyerManuallyInitialized else {
             return
         }
         _onReady.publish(appsFlyer)
     }
 
     public func initialize(appId: String, appDevKey: String, settings: [String: Any]?) {
-        TealiumQueues.backgroundSerialQueue.async {
-            let appsFlyer = AppsFlyerLib.shared()
-            defer { self._onReady.publish(appsFlyer) }
-            appsFlyer.appsFlyerDevKey = appDevKey
-            appsFlyer.appleAppID = appId
-            guard let settings = settings else {
-                return
-            }
-            if let debug = settings[AppsFlyerConstants.Configuration.debug] as? Bool {
-                appsFlyer.isDebug = debug
-            }
-            if let disableAdTracking = settings[AppsFlyerConstants.Configuration.disableAdTracking] as? Bool {
-                appsFlyer.disableAdvertisingIdentifier = disableAdTracking
-                appsFlyer.disableIDFVCollection = disableAdTracking
-            }
-            if let disableAppleAdTracking = settings[AppsFlyerConstants.Configuration.disableAppleAdTracking] as? Bool {
-                appsFlyer.disableSKAdNetwork = disableAppleAdTracking
-            }
-            if let minTimeBetweenSessions = settings[AppsFlyerConstants.Configuration.minTimeBetweenSessions] as? Int {
-                appsFlyer.minTimeBetweenSessions = UInt(minTimeBetweenSessions)
-            }
-            if let anonymizeUser = settings[AppsFlyerConstants.Configuration.anonymizeUser] as? Bool {
-                appsFlyer.anonymizeUser = anonymizeUser
-            }
-            if let shouldCollectDeviceName = settings[AppsFlyerConstants.Configuration.collectDeviceName] as? Bool {
-                appsFlyer.shouldCollectDeviceName = shouldCollectDeviceName
-            }
-            if let customData = settings[AppsFlyerConstants.Configuration.customData] as? [AnyHashable: Any] {
-                appsFlyer.customData = customData
-            }
+        let appsFlyer = AppsFlyerLib.shared()
+        defer {
+            self._onReady.publish(appsFlyer)
+        }
+        appsFlyer.appsFlyerDevKey = appDevKey
+        appsFlyer.appleAppID = appId
+        guard let settings = settings else {
+            return
+        }
+        if let debug = settings[AppsFlyerConstants.Configuration.debug] as? Bool {
+            appsFlyer.isDebug = debug
+        }
+        if let disableAdTracking = settings[AppsFlyerConstants.Configuration.disableAdTracking] as? Bool {
+            appsFlyer.disableAdvertisingIdentifier = disableAdTracking
+            appsFlyer.disableIDFVCollection = disableAdTracking
+        }
+        if let disableAppleAdTracking = settings[AppsFlyerConstants.Configuration.disableAppleAdTracking] as? Bool {
+            appsFlyer.disableSKAdNetwork = disableAppleAdTracking
+        }
+        if let minTimeBetweenSessions = settings[AppsFlyerConstants.Configuration.minTimeBetweenSessions] as? Int {
+            appsFlyer.minTimeBetweenSessions = UInt(minTimeBetweenSessions)
+        }
+        if let anonymizeUser = settings[AppsFlyerConstants.Configuration.anonymizeUser] as? Bool {
+            appsFlyer.anonymizeUser = anonymizeUser
+        }
+        if let shouldCollectDeviceName = settings[AppsFlyerConstants.Configuration.collectDeviceName] as? Bool {
+            appsFlyer.shouldCollectDeviceName = shouldCollectDeviceName
+        }
+        if let customData = settings[AppsFlyerConstants.Configuration.customData] as? [AnyHashable: Any] {
+            appsFlyer.customData = customData
         }
     }
 

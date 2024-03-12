@@ -8,9 +8,9 @@
 
 import Foundation
 @testable import TealiumAppsFlyer
+import AppsFlyerLib
 
 class MockAppsFlyerInstance: AppsFlyerCommand {
-    
     var initWithoutConfigCount = 0
     var initWithConfigCount = 0
     var logEventCount = 0
@@ -23,7 +23,6 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var disableTrackingCount = 0
     var registerUninstallCount = 0
     var resolveDeepLinkURLsCount = 0
-    
     func initialize(appId: String, appDevKey: String) {
         initWithoutConfigCount += 1
     }
@@ -74,6 +73,10 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     
     func resolveDeepLinkURLs(_ urls: [String]) {
         resolveDeepLinkURLsCount += 1
+    }
+    
+    func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {
+        onReady(AppsFlyerLib.shared())
     }
     
 }
