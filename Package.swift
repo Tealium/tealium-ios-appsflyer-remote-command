@@ -4,14 +4,14 @@ import PackageDescription
 let package = Package(
     name: "TealiumAppsFlyer",
     platforms: [
-        .iOS(.v10)
+        .iOS(.v12)
     ],
     products: [
         .library(name: "TealiumAppsFlyer", targets: ["TealiumAppsFlyer"])
     ],
     dependencies: [
         .package(name: "TealiumSwift", url: "https://github.com/tealium/tealium-swift", 
-.upToNextMajor(from: "2.9.0")),
+.upToNextMajor(from: "2.12.0")),
         .package(name: "AppsFlyerLib", url: "https://github.com/AppsFlyerSDK/AppsFlyerFramework", .upToNextMajor(from: "6.9.0"))
     ],
     targets: [
