@@ -45,9 +45,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 extension AppDelegate: UNUserNotificationCenterDelegate {
 
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-//        if response.actionIdentifier == UNNotificationDefaultActionIdentifier { // Is this needed?
-//            self.tealiumHelper.tealium?.track(TealiumEvent("notification_open"))
-//        }
         tealiumHelper.appsFlyerRemoteCommand.onReady { appsFlyer in
             appsFlyer.handlePushNotification(response.notification.request.content.userInfo)
         }
