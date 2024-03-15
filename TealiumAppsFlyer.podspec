@@ -3,7 +3,7 @@ Pod::Spec.new do |s|
     # ―――  Spec Metadata  ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
     s.name         = "TealiumAppsFlyer"
     s.module_name  = "TealiumAppsFlyer"
-    s.version      = "2.1.2"
+    s.version      = "3.0.0"
     s.summary      = "Tealium Swift and AppsFlyer integration"
     s.description  = <<-DESC
     Tealium's integration with AppsFlyer for iOS.
@@ -20,7 +20,7 @@ Pod::Spec.new do |s|
 
     # ――― Platform Specifics ――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
     s.swift_version = "5.0"
-    s.platform     = :ios, "11.0"
+    s.platform     = :ios, "12.0"
 
     # ――― Source Location ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
     s.source       = { :git => "https://github.com/Tealium/tealium-ios-appsflyer-remote-command.git", :tag => "#{s.version}" }
@@ -30,8 +30,8 @@ Pod::Spec.new do |s|
 
     # ――― Dependencies ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
     s.static_framework = true
-    s.ios.dependency 'tealium-swift/Core', '~> 2.9'
-    s.ios.dependency 'tealium-swift/RemoteCommands', '~> 2.9'
+    s.ios.dependency 'tealium-swift/Core', '~> 2.12'
+    s.ios.dependency 'tealium-swift/RemoteCommands', '~> 2.12'
     s.ios.dependency 'AppsFlyerFramework', '~> 6.9'
 
 end

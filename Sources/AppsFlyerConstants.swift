@@ -16,7 +16,7 @@ public enum AppsFlyerConstants {
     static let description = "AppsFlyer Remote Command"
     static let errorPrefix = "AppsFlyer Error: "
     static let attributionLog = "AppsFlyer Attribution: "
-    static let version = "2.1.2"
+    static let version = "3.0.0"
     
     /// Standard AppsFlyer events: https://support.appsflyer.com/hc/en-us/articles/115005544169#Event-Types
     public enum EventCommandNames: String, CaseIterable {
@@ -45,10 +45,10 @@ public enum AppsFlyerConstants {
         case update
         case login
         case customersegment
+        case pushnotificationopened
     }
     
     public enum CommandNames: String {
-        case launch = "launch"
         case initialize = "initialize"
         case trackLocation = "tracklocation"
         case setHost = "sethost"

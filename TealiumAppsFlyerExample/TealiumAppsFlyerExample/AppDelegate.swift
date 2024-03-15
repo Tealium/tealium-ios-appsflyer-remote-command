@@ -8,6 +8,8 @@
 
 import UIKit
 import UserNotifications
+import AppsFlyerLib
+import TealiumSwift
 // AppsFlyer Push Notification Campaign
 // https://support.appsflyer.com/hc/en-us/articles/207364076-Measuring-push-notification-re-engagement-campaigns#setting-up-a-push-notification-campaign
 
@@ -23,15 +25,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        
-        let token = deviceToken.reduce("") { $0 + String(format: "%02x", $1) }
-        print("token: \(token)")
-
-        let deviceTokenString = String(format: "%@", deviceToken as CVarArg)
-        
-        // Use rc to register push token
-        tealiumHelper.pushMessaging.forEach {
-            $0.registerPushToken(deviceTokenString)
+        tealiumHelper.appsFlyerRemoteCommand.onReady { appsFlyer in
+            appsFlyer.registerUninstall(deviceToken)
         }
     }
 
@@ -44,49 +39,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationDidBecomeActive(_ application: UIApplication) { }
 
     func applicationWillTerminate(_ application: UIApplication) { }
-    
-    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        // Use rc to log push notification receipt/open
-        tealiumHelper.pushMessaging.forEach {
-            $0.application(application, didReceiveRemoteNotification: userInfo, fetchCompletionHandler: completionHandler)
-        }
-    }
 
 }
 
 extension AppDelegate: UNUserNotificationCenterDelegate {
 
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-        // Use rc to log push notification receipt/open
-        tealiumHelper.pushMessaging.forEach {
-            $0.userNotificationCenter(center, didReceive: response, withCompletionHandler: completionHandler)
+        tealiumHelper.appsFlyerRemoteCommand.onReady { appsFlyer in
+            appsFlyer.handlePushNotification(response.notification.request.content.userInfo)
         }
+        completionHandler()
     }
     
     func notificationRegistration(_ application: UIApplication) {
-        if #available(iOS 10, *) {
-            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { [weak self] (granted, error) in
-                guard error == nil else {
-                    return
-                }
-                if granted {
-                    DispatchQueue.main.async {
-                        // use rc to log remote notification opt-in/out
-                        self?.tealiumHelper.pushMessaging.forEach {
-                            $0.pushAuthorization(fromUserNotificationCenter: granted)
-                        }
-                        application.registerForRemoteNotifications()
-                    }
-                }
-            }
-            application.registerForRemoteNotifications()
-        }
-        else {
-            let settings = UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: nil)
-            application.registerUserNotificationSettings(settings)
-            application.registerForRemoteNotifications()
-        }
+        UNUserNotificationCenter.current().delegate = self
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { _, _ in }
+        application.registerForRemoteNotifications()
     }
-    
 }
 

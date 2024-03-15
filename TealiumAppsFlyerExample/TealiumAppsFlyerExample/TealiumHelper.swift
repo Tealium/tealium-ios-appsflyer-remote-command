@@ -19,7 +19,6 @@ enum TealiumConfiguration {
 class TealiumHelper {
 
     static let shared = TealiumHelper()
-    var pushMessaging = [TealiumRegistration]()
 
     let config = TealiumConfig(account: TealiumConfiguration.account,
                                profile: TealiumConfiguration.profile,

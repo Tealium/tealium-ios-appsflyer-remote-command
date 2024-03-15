@@ -9,6 +9,8 @@
 import XCTest
 @testable import TealiumAppsFlyer
 import TealiumRemoteCommands
+import TealiumCore
+import AppsFlyerLib
 
 
 class AppsFlyerInstanceTests: XCTestCase {
@@ -174,5 +176,50 @@ class AppsFlyerInstanceTests: XCTestCase {
         let payload: [String: Any] = ["command_name": "resolvedeeplinkurls"]
         appsFlyerCommand.processRemoteCommand(with: payload)
         XCTAssertEqual(0, self.appsFlyerInstance.resolveDeepLinkURLsCount)
+    }
+
+    func testOnReadyCalledAfterInitialize() {
+        let onReadyCalled = expectation(description: "OnReady is called")
+        let payload: [String: Any] = ["command_name": "initialize",
+                                      "app_id": "test",
+                                      "app_dev_key": "test"]
+        appsFlyerCommand = AppsFlyerRemoteCommand()
+        appsFlyerCommand.onReady { _ in
+            onReadyCalled.fulfill()
+        }
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        TealiumQueues.backgroundSerialQueue.sync {
+            waitForExpectations(timeout: 1.0)
+        }
+    }
+
+    func testOnReadyCalledOnFirstLogWhenManuallyInitialized() {
+        let onReadyCalled = expectation(description: "OnReady is called")
+        let payload: [String: Any] = ["command_name": "viewedcontent"]
+        appsFlyerCommand = AppsFlyerRemoteCommand()
+        appsFlyerCommand.onReady { _ in
+            onReadyCalled.fulfill()
+        }
+        let lib = AppsFlyerLib.shared()
+        lib.appleAppID = "test_appid"
+        lib.appsFlyerDevKey = "test_devkey"
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        TealiumQueues.backgroundSerialQueue.sync {
+            waitForExpectations(timeout: 1.0)
+        }
+    }
+
+    func testOnReadyCalledOnRegistrationWhenPreviouslyManuallyInitialized() {
+        let onReadyCalled = expectation(description: "OnReady is called")
+        appsFlyerCommand = AppsFlyerRemoteCommand()
+        let lib = AppsFlyerLib.shared()
+        lib.appleAppID = "test_appid"
+        lib.appsFlyerDevKey = "test_devkey"
+        appsFlyerCommand.onReady { _ in
+            onReadyCalled.fulfill()
+        }
+        TealiumQueues.backgroundSerialQueue.sync {
+            waitForExpectations(timeout: 1.0)
+        }
     }
 }
