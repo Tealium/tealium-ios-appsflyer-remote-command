@@ -16,7 +16,7 @@ public enum AppsFlyerConstants {
     static let description = "AppsFlyer Remote Command"
     static let errorPrefix = "AppsFlyer Error: "
     static let attributionLog = "AppsFlyer Attribution: "
-    static let version = "3.0.0"
+    static let version = "3.1.0"
     
     /// Standard AppsFlyer events: https://support.appsflyer.com/hc/en-us/articles/115005544169#Event-Types
     public enum EventCommandNames: String, CaseIterable {
@@ -35,7 +35,7 @@ public enum AppsFlyerConstants {
         case subscribe
         case initiatecheckout
         case purchase
-        case unlockachievement
+        case achievementunlocked
         case spentcredits
         case listview
         case travelbooking
@@ -57,6 +57,8 @@ public enum AppsFlyerConstants {
         case setCustomerId = "setcustomerid"
         case disableTracking = "disabletracking"
         case resolveDeepLinkUrls = "resolvedeeplinkurls"
+        case logAdRevenue = "logadrevenue"
+        case setDMAConsent = "setdmaconsent"
     }
     
     public enum Configuration {
@@ -85,6 +87,49 @@ public enum AppsFlyerConstants {
         static let stopTracking = "stop_tracking"
         static let deepLinkUrls = "af_deep_link"
         static let event = "event"
+        // Ad Revenue Parameters
+        static let adMonetizationNetwork = "monetization_network"
+        static let adMediationNetwork = "mediation_network"
+        static let adRevenue = "revenue"
+        static let adAdditionalParameters = "additional_parameters"
+        // DMA Consent Parameters
+        static let gdprApplies = "gdpr_applies"
+        static let consentForDataUsage = "consent_for_data_usage"
+        static let consentForAdsPersonalization = "consent_for_ads_personalization"
+        static let consentForAdStorage = "consent_for_ad_storage"
+        // Standard Event Parameters
+        static let content = "af_content"
+        static let contentId = "af_content_id" 
+        static let contentType = "af_content_type"
+        static let price = "af_price"
+        static let quantity = "af_quantity"
+        static let revenue = "af_revenue"
+        static let level = "af_level"
+        static let score = "af_score"
+        static let orderId = "af_order_id"
+        static let success = "af_success"
+        static let maxRatingValue = "af_max_rating_value"
+        static let ratingValue = "af_rating_value"
+        static let searchString = "af_search_string"
+        static let dateA = "af_date_a"
+        static let dateB = "af_date_b"
+        static let destinationA = "af_destination_a"
+        static let destinationB = "af_destination_b"
+        static let description = "af_description"
+        static let className = "af_class"
+        static let eventTime = "af_event_time"
+        static let userId = "af_user_id"
+        static let validated = "af_validated"
+        static let param1 = "af_param_1"
+        static let param2 = "af_param_2"
+        static let param3 = "af_param_3"
+        static let param4 = "af_param_4"
+        static let param5 = "af_param_5"
+        static let param6 = "af_param_6"
+        static let param7 = "af_param_7"
+        static let param8 = "af_param_8"
+        static let param9 = "af_param_9"
+        static let param10 = "af_param_10"
     }
     
     public enum Events {
@@ -101,7 +146,7 @@ public enum AppsFlyerConstants {
         static let rate = "af_rate"
         static let search = "af_search"
         static let spentCredits = "af_spent_credits"
-        static let unlockAchievement = "af_achievement_unlocked"
+        static let achievementUnlocked = "af_achievement_unlocked"
         static let contentView = "af_content_view"
         static let listView = "af_list_view"
         static let adClick = "af_ad_click"

@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/AppsFlyerSDK/AppsFlyerFramework",
         "state": {
           "branch": null,
-          "revision": "3e8a25ec64433001287e2ff135d5ed3dbc634ad2",
-          "version": "6.5.0"
+          "revision": "88269d96aed888416e5fabbe983f769aa9013d5c",
+          "version": "6.17.0"
         }
       },
       {
@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/tealium/tealium-swift",
         "state": {
           "branch": null,
-          "revision": "9bd74f09c780862de61101bd147b1c6b232f98ce",
-          "version": "2.5.1"
+          "revision": "4264a4581e2f9aad5e4dd002282ea2952ec6d5d9",
+          "version": "2.17.0"
         }
       }
     ]
