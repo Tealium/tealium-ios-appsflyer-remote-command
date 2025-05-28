@@ -70,6 +70,68 @@ class AccountViewController: UIViewController {
         TealiumHelper.trackEvent(title: "rate", data: [AccountViewController.rating: rating])
     }
     
+    // MARK: - New AppsFlyer Features
+    @IBAction func sendPushNotification(_ sender: UIButton) {
+        let pushData: [String: Any] = [
+            "aps": [
+                "alert": "Welcome back! Check out our new offers!",
+                "badge": 1,
+                "sound": "default"
+            ],
+            "af_campaign": "welcome_back",
+            "af_c_id": "push_001",
+            "deep_link": "myapp://offers"
+        ]
+        
+        let data: [String: Any] = [
+            "command_name": "sendpushnotificationdata",
+            "af_push_payload": pushData
+        ]
+        
+        TealiumHelper.trackEvent(title: "send_push_data", data: data)
+        showAlert(title: "Push Notification", message: "Push notification data sent to AppsFlyer")
+    }
+    
+    @IBAction func addPushDeepLinkPath(_ sender: UIButton) {
+        let data: [String: Any] = [
+            "command_name": "addpushnotificationdeeplinkpath",
+            "push_deep_link_path": ["offers", "profile", "rewards"]
+        ]
+        
+        TealiumHelper.trackEvent(title: "add_push_path", data: data)
+        showAlert(title: "Deep Link Path", message: "Push notification deep link paths added")
+    }
+    
+    @IBAction func updateUninstallToken(_ sender: UIButton) {
+        // Simulate getting device token
+        let fakeToken = "sample_device_token_\(Int.random(in: 1000...9999))"
+        
+        let data: [String: Any] = [
+            "command_name": "updateserveruninstalltoken",
+            "uninstall_token": fakeToken
+        ]
+        
+        TealiumHelper.trackEvent(title: "update_uninstall_token", data: data)
+        showAlert(title: "Uninstall Token", message: "Device token updated: \(fakeToken)")
+    }
+    
+    @IBAction func setAppId(_ sender: UIButton) {
+        let data: [String: Any] = [
+            "command_name": "setappid",
+            "app_id": "1234567890" // Your actual App Store ID
+        ]
+        
+        TealiumHelper.trackEvent(title: "set_app_id", data: data)
+        showAlert(title: "App ID", message: "App ID set for AppsFlyer")
+    }
+    
+    // MARK: - Helper Method
+    private func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+    
 }
 
 extension AccountViewController: UITextFieldDelegate {

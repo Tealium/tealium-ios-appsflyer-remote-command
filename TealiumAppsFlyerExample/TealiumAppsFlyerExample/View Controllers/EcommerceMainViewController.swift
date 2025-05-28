@@ -95,6 +95,93 @@ class EcommerceMainViewController: UIViewController {
         present(ac, animated: true)
     }
 
+    // MARK: - New Privacy & GDPR Features
+    @IBAction func setUserEmails(_ sender: UIButton) {
+        guard let email = emailTextField.text, !email.isEmpty else {
+            showAlert(title: "Email Required", message: "Please enter an email address first")
+            return
+        }
+        
+        let data: [String: Any] = [
+            "command_name": "setuseremails",
+            "customer_emails": [email],
+            "email_hash_type": "sha256"
+        ]
+        
+        TealiumHelper.trackEvent(title: "set_user_emails", data: data)
+        showAlert(title: "Email Set", message: "User email set: \(email)")
+    }
+    
+    @IBAction func setGDPRConsent(_ sender: UIButton) {
+        let alert = UIAlertController(title: "GDPR Consent", message: "Do you consent to data processing?", preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "Accept All", style: .default) { _ in
+            let data: [String: Any] = [
+                "command_name": "setdmaconsent",
+                "gdpr_applies": true,
+                "consent_for_data_usage": true,
+                "consent_for_ads_personalization": true,
+                "consent_for_ad_storage": true
+            ]
+            TealiumHelper.trackEvent(title: "gdpr_consent_accept", data: data)
+            self.showAlert(title: "Consent", message: "All consents granted")
+        })
+        
+        alert.addAction(UIAlertAction(title: "Decline", style: .destructive) { _ in
+            let data: [String: Any] = [
+                "command_name": "setdmaconsent",
+                "gdpr_applies": true,
+                "consent_for_data_usage": false,
+                "consent_for_ads_personalization": false,
+                "consent_for_ad_storage": false
+            ]
+            TealiumHelper.trackEvent(title: "gdpr_consent_decline", data: data)
+            self.showAlert(title: "Consent", message: "All consents declined")
+        })
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(alert, animated: true)
+    }
+    
+    @IBAction func resolveDeepLinks(_ sender: UIButton) {
+        let deepLinks = [
+            "myapp://products/electronics",
+            "myapp://offers/summer2024", 
+            "myapp://cart/checkout"
+        ]
+        
+        let data: [String: Any] = [
+            "command_name": "resolvedeeplinkurls",
+            "af_deep_link": deepLinks
+        ]
+        
+        TealiumHelper.trackEvent(title: "resolve_deep_links", data: data)
+        showAlert(title: "Deep Links", message: "Resolved \(deepLinks.count) deep link URLs")
+    }
+    
+    @IBAction func stopTracking(_ sender: UIButton) {
+        let alert = UIAlertController(title: "Stop Tracking", message: "Are you sure you want to stop AppsFlyer tracking?", preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "Yes, Stop", style: .destructive) { _ in
+            let data: [String: Any] = [
+                "command_name": "stoptracking",
+                "stop_tracking": true
+            ]
+            TealiumHelper.trackEvent(title: "stop_tracking", data: data)
+            self.showAlert(title: "Tracking Stopped", message: "AppsFlyer tracking has been disabled")
+        })
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(alert, animated: true)
+    }
+    
+    // MARK: - Helper Method
+    private func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+
     func hideAllViews(except: UIView) {
         views.forEach { view in
             if view == except {
