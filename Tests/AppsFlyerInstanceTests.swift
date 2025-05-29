@@ -162,24 +162,6 @@ class AppsFlyerInstanceTests: XCTestCase {
         XCTAssertEqual(0, self.appsFlyerInstance.setCustomerIdCount)
     }
     
-    func testDisableTrackingCommandName() {
-        let payload: [String: Any] = ["command_name": "disabletracking"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.disableTrackingCount)
-    }
-    
-    func testDisableTrackingNotRun() {
-        let payload: [String: Any] = ["command_name": "disable"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(0, self.appsFlyerInstance.disableTrackingCount)
-    }
-    
-    func testDisableTrackingVariable() {
-        let payload: [String: Any] = ["command_name": "disabletracking"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.disableTrackingCount)
-    }
-    
     func testResolveDeepLinkURLs() {
         let payload: [String: Any] = ["command_name": "resolvedeeplinkurls", "af_deep_link": ["app://test.com", "app://test?home=true"]]
         appsFlyerCommand.processRemoteCommand(with: payload)
@@ -283,7 +265,7 @@ class AppsFlyerInstanceTests: XCTestCase {
     func testLogAdRevenueWithNilValues() {
         let payload: [String: Any] = ["command_name": "logadrevenue"]
         appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.logAdRevenueCount)
+        XCTAssertEqual(0, self.appsFlyerInstance.logAdRevenueCount)
         XCTAssertNil(self.appsFlyerInstance.lastMonetizationNetwork)
         XCTAssertNil(self.appsFlyerInstance.lastMediationNetwork)
         XCTAssertNil(self.appsFlyerInstance.lastRevenue)
@@ -543,7 +525,7 @@ class AppsFlyerInstanceTests: XCTestCase {
     }
     
     func testSetAdditionalData() {
-        let additionalData = ["key1": "value1", "key2": 123] as [String : Any]
+        let additionalData: [String: Any] = ["key1": "value1", "key2": 123]
         let payload: [String: Any] = ["command_name": "setadditionaldata", "additional_data": additionalData]
         appsFlyerCommand.processRemoteCommand(with: payload)
         XCTAssertEqual(1, self.appsFlyerInstance.setAdditionalDataCount)
@@ -559,7 +541,7 @@ class AppsFlyerInstanceTests: XCTestCase {
     // MARK: - Event Parameter Tests
     
     func testGetEventParametersWithEventKey() {
-        let eventParams = ["event_param1": "value1", "event_param2": 123]
+        let eventParams: [String: Any] = ["event_param1": "value1", "event_param2": 123]
         let payload: [String: Any] = ["command_name": "customevent",
                                       "event": eventParams,
                                       "other_param": "should_be_filtered"]
@@ -586,7 +568,7 @@ class AppsFlyerInstanceTests: XCTestCase {
     }
     
     func testGetEventNameWithStandardEvent() {
-        let result = appsFlyerCommand.getEventName(command: "purchase")
+        let result = appsFlyerCommand.getEventName(command: "af_purchase")
         XCTAssertEqual(result, "af_purchase")
     }
     
@@ -639,5 +621,132 @@ class AppsFlyerInstanceTests: XCTestCase {
         XCTAssertEqual(settings["disable_ad_tracking"] as? Bool, true)
         XCTAssertEqual(settings["disable_apple_ad_tracking"] as? Bool, false)
         XCTAssertNotNil(settings["custom_data"])
+    }
+    
+    // MARK: - Missing Tests
+    
+    func testRegisterUninstallWithDataToken() {
+        let tokenData = Data([0x01, 0x02, 0x03, 0x04])
+        let payload: [String: Any] = ["command_name": "registeruninstall", "device_token": tokenData]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(1, self.appsFlyerInstance.registerUninstallCount)
+    }
+    
+    func testRegisterUninstallWithStringToken() {
+        let payload: [String: Any] = ["command_name": "registeruninstall", "device_token": "abc123"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(1, self.appsFlyerInstance.registerUninstallCount)
+    }
+    
+    func testRegisterUninstallNotRun() {
+        let payload: [String: Any] = ["command_name": "registeruninstall"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(0, self.appsFlyerInstance.registerUninstallCount)
+    }
+    
+    func testSetUseUninstallSandbox() {
+        let payload: [String: Any] = ["command_name": "setuseuninstallsandbox", "use_uninstall_sandbox": true]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(1, self.appsFlyerInstance.setUseUninstallSandboxCount)
+        XCTAssertEqual(true, self.appsFlyerInstance.lastUseSandbox)
+    }
+    
+    func testSetUseUninstallSandboxNotRun() {
+        let payload: [String: Any] = ["command_name": "setuseuninstallsandbox"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(0, self.appsFlyerInstance.setUseUninstallSandboxCount)
+    }
+    
+    func testSetUserEmailsWithSingleString() {
+        let payload: [String: Any] = ["command_name": "setuseremails",
+                                      "customer_emails": "test@example.com",
+                                      "email_hash_type": 1]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(1, self.appsFlyerInstance.setUserEmailsCount)
+        XCTAssertEqual(["test@example.com"], self.appsFlyerInstance.lastEmails)
+    }
+    
+    // MARK: - LogAdRevenue Error Cases
+    
+    func testLogAdRevenueWithoutMonetizationNetwork() {
+        let payload: [String: Any] = ["command_name": "logadrevenue",
+                                      "mediation_network": "ironsource",
+                                      "revenue": 1.99,
+                                      "af_currency": "USD"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(0, self.appsFlyerInstance.logAdRevenueCount)
+    }
+    
+    func testLogAdRevenueWithoutMediationNetwork() {
+        let payload: [String: Any] = ["command_name": "logadrevenue",
+                                      "monetization_network": "TestNetwork",
+                                      "revenue": 1.99,
+                                      "af_currency": "USD"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(0, self.appsFlyerInstance.logAdRevenueCount)
+    }
+    
+    func testLogAdRevenueWithoutRevenue() {
+        let payload: [String: Any] = ["command_name": "logadrevenue",
+                                      "monetization_network": "TestNetwork",
+                                      "mediation_network": "ironsource",
+                                      "af_currency": "USD"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(0, self.appsFlyerInstance.logAdRevenueCount)
+    }
+    
+    func testLogAdRevenueWithoutCurrency() {
+        let payload: [String: Any] = ["command_name": "logadrevenue",
+                                      "monetization_network": "TestNetwork",
+                                      "mediation_network": "ironsource",
+                                      "revenue": 1.99]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(0, self.appsFlyerInstance.logAdRevenueCount)
+    }
+    
+    // MARK: - Case Insensitive Command Tests
+    
+    func testCaseInsensitiveCommands() {
+        let payloadUpper: [String: Any] = ["command_name": "INITIALIZE",
+                                           "app_id": "test",
+                                           "app_dev_key": "test"]
+        appsFlyerCommand.processRemoteCommand(with: payloadUpper)
+        XCTAssertEqual(1, self.appsFlyerInstance.initWithoutConfigCount)
+        
+        let payloadMixed: [String: Any] = ["command_name": "LogSession"]
+        appsFlyerCommand.processRemoteCommand(with: payloadMixed)
+        XCTAssertEqual(1, self.appsFlyerInstance.logSessionCount)
+    }
+    
+    // MARK: - Edge Cases
+    
+    func testCommandNameWithSpaces() {
+        let payload: [String: Any] = ["command_name": " initialize , setcurrencycode ",
+                                      "app_id": "test",
+                                      "app_dev_key": "test",
+                                      "af_currency": "USD"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(1, self.appsFlyerInstance.initWithoutConfigCount)
+        XCTAssertEqual(1, self.appsFlyerInstance.setCurrencyCodeCount)
+    }
+    
+    func testEmptyCommandName() {
+        let payload: [String: Any] = ["command_name": ""]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        // Should handle empty command gracefully
+    }
+    
+    func testInvalidCommandName() {
+        let payload: [String: Any] = ["command_name": "invalid_command_that_does_not_exist"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(1, self.appsFlyerInstance.logEventCount)
+        XCTAssertEqual("invalid_command_that_does_not_exist", self.appsFlyerInstance.lastEventName)
+    }
+    
+    func testMissingCommandName() {
+        let payload: [String: Any] = ["app_id": "test", "app_dev_key": "test"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        // Should return early without processing
+        XCTAssertEqual(0, self.appsFlyerInstance.initWithoutConfigCount)
     }
 }

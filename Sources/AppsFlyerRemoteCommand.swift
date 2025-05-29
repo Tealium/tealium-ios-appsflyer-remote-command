@@ -185,11 +185,32 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 }
                 appsFlyerInstance.resolveDeepLinkURLs(deepLinkUrls)
             case .logAdRevenue:
-                let monetizationNetwork = payload[AppsFlyerConstants.Parameters.adMonetizationNetwork] as? String
-                let mediationNetwork = payload[AppsFlyerConstants.Parameters.adMediationNetwork] as? String
-                let revenue = payload[AppsFlyerConstants.Parameters.adRevenue] as? Double
-                let currency = payload[AppsFlyerConstants.Parameters.currency] as? String
+                guard let monetizationNetwork = payload[AppsFlyerConstants.Parameters.adMonetizationNetwork] as? String else {
+                    if debug {
+                        print("\(AppsFlyerConstants.errorPrefix)Must provide monetization_network parameter")
+                    }
+                    return
+                }
+                guard let mediationNetwork = payload[AppsFlyerConstants.Parameters.adMediationNetwork] as? String else {
+                    if debug {
+                        print("\(AppsFlyerConstants.errorPrefix)Must provide mediation_network parameter")
+                    }
+                    return
+                }
+                guard let revenue = payload[AppsFlyerConstants.Parameters.adRevenue] as? Double else {
+                    if debug {
+                        print("\(AppsFlyerConstants.errorPrefix)Must provide ad_revenue parameter")
+                    }
+                    return
+                }
+                guard let currency = payload[AppsFlyerConstants.Parameters.currency] as? String else {
+                    if debug {
+                        print("\(AppsFlyerConstants.errorPrefix)Must provide currency parameter")
+                    }
+                    return
+                }
                 let additionalParameters = payload[AppsFlyerConstants.Parameters.adAdditionalParameters] as? [String: Any]
+                
                 appsFlyerInstance.logAdRevenue(monetizationNetwork: monetizationNetwork, mediationNetwork: mediationNetwork, revenue: revenue, currency: currency, additionalParameters: additionalParameters)
             case .setDMAConsent:
                 let gdprApplies = payload[AppsFlyerConstants.Parameters.gdprApplies] as? Bool

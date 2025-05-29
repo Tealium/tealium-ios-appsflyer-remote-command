@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import TealiumAppsFlyer
 
 // Image Credit: https://www.flaticon.com/authors/flat-icons 🙏
 class RegisterViewController: UIViewController {
@@ -34,9 +35,13 @@ class RegisterViewController: UIViewController {
         if let customerEmail = email.text {
             customerEmails.append(customerEmail)
         }
-        // Add customer emails array to payload
-        // Add email hash type of 3 to payload
-        TealiumHelper.trackEvent(title: "user_register", data: [RegisterViewController.customerId: "ABC123", RegisterViewController.signUpMethod: "apple", RegisterViewController.customerEmails: customerEmails, RegisterViewController.emailHashType: 3])
+        // Use EmailHashType.sha256 instead of magic number
+        TealiumHelper.trackEvent(title: "user_register", data: [
+            RegisterViewController.customerId: "ABC123",
+            RegisterViewController.signUpMethod: "apple",
+            RegisterViewController.customerEmails: customerEmails,
+            RegisterViewController.emailHashType: AppsFlyerConstants.EmailHashType.sha256.rawValue
+        ])
     }
 
 }

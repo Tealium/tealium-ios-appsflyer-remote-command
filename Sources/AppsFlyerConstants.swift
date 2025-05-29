@@ -6,6 +6,7 @@
 //  Copyright © 2019 Tealium. All rights reserved.
 //
 import Foundation
+import AppsFlyerLib
 
 public enum AppsFlyerConstants {
     
@@ -235,7 +236,6 @@ public enum AppsFlyerConstants {
         static let touchObj = "af_touch_obj"
         static let afChannel = "af_channel"
         
-        // Legacy parameters for backward compatibility
         static let eventTime = "af_event_time"
         static let userId = "af_user_id"
     }
@@ -254,8 +254,7 @@ public enum AppsFlyerConstants {
         static let error = "appsflyer_error"
     }
     
-    // Mediation Network Types from Android version - mapped to iOS AppsFlyerAdRevenueMediationNetworkType
-    public enum MediationNetworkType: String, CaseIterable {
+    public enum MediationNetwork: String, CaseIterable {
         case ironsource = "ironsource"
         case applovinmax = "applovinmax"
         case googleadmob = "googleadmob"
@@ -271,28 +270,57 @@ public enum AppsFlyerConstants {
         case custommediation = "custommediation"
         case directmonetizationnetwork = "directmonetizationnetwork"
 
-        public static func fromString(_ value: String) -> MediationNetworkType? {
-            return MediationNetworkType(rawValue: value.lowercased())
+        public static func fromString(_ value: String) -> MediationNetwork? {
+            return MediationNetwork(rawValue: value.lowercased())
         }
-    }
-    
-    // Email Hash Types from Android version
-    public enum EmailHashType: String, CaseIterable {
-        case none = "none"
-        case sha256 = "sha256"
-
-        public static func fromString(_ value: String) -> EmailHashType? {
-            return EmailHashType(rawValue: value.lowercased())
-        }
-    }
-    
-    // Purchase Types from Android version
-    public enum PurchaseType: String, CaseIterable {
-        case oneTimePurchase = "one_time_purchase"
-        case subscription = "subscription"
         
-        public static func fromString(_ value: String) -> PurchaseType? {
-            return PurchaseType(rawValue: value.lowercased())
+        // Convert to AppsFlyerLib's MediationNetworkType
+        public func toAppsFlyerType() -> MediationNetworkType {
+            switch self {
+            case .ironsource:
+                return MediationNetworkType.ironSource
+            case .applovinmax:
+                return MediationNetworkType.applovinMax
+            case .googleadmob:
+                return MediationNetworkType.googleAdMob
+            case .fyber:
+                return MediationNetworkType.fyber
+            case .appodeal:
+                return MediationNetworkType.appodeal
+            case .admost:
+                return MediationNetworkType.admost
+            case .topon:
+                return MediationNetworkType.topon
+            case .tradplus:
+                return MediationNetworkType.tradplus
+            case .yandex:
+                return MediationNetworkType.yandex
+            case .chartboost:
+                return MediationNetworkType.chartBoost
+            case .unity:
+                return MediationNetworkType.unity
+            case .toponpte:
+                return MediationNetworkType.toponPte
+            case .custommediation:
+                return MediationNetworkType.custom
+            case .directmonetizationnetwork:
+                return MediationNetworkType.directMonetization
+            }
+        }
+        
+        // Convenience method to convert string directly to AppsFlyerLib type
+        public static func appsFlyerTypeFromString(_ value: String) -> MediationNetworkType {
+            return fromString(value)?.toAppsFlyerType() ?? MediationNetworkType.googleAdMob
+        }
+    }
+    
+    public enum EmailHashType: Int, CaseIterable {
+        case none = 0
+        case sha256 = 3
+        
+        // Convert from int directly to AppsFlyerLib's EmailCryptType
+        public static func appsFlyerTypeFromInt(_ value: Int) -> EmailCryptType {
+            return EmailCryptType(rawValue: UInt32(value))
         }
     }
 }

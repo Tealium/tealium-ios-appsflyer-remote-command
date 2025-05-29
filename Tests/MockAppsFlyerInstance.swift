@@ -20,7 +20,6 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var setUserEmailsCount = 0
     var setCurrencyCodeCount = 0
     var setCustomerIdCount = 0
-    var disableTrackingCount = 0
     var registerUninstallCount = 0
     var resolveDeepLinkURLsCount = 0
     
@@ -47,6 +46,7 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var updateServerUninstallTokenCount = 0
     var setIsUpdateCount = 0
     var setAdditionalDataCount = 0
+    var setUseUninstallSandboxCount = 0
     
     // Last received values for verification
     var lastAppId: String?
@@ -91,6 +91,7 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var lastUninstallToken: String?
     var lastIsUpdate: Bool?
     var lastAdditionalData: [String: Any]?
+    var lastUseSandbox: Bool?
     
     func initialize(appId: String, appDevKey: String) {
         lastAppId = appId
@@ -147,12 +148,7 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         setCustomerIdCount += 1
     }
     
-    func disableTracking(_ disable: Bool) {
-        lastDisable = disable
-        disableTrackingCount += 1
-    }
-    
-    func registerUninstall(token: Data) {
+    func registerUninstall(deviceToken: Data?) {
         registerUninstallCount += 1
     }
     
@@ -177,7 +173,7 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         anonymizeUserCount += 1
     }
     
-    func logAdRevenue(monetizationNetwork: String?, mediationNetwork: String?, revenue: Double?, currency: String?, additionalParameters: [String: Any]?) {
+    func logAdRevenue(monetizationNetwork: String, mediationNetwork: String, revenue: Double, currency: String, additionalParameters: [String: Any]?) {
         lastMonetizationNetwork = monetizationNetwork
         lastMediationNetwork = mediationNetwork
         lastRevenue = revenue
@@ -286,5 +282,10 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     func setAdditionalData(_ data: [String: Any]) {
         lastAdditionalData = data
         setAdditionalDataCount += 1
+    }
+    
+    func setUseUninstallSandbox(_ sandbox: Bool) {
+        lastUseSandbox = sandbox
+        setUseUninstallSandboxCount += 1
     }
 }

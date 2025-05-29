@@ -330,6 +330,161 @@
             </objects>
             <point key="canvasLocation" x="-4710.144927536232" y="493.52678571428567"/>
         </scene>
+        <!--Advanced Features-->
+        <scene sceneID="adv-ft-sc1">
+            <objects>
+                <viewController storyboardIdentifier="AdvancedFeaturesViewController" id="Adv-Ft-Vc1" customClass="AdvancedFeaturesViewController" customModule="TealiumAppsFlyerExample" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Adv-Ft-Vw1">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Scr-Vw-1">
+                                <rect key="frame" x="0.0" y="44" width="375" height="574"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="Stk-Vw-1">
+                                        <rect key="frame" x="20" y="20" width="335" height="800"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Advanced Features" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Adv-Lbl-1">
+                                                <rect key="frame" x="89.5" y="0.0" width="156" height="24"/>
+                                                <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="+1234567890" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Phn-Tf-1">
+                                                <rect key="frame" x="50" y="44" width="235" height="34"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                <textInputTraits key="textInputTraits"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="235" id="Phn-W-1"/>
+                                                </constraints>
+                                            </textField>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Phn-Btn-1">
+                                                <rect key="frame" x="117" y="98" width="101" height="30"/>
+                                                <state key="normal" title="Set Phone Number"/>
+                                                <connections>
+                                                    <action selector="setPhoneNumber:" destination="Adv-Ft-Vc1" eventType="touchUpInside" id="Phn-Act-1"/>
+                                                </connections>
+                                            </button>
+                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="user123" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Cst-Tf-1">
+                                                <rect key="frame" x="50" y="148" width="235" height="34"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                <textInputTraits key="textInputTraits"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="235" id="Cst-W-1"/>
+                                                </constraints>
+                                            </textField>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Cst-Btn-1">
+                                                <rect key="frame" x="96.5" y="202" width="142" height="30"/>
+                                                <state key="normal" title="Set Customer ID &amp; Log Session"/>
+                                                <connections>
+                                                    <action selector="setCustomerIdAndLogSession:" destination="Adv-Ft-Vc1" eventType="touchUpInside" id="Cst-Act-1"/>
+                                                </connections>
+                                            </button>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Adv-Btn-1">
+                                                <rect key="frame" x="126.5" y="252" width="82" height="30"/>
+                                                <state key="normal" title="Log Ad Revenue"/>
+                                                <connections>
+                                                    <action selector="logAdRevenue:" destination="Adv-Ft-Vc1" eventType="touchUpInside" id="Adv-Act-1"/>
+                                                </connections>
+                                            </button>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Val-Btn-1">
+                                                <rect key="frame" x="118" y="302" width="99" height="30"/>
+                                                <state key="normal" title="Validate Purchase"/>
+                                                <connections>
+                                                    <action selector="validatePurchase:" destination="Adv-Ft-Vc1" eventType="touchUpInside" id="Val-Act-1"/>
+                                                </connections>
+                                            </button>
+                                            <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="Swt-Stk-1">
+                                                <rect key="frame" x="84.5" y="352" width="166" height="31"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="DMA Consent" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Dma-Lbl-1">
+                                                        <rect key="frame" x="0.0" y="5.5" width="97" height="20.5"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Dma-Swt-1">
+                                                        <rect key="frame" x="117" y="0.0" width="51" height="31"/>
+                                                    </switch>
+                                                </subviews>
+                                            </stackView>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Dma-Btn-1">
+                                                <rect key="frame" x="124" y="403" width="87" height="30"/>
+                                                <state key="normal" title="Set DMA Consent"/>
+                                                <connections>
+                                                    <action selector="setDMAConsent:" destination="Adv-Ft-Vc1" eventType="touchUpInside" id="Dma-Act-1"/>
+                                                </connections>
+                                            </button>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Anm-Btn-1">
+                                                <rect key="frame" x="125" y="453" width="85" height="30"/>
+                                                <state key="normal" title="Anonymize User"/>
+                                                <connections>
+                                                    <action selector="anonymizeUser:" destination="Adv-Ft-Vc1" eventType="touchUpInside" id="Anm-Act-1"/>
+                                                </connections>
+                                            </button>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Tcf-Btn-1">
+                                                <rect key="frame" x="110" y="503" width="115" height="30"/>
+                                                <state key="normal" title="Enable TCF Collection"/>
+                                                <connections>
+                                                    <action selector="enableTCFDataCollection:" destination="Adv-Ft-Vc1" eventType="touchUpInside" id="Tcf-Act-1"/>
+                                                </connections>
+                                            </button>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Oos-Btn-1">
+                                                <rect key="frame" x="124" y="553" width="87" height="30"/>
+                                                <state key="normal" title="Set Out of Store"/>
+                                                <connections>
+                                                    <action selector="setOutOfStore:" destination="Adv-Ft-Vc1" eventType="touchUpInside" id="Oos-Act-1"/>
+                                                </connections>
+                                            </button>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Shf-Btn-1">
+                                                <rect key="frame" x="113.5" y="603" width="108" height="30"/>
+                                                <state key="normal" title="Set Sharing Filter"/>
+                                                <connections>
+                                                    <action selector="setSharingFilter:" destination="Adv-Ft-Vc1" eventType="touchUpInside" id="Shf-Act-1"/>
+                                                </connections>
+                                            </button>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Add-Btn-1">
+                                                <rect key="frame" x="114" y="653" width="107" height="30"/>
+                                                <state key="normal" title="Set Additional Data"/>
+                                                <connections>
+                                                    <action selector="setAdditionalData:" destination="Adv-Ft-Vc1" eventType="touchUpInside" id="Add-Act-1"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="335" id="Stk-W-1"/>
+                                        </constraints>
+                                    </stackView>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="Stk-Vw-1" firstAttribute="top" secondItem="Scr-Vw-1" secondAttribute="top" constant="20" id="Stk-T-1"/>
+                                    <constraint firstItem="Stk-Vw-1" firstAttribute="leading" secondItem="Scr-Vw-1" secondAttribute="leading" constant="20" id="Stk-L-1"/>
+                                    <constraint firstAttribute="trailing" secondItem="Stk-Vw-1" secondAttribute="trailing" constant="20" id="Stk-R-1"/>
+                                    <constraint firstAttribute="bottom" secondItem="Stk-Vw-1" secondAttribute="bottom" constant="20" id="Stk-B-1"/>
+                                    <constraint firstItem="Stk-Vw-1" firstAttribute="width" secondItem="Scr-Vw-1" secondAttribute="width" constant="-40" id="Stk-Wd-1"/>
+                                </constraints>
+                            </scrollView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="Adv-Sa-1"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="Scr-Vw-1" firstAttribute="top" secondItem="Adv-Sa-1" secondAttribute="top" id="Scr-T-1"/>
+                            <constraint firstItem="Scr-Vw-1" firstAttribute="leading" secondItem="Adv-Sa-1" secondAttribute="leading" id="Scr-L-1"/>
+                            <constraint firstItem="Adv-Sa-1" firstAttribute="trailing" secondItem="Scr-Vw-1" secondAttribute="trailing" id="Scr-R-1"/>
+                            <constraint firstItem="Adv-Sa-1" firstAttribute="bottom" secondItem="Scr-Vw-1" secondAttribute="bottom" id="Scr-B-1"/>
+                        </constraints>
+                    </view>
+                    <tabBarItem key="tabBarItem" title="Advanced" image="okay" id="Adv-Tab-1"/>
+                    <connections>
+                        <outlet property="phoneTextField" destination="Phn-Tf-1" id="Phn-Out-1"/>
+                        <outlet property="customerIdTextField" destination="Cst-Tf-1" id="Cst-Out-1"/>
+                        <outlet property="consentSwitch" destination="Dma-Swt-1" id="Dma-Out-1"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Adv-Rsp-1" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-2200" y="494"/>
+        </scene>
         <!--Tab Bar Controller-->
         <scene sceneID="urk-Ef-aj1">
             <objects>
@@ -345,6 +500,7 @@
                         <segue destination="WOD-70-LHq" kind="relationship" relationship="viewControllers" id="GJ1-Vw-19k"/>
                         <segue destination="Z3m-zV-96N" kind="relationship" relationship="viewControllers" id="Ezj-1Q-VaX"/>
                         <segue destination="0H7-Ps-lXL" kind="relationship" relationship="viewControllers" id="3CW-qP-DwF"/>
+                        <segue destination="Adv-Ft-Vc1" kind="relationship" relationship="viewControllers" id="Adv-Seg-1"/>
                     </connections>
                 </tabBarController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iba-tY-g6T" userLabel="First Responder" sceneMemberID="firstResponder"/>

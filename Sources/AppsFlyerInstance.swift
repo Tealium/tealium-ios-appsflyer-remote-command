@@ -24,11 +24,10 @@ public protocol AppsFlyerCommand {
     func setUserEmails(emails: [String], with cryptType: Int)
     func currencyCode(_ currency: String)
     func customerId(_ id: String)
-    func disableTracking(_ disable: Bool)
     func stopTracking(_ stop: Bool)
     func anonymizeUser(_ anonymize: Bool)
     func resolveDeepLinkURLs(_ urls: [String])
-    func logAdRevenue(monetizationNetwork: String?, mediationNetwork: String?, revenue: Double?, currency: String?, additionalParameters: [String: Any]?)
+    func logAdRevenue(monetizationNetwork: String, mediationNetwork: String, revenue: Double, currency: String, additionalParameters: [String: Any]?)
     func setDMAConsent(gdprApplies: Bool?, consentForDataUsage: Bool?, consentForAdsPersonalization: Bool?, consentForAdStorage: Bool?)
     func enableAppsetId(_ enable: Bool)
     func setDisableNetworkData(_ disable: Bool)
@@ -136,7 +135,8 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     }
 
     public func setUserEmails(emails: [String], with cryptType: Int) {
-        AppsFlyerLib.shared().setUserEmails(emails, with: EmailCryptType(rawValue: EmailCryptType.RawValue(cryptType)))
+        let emailCryptType = AppsFlyerConstants.EmailHashType.appsFlyerTypeFromInt(cryptType)
+        AppsFlyerLib.shared().setUserEmails(emails, with: emailCryptType)
     }
 
     public func currencyCode(_ currency: String) {
@@ -145,10 +145,6 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
 
     public func customerId(_ id: String) {
         AppsFlyerLib.shared().customerUserID = id
-    }
-
-    public func disableTracking(_ disable: Bool) {
-        AppsFlyerLib.shared().isStopped = disable
     }
 
     public func stopTracking(_ stop: Bool) {
@@ -163,27 +159,15 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         AppsFlyerLib.shared().resolveDeepLinkURLs = urls
     }
 
-    public func logAdRevenue(monetizationNetwork: String?, mediationNetwork: String?, revenue: Double?, currency: String?, additionalParameters: [String: Any]?) {
-        guard let monetizationNetwork = monetizationNetwork,
-              let mediationNetworkString = mediationNetwork,
-              let revenue = revenue,
-              let currency = currency else {
-            return
-        }
-        
-        // Convert our string to MediationNetworkType enum, then to official iOS type
-        guard let mediationNetworkType = AppsFlyerConstants.MediationNetworkType.fromString(mediationNetworkString) else {
-            print("AppsFlyerInstance: Unknown mediation network type: \(mediationNetworkString)")
-            return
-        }
-        
-        let appsFlyerMediationNetworkType = mediationNetworkType.toAppsFlyerMediationNetworkType()
-        
+    public func logAdRevenue(monetizationNetwork: String, mediationNetwork: String, revenue: Double, currency: String, additionalParameters: [String: Any]?) {
+
         onReady { appsFlyer in
-            // Use the official iOS SDK AFAdRevenueData object (SDK v6.15.0+)
+            // Use our enum's conversion method
+            let mediationNetworkType = AppsFlyerConstants.MediationNetwork.appsFlyerTypeFromString(mediationNetwork)
+            
             let adRevenueData = AFAdRevenueData(
                 monetizationNetwork: monetizationNetwork,
-                mediationNetwork: appsFlyerMediationNetworkType,
+                mediationNetwork: mediationNetworkType,
                 currencyIso4217Code: currency,
                 eventRevenue: NSNumber(value: revenue)
             )
@@ -218,10 +202,9 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
 
     public func enableAppsetId(_ enable: Bool) {
         // iOS equivalent - there's no direct AppSet ID in iOS, but we can set a flag
-        if #available(iOS 14.0, *) {
-            // iOS 14+ has different advertising tracking permissions
-            // This would be handled differently in iOS
-        }
+        var customData = AppsFlyerLib.shared().customData ?? [:]
+        customData["appset_id"] = enable
+        AppsFlyerLib.shared().customData = customData
     }
 
     public func setDisableNetworkData(_ disable: Bool) {

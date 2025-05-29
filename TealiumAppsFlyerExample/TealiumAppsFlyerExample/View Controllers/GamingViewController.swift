@@ -74,7 +74,7 @@ class GamingViewController: UIViewController {
     @IBAction func customEvent(_ sender: Any) {
         TealiumHelper.trackEvent(title: "custom_event", data: [:])
     }
-    
+
     // MARK: - New AppsFlyer Ad Revenue Features
     @IBAction func logRewardedAdRevenue(_ sender: UIButton) {
         let adRevenue = Double.random(in: 0.01...0.50)
