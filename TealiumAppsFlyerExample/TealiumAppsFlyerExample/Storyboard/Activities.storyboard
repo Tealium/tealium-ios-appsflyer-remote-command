@@ -682,6 +682,7 @@
         </scene>
     </scenes>
     <resources>
+        <image name="okay" width="30" height="30"/>
         <image name="black-plane" width="30" height="30"/>
         <image name="discount" width="512" height="512"/>
         <image name="game" width="30" height="30"/>
