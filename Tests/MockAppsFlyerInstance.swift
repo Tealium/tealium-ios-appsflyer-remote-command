@@ -28,7 +28,7 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var anonymizeUserCount = 0
     var logAdRevenueCount = 0
     var setDMAConsentCount = 0
-    var enableAppsetIdCount = 0
+    var disableAppsetIdCount = 0
     var setDisableNetworkDataCount = 0
     var setPhoneNumberCount = 0
     var setOutOfStoreCount = 0
@@ -74,7 +74,8 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var lastConsentForAdsPersonalization: Bool?
     var lastConsentForAdStorage: Bool?
     var lastEnable: Bool?
-    var lastDisable: Bool?
+    var lastDisableAdvertisingIdentifiers: Bool?
+    var lastDisableNetworkData: Bool?
     var lastPhoneNumber: String?
     var lastOutOfStoreSource: String?
     var lastPushDeepLinkPaths: [String]?
@@ -138,12 +139,12 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         setUserEmailsCount += 1
     }
     
-    func currencyCode(_ currency: String) {
+    func setCurrencyCode(_ currency: String) {
         lastCurrency = currency
         setCurrencyCodeCount += 1
     }
     
-    func customerId(_ id: String) {
+    func setCustomerId(_ id: String) {
         lastCustomerId = id
         setCustomerIdCount += 1
     }
@@ -190,13 +191,12 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         setDMAConsentCount += 1
     }
     
-    func enableAppsetId(_ enable: Bool) {
-        lastEnable = enable
-        enableAppsetIdCount += 1
+    func disableAppSetId() { 
+        disableAppsetIdCount += 1
     }
     
     func setDisableNetworkData(_ disable: Bool) {
-        lastDisable = disable
+        lastDisableNetworkData = disable
         setDisableNetworkDataCount += 1
     }
     
@@ -255,7 +255,7 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     }
     
     func setDisableAdvertisingIdentifiers(_ disable: Bool) {
-        lastDisable = disable
+        lastDisableAdvertisingIdentifiers = disable
         setDisableAdvertisingIdentifiersCount += 1
     }
     

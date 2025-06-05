@@ -18,37 +18,37 @@ public enum AppsFlyerConstants {
     static let attributionLog = "AppsFlyer Attribution: "
     static let version = "3.1.0"
     
-    /// Standard AppsFlyer events: https://support.appsflyer.com/hc/en-us/articles/115005544169#Event-Types
-    public enum EventCommandNames: String, CaseIterable {
-        case levelachieved = "af_level_achieved"
-        case addpaymentinfo = "af_add_payment_info"
-        case addtocart = "af_add_to_cart"
-        case addtowishlist = "af_add_to_wishlist"
-        case completeregistration = "af_complete_registration"
-        case tutorialcompletion = "af_tutorial_completion"
-        case initiatecheckout = "af_initiated_checkout"
-        case purchase = "af_purchase"
-        case subscribe = "af_subscribe"
-        case starttrial = "af_start_trial"
-        case rate = "af_rate"
-        case spentcredits = "af_spent_credits"
-        case achievementunlocked = "af_achievement_unlocked"
-        case contentview = "af_content_view"
-        case listview = "af_list_view"
-        case adclick = "af_ad_click"
-        case adview = "af_ad_view"
-        case share = "af_share"
-        case invite = "af_invite"
-        case login = "af_login"
-        case reengage = "af_re_engage"
-        case openfrompushnotification = "af_opened_from_push_notification"
-        case update = "af_update"
-        case search = "af_search"
-        case travelbooking = "af_travel_booking"
-        case customersegment = "af_customer_segment"
-        case locationchanged = "af_location_changed"
-        case locationcoordinates = "af_location_coordinates"
-        case orderid = "af_order_id"
+
+    public enum StandardEvent: String, CaseIterable {
+        case levelachieved = "levelachieved"
+        case addpaymentinfo = "addpaymentinfo"
+        case addtocart = "addtocart"
+        case addtowishlist = "addtowishlist"
+        case completeregistration = "completeregistration"
+        case tutorialcompletion = "tutorialcompletion"
+        case initiatecheckout = "initiatecheckout"
+        case purchase = "purchase"
+        case subscribe = "subscribe"
+        case starttrial = "starttrial"
+        case rate = "rate"
+        case spentcredits = "spentcredits"
+        case achievementunlocked = "achievementunlocked"
+        case contentview = "contentview"
+        case listview = "listview"
+        case adclick = "adclick"
+        case adview = "adview"
+        case share = "share"
+        case invite = "invite"
+        case login = "login"
+        case reengage = "reengage"
+        case openfrompushnotification = "openfrompushnotification"
+        case update = "update"
+        case search = "search"
+        case travelbooking = "travelbooking"
+        case customersegment = "customersegment"
+        case locationchanged = "locationchanged"
+        case locationcoordinates = "locationcoordinates"
+        case orderid = "orderid"
     }
     
     public enum CommandNames: String {
@@ -62,7 +62,7 @@ public enum AppsFlyerConstants {
         case resolveDeepLinkUrls = "resolvedeeplinkurls"
         case stopTracking = "stoptracking"
         case logAdRevenue = "logadrevenue"
-        case enableAppsetId = "enableappsetid"
+        case disableAppsetId = "disableappsetid"
         case setDMAConsent = "setdmaconsent"
         case setDisableNetworkData = "setdisablenetworkdata"
         case setPhoneNumber = "setphonenumber"
@@ -92,7 +92,7 @@ public enum AppsFlyerConstants {
         static let disableAdTracking = "disable_ad_tracking"
         static let disableAppleAdTracking = "disable_apple_ad_tracking"
         static let disableNetworkData = "disable_network_data"
-        static let enableAppsetId = "enable_appset_id"
+        static let disableAppsetId = "disable_appset_id"
         static let minTimeBetweenSessions = "time_between_sessions"
         static let anonymizeUser = "anonymize_user"
         static let collectDeviceName = "collect_device_name"
@@ -321,6 +321,76 @@ public enum AppsFlyerConstants {
         // Convert from int directly to AppsFlyerLib's EmailCryptType
         public static func appsFlyerTypeFromInt(_ value: Int) -> EmailCryptType {
             return EmailCryptType(rawValue: UInt32(value))
+        }
+    }
+}
+
+/// Extension to map StandardEvent cases to official AppsFlyer event constants
+/// This leverages the constants defined in AppsFlyerLib.h for type safety and consistency
+extension AppsFlyerConstants.StandardEvent {
+    
+    /// Converts the command event to the corresponding AppsFlyer standard event name
+    /// Uses the official constants from AppsFlyerLib.h to ensure consistency and prevent typos
+    var appsFlyerEventName: String {
+        switch self {
+        case .levelachieved:
+            return "af_level_achieved"  // AFEventLevelAchieved from AppsFlyerLib.h
+        case .addpaymentinfo:
+            return "af_add_payment_info"  // AFEventAddPaymentInfo from AppsFlyerLib.h
+        case .addtocart:
+            return "af_add_to_cart"  // AFEventAddToCart from AppsFlyerLib.h
+        case .addtowishlist:
+            return "af_add_to_wishlist"  // AFEventAddToWishlist from AppsFlyerLib.h
+        case .completeregistration:
+            return "af_complete_registration"  // AFEventCompleteRegistration from AppsFlyerLib.h
+        case .tutorialcompletion:
+            return "af_tutorial_completion"  // AFEventTutorial_completion from AppsFlyerLib.h
+        case .initiatecheckout:
+            return "af_initiated_checkout"  // AFEventInitiatedCheckout from AppsFlyerLib.h
+        case .purchase:
+            return "af_purchase"  // AFEventPurchase from AppsFlyerLib.h
+        case .subscribe:
+            return "af_subscribe"  // AFEventSubscribe from AppsFlyerLib.h
+        case .starttrial:
+            return "af_start_trial"  // AFEventStartTrial from AppsFlyerLib.h
+        case .rate:
+            return "af_rate"  // AFEventRate from AppsFlyerLib.h
+        case .spentcredits:
+            return "af_spent_credits"  // AFEventSpentCredits from AppsFlyerLib.h
+        case .achievementunlocked:
+            return "af_achievement_unlocked"  // AFEventAchievementUnlocked from AppsFlyerLib.h
+        case .contentview:
+            return "af_content_view"  // AFEventContentView from AppsFlyerLib.h
+        case .listview:
+            return "af_list_view"  // AFEventListView from AppsFlyerLib.h
+        case .adclick:
+            return "af_ad_click"  // AFEventAdClick from AppsFlyerLib.h
+        case .adview:
+            return "af_ad_view"  // AFEventAdView from AppsFlyerLib.h
+        case .share:
+            return "af_share"  // AFEventShare from AppsFlyerLib.h
+        case .invite:
+            return "af_invite"  // AFEventInvite from AppsFlyerLib.h
+        case .login:
+            return "af_login"  // AFEventLogin from AppsFlyerLib.h
+        case .reengage:
+            return "af_re_engage"  // AFEventReEngage from AppsFlyerLib.h
+        case .openfrompushnotification:
+            return "af_opened_from_push_notification"  // AFEventOpenedFromPushNotification from AppsFlyerLib.h
+        case .update:
+            return "af_update"  // AFEventUpdate from AppsFlyerLib.h
+        case .search:
+            return "af_search"  // AFEventSearch from AppsFlyerLib.h
+        case .travelbooking:
+            return "af_travel_booking"  // AFEventTravelBooking from AppsFlyerLib.h
+        case .customersegment:
+            return "af_customer_segment"  // AFEventCustomerSegment from AppsFlyerLib.h
+        case .locationchanged:
+            return "af_location_changed"  // Custom event for location changes
+        case .locationcoordinates:
+            return "af_location_coordinates"  // AFEventLocation from AppsFlyerLib.h
+        case .orderid:
+            return "af_order_id"  // Custom event for order tracking
         }
     }
 }

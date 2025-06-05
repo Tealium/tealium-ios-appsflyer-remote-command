@@ -80,8 +80,8 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 if let minTimeBetweenSessions = payload[AppsFlyerConstants.Configuration.minTimeBetweenSessions] as? Int {
                     configSettings[AppsFlyerConstants.Configuration.minTimeBetweenSessions] = minTimeBetweenSessions
                 }
-                if let enableAppsetId = payload[AppsFlyerConstants.Configuration.enableAppsetId] as? Bool {
-                    configSettings[AppsFlyerConstants.Configuration.enableAppsetId] = enableAppsetId
+                if let disableAppsetId = payload[AppsFlyerConstants.Configuration.disableAppsetId] as? Bool {
+                    configSettings[AppsFlyerConstants.Configuration.disableAppsetId] = disableAppsetId
                 }
                 if let collectDeviceName = payload[AppsFlyerConstants.Configuration.collectDeviceName] as? Bool {
                     configSettings[AppsFlyerConstants.Configuration.collectDeviceName] = collectDeviceName
@@ -151,7 +151,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     }
                     return
                 }
-                appsFlyerInstance.currencyCode(currency)
+                appsFlyerInstance.setCurrencyCode(currency)
             case .setCustomerId:
                 guard let customerId = payload[AppsFlyerConstants.Parameters.customerId] as? String else {
                     if debug {
@@ -159,7 +159,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     }
                     return
                 }
-                appsFlyerInstance.customerId(customerId)
+                appsFlyerInstance.setCustomerId(customerId)
             case .anonymizeUser:
                 guard let anonymize = payload[AppsFlyerConstants.Configuration.anonymizeUser] as? Bool else {
                     if debug {
@@ -218,14 +218,6 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 let consentForAdsPersonalization = payload[AppsFlyerConstants.Parameters.consentForAdsPersonalization] as? Bool
                 let consentForAdStorage = payload[AppsFlyerConstants.Parameters.consentForAdStorage] as? Bool
                 appsFlyerInstance.setDMAConsent(gdprApplies: gdprApplies, consentForDataUsage: consentForDataUsage, consentForAdsPersonalization: consentForAdsPersonalization, consentForAdStorage: consentForAdStorage)
-            case .enableAppsetId:
-                guard let enable = payload[AppsFlyerConstants.Configuration.enableAppsetId] as? Bool else {
-                    if debug {
-                        print("\(AppsFlyerConstants.errorPrefix)Must provide enable_appset_id parameter")
-                    }
-                    return
-                }
-                appsFlyerInstance.enableAppsetId(enable)
             case .setDisableNetworkData:
                 guard let disable = payload[AppsFlyerConstants.Configuration.disableNetworkData] as? Bool else {
                     if debug {
@@ -390,7 +382,10 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     }
     
     func getEventName(command: String) -> String {
-        return AppsFlyerConstants.EventCommandNames(rawValue: command.lowercased())?.rawValue ?? command
+        if let standardEvent = AppsFlyerConstants.StandardEvent(rawValue: command.lowercased()) {
+            return standardEvent.appsFlyerEventName
+        }
+        return command
     }
 
 }
@@ -406,7 +401,7 @@ fileprivate extension Dictionary where Key == String, Value == Any {
             $0.key != AppsFlyerConstants.Configuration.settings &&
             $0.key != AppsFlyerConstants.Configuration.anonymizeUser &&
             $0.key != AppsFlyerConstants.Configuration.disableNetworkData &&
-            $0.key != AppsFlyerConstants.Configuration.enableAppsetId &&
+            $0.key != AppsFlyerConstants.Configuration.disableAppsetId &&
             $0.key != AppsFlyerConstants.Configuration.minTimeBetweenSessions &&
             $0.key != AppsFlyerConstants.Configuration.collectDeviceName &&
             $0.key != AppsFlyerConstants.Configuration.disableAdTracking &&

@@ -293,19 +293,6 @@ class AppsFlyerInstanceTests: XCTestCase {
         XCTAssertNil(self.appsFlyerInstance.lastConsentForDataUsage)
     }
     
-    func testEnableAppsetId() {
-        let payload: [String: Any] = ["command_name": "enableappsetid", "enable_appset_id": true]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.enableAppsetIdCount)
-        XCTAssertEqual(true, self.appsFlyerInstance.lastEnable)
-    }
-    
-    func testEnableAppsetIdNotRun() {
-        let payload: [String: Any] = ["command_name": "enableappsetid"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(0, self.appsFlyerInstance.enableAppsetIdCount)
-    }
-    
     func testSetDisableNetworkData() {
         let payload: [String: Any] = ["command_name": "setdisablenetworkdata", "disable_network_data": true]
         appsFlyerCommand.processRemoteCommand(with: payload)
@@ -601,7 +588,7 @@ class AppsFlyerInstanceTests: XCTestCase {
                                       "disable_network_data": false,
                                       "anonymize_user": true,
                                       "time_between_sessions": 30,
-                                      "enable_appset_id": true,
+                                      "disable_appset_id": true,
                                       "collect_device_name": false,
                                       "disable_ad_tracking": true,
                                       "disable_apple_ad_tracking": false,
@@ -616,7 +603,7 @@ class AppsFlyerInstanceTests: XCTestCase {
         XCTAssertEqual(settings["disable_network_data"] as? Bool, false)
         XCTAssertEqual(settings["anonymize_user"] as? Bool, true)
         XCTAssertEqual(settings["time_between_sessions"] as? Int, 30)
-        XCTAssertEqual(settings["enable_appset_id"] as? Bool, true)
+        XCTAssertEqual(settings["disable_appset_id"] as? Bool, true)
         XCTAssertEqual(settings["collect_device_name"] as? Bool, false)
         XCTAssertEqual(settings["disable_ad_tracking"] as? Bool, true)
         XCTAssertEqual(settings["disable_apple_ad_tracking"] as? Bool, false)
