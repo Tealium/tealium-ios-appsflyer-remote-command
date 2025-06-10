@@ -65,7 +65,7 @@ class AppsFlyerInstanceTests: XCTestCase {
                                       "app_id": "test_app",
                                       "app_dev_key": "test_key",
                                       "debug": true,
-                                      "disable_network_data": true,
+                                      "disable_collect_asa": true,
                                       "anonymize_user": false]
         appsFlyerCommand.processRemoteCommand(with: payload)
         XCTAssertEqual(1, self.appsFlyerInstance.initWithConfigCount)
@@ -138,28 +138,28 @@ class AppsFlyerInstanceTests: XCTestCase {
         XCTAssertEqual(0, self.appsFlyerInstance.setUserEmailsCount)
     }
     
-    func testSetCurrencyCode() {
-        let payload: [String: Any] = ["command_name": "setcurrencycode", "af_currency": "USD"]
+    func testCurrencyCode() {
+        let payload: [String: Any] = ["command_name": "currencycode", "af_currency": "USD"]
         appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.setCurrencyCodeCount)
+        XCTAssertEqual(1, self.appsFlyerInstance.currencyCodeCount)
     }
     
-    func testSetCurrencyCodeNotRun() {
-        let payload: [String: Any] = ["command_name": "setcurrencycode"]
+    func testCurrencyCodeNotRun() {
+        let payload: [String: Any] = ["command_name": "currencycode"]
         appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(0, self.appsFlyerInstance.setCurrencyCodeCount)
+        XCTAssertEqual(0, self.appsFlyerInstance.currencyCodeCount)
     }
     
-    func testSetCustomerId() {
-        let payload: [String: Any] = ["command_name": "setcustomerid", "af_customer_user_id": "ABC123"]
+    func testCustomerId() {
+        let payload: [String: Any] = ["command_name": "customerid", "af_customer_user_id": "ABC123"]
         appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.setCustomerIdCount)
+        XCTAssertEqual(1, self.appsFlyerInstance.customerIdCount)
     }
     
-    func testSetCustomerIdNotRun() {
-        let payload: [String: Any] = ["command_name": "setcustomerid"]
+    func testCustomerIdNotRun() {
+        let payload: [String: Any] = ["command_name": "customerid"]
         appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(0, self.appsFlyerInstance.setCustomerIdCount)
+        XCTAssertEqual(0, self.appsFlyerInstance.customerIdCount)
     }
     
     func testResolveDeepLinkURLs() {
@@ -293,19 +293,6 @@ class AppsFlyerInstanceTests: XCTestCase {
         XCTAssertNil(self.appsFlyerInstance.lastConsentForDataUsage)
     }
     
-    func testSetDisableNetworkData() {
-        let payload: [String: Any] = ["command_name": "setdisablenetworkdata", "disable_network_data": true]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.setDisableNetworkDataCount)
-        XCTAssertEqual(true, self.appsFlyerInstance.lastDisable)
-    }
-    
-    func testSetDisableNetworkDataNotRun() {
-        let payload: [String: Any] = ["command_name": "setdisablenetworkdata"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(0, self.appsFlyerInstance.setDisableNetworkDataCount)
-    }
-    
     func testSetPhoneNumber() {
         let payload: [String: Any] = ["command_name": "setphonenumber", "phone_number": "+1234567890"]
         appsFlyerCommand.processRemoteCommand(with: payload)
@@ -317,19 +304,6 @@ class AppsFlyerInstanceTests: XCTestCase {
         let payload: [String: Any] = ["command_name": "setphonenumber"]
         appsFlyerCommand.processRemoteCommand(with: payload)
         XCTAssertEqual(0, self.appsFlyerInstance.setPhoneNumberCount)
-    }
-    
-    func testSetOutOfStore() {
-        let payload: [String: Any] = ["command_name": "setoutofstore", "out_of_store_source": "amazon"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.setOutOfStoreCount)
-        XCTAssertEqual("amazon", self.appsFlyerInstance.lastOutOfStoreSource)
-    }
-    
-    func testSetOutOfStoreNotRun() {
-        let payload: [String: Any] = ["command_name": "setoutofstore"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(0, self.appsFlyerInstance.setOutOfStoreCount)
     }
     
     func testAddPushNotificationDeepLinkPath() {
@@ -346,25 +320,10 @@ class AppsFlyerInstanceTests: XCTestCase {
         XCTAssertEqual(0, self.appsFlyerInstance.addPushNotificationDeepLinkPathCount)
     }
     
-    func testSendPushNotificationData() {
-        let pushData = ["aps": ["alert": "Test"], "af": ["c": "campaign"]]
-        let payload: [String: Any] = ["command_name": "sendpushnotificationdata", 
-                                      "af_push_payload": pushData]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.sendPushNotificationDataCount)
-        XCTAssertNotNil(self.appsFlyerInstance.lastPushNotificationData)
-    }
-    
-    func testSendPushNotificationDataNotRun() {
-        let payload: [String: Any] = ["command_name": "sendpushnotificationdata"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(0, self.appsFlyerInstance.sendPushNotificationDataCount)
-    }
-    
     func testValidateAndLogPurchase() {
         let payload: [String: Any] = ["command_name": "validateandlogpurchase",
                                       "purchase_type": "subscription",
-                                      "purchase_token": "token123",
+                                      "transaction_id": "txn123",
                                       "product_id": "premium_monthly",
                                       "price": "9.99",
                                       "currency": "USD",
@@ -372,7 +331,7 @@ class AppsFlyerInstanceTests: XCTestCase {
         appsFlyerCommand.processRemoteCommand(with: payload)
         XCTAssertEqual(1, self.appsFlyerInstance.validateAndLogPurchaseCount)
         XCTAssertEqual("subscription", self.appsFlyerInstance.lastPurchaseType)
-        XCTAssertEqual("token123", self.appsFlyerInstance.lastPurchaseToken)
+        XCTAssertEqual("txn123", self.appsFlyerInstance.lastTransactionId)
         XCTAssertEqual("premium_monthly", self.appsFlyerInstance.lastProductId)
         XCTAssertEqual("9.99", self.appsFlyerInstance.lastPrice)
         XCTAssertEqual("USD", self.appsFlyerInstance.lastPurchaseCurrency)
@@ -383,91 +342,7 @@ class AppsFlyerInstanceTests: XCTestCase {
         appsFlyerCommand.processRemoteCommand(with: payload)
         XCTAssertEqual(1, self.appsFlyerInstance.validateAndLogPurchaseCount)
         XCTAssertNil(self.appsFlyerInstance.lastPurchaseType)
-        XCTAssertNil(self.appsFlyerInstance.lastPurchaseToken)
-    }
-    
-    func testLogSession() {
-        let payload: [String: Any] = ["command_name": "logsession"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.logSessionCount)
-    }
-    
-    func testWaitForCustomerUserId() {
-        let payload: [String: Any] = ["command_name": "waitforcustomeruserid", "wait_for_customer_user_id": true]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.waitForCustomerUserIdCount)
-        XCTAssertEqual(true, self.appsFlyerInstance.lastWait)
-    }
-    
-    func testWaitForCustomerUserIdNotRun() {
-        let payload: [String: Any] = ["command_name": "waitforcustomeruserid"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(0, self.appsFlyerInstance.waitForCustomerUserIdCount)
-    }
-    
-    func testSetCustomerIdAndLogSession() {
-        let payload: [String: Any] = ["command_name": "setcustomeridandlogsession", "af_customer_user_id": "user123"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.setCustomerIdAndLogSessionCount)
-        XCTAssertEqual("user123", self.appsFlyerInstance.lastCustomerId)
-    }
-    
-    func testSetCustomerIdAndLogSessionNotRun() {
-        let payload: [String: Any] = ["command_name": "setcustomeridandlogsession"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(0, self.appsFlyerInstance.setCustomerIdAndLogSessionCount)
-    }
-    
-    func testSetMinTimeBetweenSessions() {
-        let payload: [String: Any] = ["command_name": "setmintimebetweensessions", "min_time_between_sessions": 10]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.setMinTimeBetweenSessionsCount)
-        XCTAssertEqual(10, self.appsFlyerInstance.lastSeconds)
-    }
-    
-    func testSetMinTimeBetweenSessionsNotRun() {
-        let payload: [String: Any] = ["command_name": "setmintimebetweensessions"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(0, self.appsFlyerInstance.setMinTimeBetweenSessionsCount)
-    }
-    
-    func testSetAppId() {
-        let payload: [String: Any] = ["command_name": "setappid", "app_id": "newAppId123"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.setAppIdCount)
-        XCTAssertEqual("newAppId123", self.appsFlyerInstance.lastAppId)
-    }
-    
-    func testSetAppIdNotRun() {
-        let payload: [String: Any] = ["command_name": "setappid"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(0, self.appsFlyerInstance.setAppIdCount)
-    }
-    
-    func testSetDisableAdvertisingIdentifiers() {
-        let payload: [String: Any] = ["command_name": "setdisableadvertisingidentifiers", "disable_advertising_identifiers": true]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.setDisableAdvertisingIdentifiersCount)
-        XCTAssertEqual(true, self.appsFlyerInstance.lastDisable)
-    }
-    
-    func testSetDisableAdvertisingIdentifiersNotRun() {
-        let payload: [String: Any] = ["command_name": "setdisableadvertisingidentifiers"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(0, self.appsFlyerInstance.setDisableAdvertisingIdentifiersCount)
-    }
-    
-    func testEnableTcfDataCollection() {
-        let payload: [String: Any] = ["command_name": "enabletcfdatacollection", "enable_tcf_data_collection": true]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.enableTcfDataCollectionCount)
-        XCTAssertEqual(true, self.appsFlyerInstance.lastEnable)
-    }
-    
-    func testEnableTcfDataCollectionNotRun() {
-        let payload: [String: Any] = ["command_name": "enabletcfdatacollection"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(0, self.appsFlyerInstance.enableTcfDataCollectionCount)
+        XCTAssertNil(self.appsFlyerInstance.lastTransactionId)
     }
     
     func testSetSharingFilterForPartners() {
@@ -485,44 +360,18 @@ class AppsFlyerInstanceTests: XCTestCase {
         XCTAssertNil(self.appsFlyerInstance.lastPartners)
     }
     
-    func testUpdateServerUninstallToken() {
-        let payload: [String: Any] = ["command_name": "updateserveruninstalltoken", "uninstall_token": "token456"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.updateServerUninstallTokenCount)
-        XCTAssertEqual("token456", self.appsFlyerInstance.lastUninstallToken)
-    }
-    
-    func testUpdateServerUninstallTokenNotRun() {
-        let payload: [String: Any] = ["command_name": "updateserveruninstalltoken"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(0, self.appsFlyerInstance.updateServerUninstallTokenCount)
-    }
-    
-    func testSetIsUpdate() {
-        let payload: [String: Any] = ["command_name": "setisupdate", "is_update": true]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.setIsUpdateCount)
-        XCTAssertEqual(true, self.appsFlyerInstance.lastIsUpdate)
-    }
-    
-    func testSetIsUpdateNotRun() {
-        let payload: [String: Any] = ["command_name": "setisupdate"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(0, self.appsFlyerInstance.setIsUpdateCount)
-    }
-    
-    func testSetAdditionalData() {
+    func testAppendCustomData() {
         let additionalData: [String: Any] = ["key1": "value1", "key2": 123]
-        let payload: [String: Any] = ["command_name": "setadditionaldata", "additional_data": additionalData]
+        let payload: [String: Any] = ["command_name": "appendcustomdata", "custom_data_to_append": additionalData]
         appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.setAdditionalDataCount)
+        XCTAssertEqual(1, self.appsFlyerInstance.appendCustomDataCount)
         XCTAssertNotNil(self.appsFlyerInstance.lastAdditionalData)
     }
     
-    func testSetAdditionalDataNotRun() {
-        let payload: [String: Any] = ["command_name": "setadditionaldata"]
+    func testAppendCustomDataNotRun() {
+        let payload: [String: Any] = ["command_name": "appendcustomdata"]
         appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(0, self.appsFlyerInstance.setAdditionalDataCount)
+        XCTAssertEqual(0, self.appsFlyerInstance.appendCustomDataCount)
     }
     
     // MARK: - Event Parameter Tests
@@ -567,13 +416,12 @@ class AppsFlyerInstanceTests: XCTestCase {
     // MARK: - Multiple Commands Test
     
     func testMultipleCommands() {
-        let payload: [String: Any] = ["command_name": "setcurrencycode,setcustomerid,logsession",
+        let payload: [String: Any] = ["command_name": "currencycode,customerid",
                                       "af_currency": "EUR",
                                       "af_customer_user_id": "user456"]
         appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.setCurrencyCodeCount)
-        XCTAssertEqual(1, self.appsFlyerInstance.setCustomerIdCount)
-        XCTAssertEqual(1, self.appsFlyerInstance.logSessionCount)
+        XCTAssertEqual(1, self.appsFlyerInstance.currencyCodeCount)
+        XCTAssertEqual(1, self.appsFlyerInstance.customerIdCount)
         XCTAssertEqual("EUR", self.appsFlyerInstance.lastCurrency)
         XCTAssertEqual("user456", self.appsFlyerInstance.lastCustomerId)
     }
@@ -585,13 +433,16 @@ class AppsFlyerInstanceTests: XCTestCase {
                                       "app_id": "test_app",
                                       "app_dev_key": "test_key",
                                       "debug": true,
-                                      "disable_network_data": false,
+                                      "disable_collect_asa": false,
                                       "anonymize_user": true,
-                                      "time_between_sessions": 30,
-                                      "disable_appset_id": true,
+                                      "time_between_sessions": 30, 
                                       "collect_device_name": false,
                                       "disable_ad_tracking": true,
                                       "disable_apple_ad_tracking": false,
+                                      "use_uninstall_sandbox": true,
+                                      "enable_tcf_data_collection": true,
+                                      "disable_advertising_identifier": true,
+                                      "disable_idfv_collection": false,
                                       "custom_data": ["custom_key": "custom_value"]]
         
         appsFlyerCommand.processRemoteCommand(with: payload)
@@ -600,49 +451,20 @@ class AppsFlyerInstanceTests: XCTestCase {
         
         let settings = self.appsFlyerInstance.lastSettings!
         XCTAssertEqual(settings["debug"] as? Bool, true)
-        XCTAssertEqual(settings["disable_network_data"] as? Bool, false)
+        XCTAssertEqual(settings["disable_collect_asa"] as? Bool, false)
         XCTAssertEqual(settings["anonymize_user"] as? Bool, true)
-        XCTAssertEqual(settings["time_between_sessions"] as? Int, 30)
-        XCTAssertEqual(settings["disable_appset_id"] as? Bool, true)
+        XCTAssertEqual(settings["time_between_sessions"] as? Int, 30) 
         XCTAssertEqual(settings["collect_device_name"] as? Bool, false)
         XCTAssertEqual(settings["disable_ad_tracking"] as? Bool, true)
         XCTAssertEqual(settings["disable_apple_ad_tracking"] as? Bool, false)
+        XCTAssertEqual(settings["use_uninstall_sandbox"] as? Bool, true)
+        XCTAssertEqual(settings["enable_tcf_data_collection"] as? Bool, true)
+        XCTAssertEqual(settings["disable_advertising_identifier"] as? Bool, true)
+        XCTAssertEqual(settings["disable_idfv_collection"] as? Bool, false)
         XCTAssertNotNil(settings["custom_data"])
     }
     
     // MARK: - Missing Tests
-    
-    func testRegisterUninstallWithDataToken() {
-        let tokenData = Data([0x01, 0x02, 0x03, 0x04])
-        let payload: [String: Any] = ["command_name": "registeruninstall", "device_token": tokenData]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.registerUninstallCount)
-    }
-    
-    func testRegisterUninstallWithStringToken() {
-        let payload: [String: Any] = ["command_name": "registeruninstall", "device_token": "abc123"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.registerUninstallCount)
-    }
-    
-    func testRegisterUninstallNotRun() {
-        let payload: [String: Any] = ["command_name": "registeruninstall"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(0, self.appsFlyerInstance.registerUninstallCount)
-    }
-    
-    func testSetUseUninstallSandbox() {
-        let payload: [String: Any] = ["command_name": "setuseuninstallsandbox", "use_uninstall_sandbox": true]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.setUseUninstallSandboxCount)
-        XCTAssertEqual(true, self.appsFlyerInstance.lastUseSandbox)
-    }
-    
-    func testSetUseUninstallSandboxNotRun() {
-        let payload: [String: Any] = ["command_name": "setuseuninstallsandbox"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(0, self.appsFlyerInstance.setUseUninstallSandboxCount)
-    }
     
     func testSetUserEmailsWithSingleString() {
         let payload: [String: Any] = ["command_name": "setuseremails",
@@ -700,21 +522,21 @@ class AppsFlyerInstanceTests: XCTestCase {
         appsFlyerCommand.processRemoteCommand(with: payloadUpper)
         XCTAssertEqual(1, self.appsFlyerInstance.initWithoutConfigCount)
         
-        let payloadMixed: [String: Any] = ["command_name": "LogSession"]
+        let payloadMixed: [String: Any] = ["command_name": "CurrencyCode", "af_currency": "GBP"]
         appsFlyerCommand.processRemoteCommand(with: payloadMixed)
-        XCTAssertEqual(1, self.appsFlyerInstance.logSessionCount)
+        XCTAssertEqual(2, self.appsFlyerInstance.currencyCodeCount)
     }
     
     // MARK: - Edge Cases
     
     func testCommandNameWithSpaces() {
-        let payload: [String: Any] = ["command_name": " initialize , setcurrencycode ",
+        let payload: [String: Any] = ["command_name": " initialize , currencycode ",
                                       "app_id": "test",
                                       "app_dev_key": "test",
                                       "af_currency": "USD"]
         appsFlyerCommand.processRemoteCommand(with: payload)
         XCTAssertEqual(1, self.appsFlyerInstance.initWithoutConfigCount)
-        XCTAssertEqual(1, self.appsFlyerInstance.setCurrencyCodeCount)
+        XCTAssertEqual(1, self.appsFlyerInstance.currencyCodeCount)
     }
     
     func testEmptyCommandName() {

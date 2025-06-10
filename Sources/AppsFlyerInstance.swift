@@ -22,32 +22,21 @@ public protocol AppsFlyerCommand {
     func logLocation(longitude: Double, latitude: Double)
     func setHost(_ host: String, with prefix: String)
     func setUserEmails(emails: [String], with cryptType: Int)
-    func setCurrencyCode(_ currency: String)
-    func setCustomerId(_ id: String)
+    func currencyCode(_ currency: String)
+    func customerId(_ id: String)
     func stopTracking(_ stop: Bool)
     func anonymizeUser(_ anonymize: Bool)
     func resolveDeepLinkURLs(_ urls: [String])
     func logAdRevenue(monetizationNetwork: String, mediationNetwork: String, revenue: Double, currency: String, additionalParameters: [String: Any]?)
     func setDMAConsent(gdprApplies: Bool?, consentForDataUsage: Bool?, consentForAdsPersonalization: Bool?, consentForAdStorage: Bool?)
-    func setDisableNetworkData(_ disable: Bool)
     func setPhoneNumber(_ phoneNumber: String)
-    func setOutOfStore(_ source: String)
     func addPushNotificationDeepLinkPath(_ paths: [String])
-    func sendPushNotificationData(_ data: [String: Any])
-    func validateAndLogPurchase(purchaseType: String?, token: String?, productId: String?, price: String?, currency: String?, additionalParameters: [String: Any]?)
-    func logSession()
-    func waitForCustomerUserId(_ wait: Bool)
-    func setCustomerIdAndLogSession(_ customerId: String)
-    func setMinTimeBetweenSessions(_ seconds: Int)
-    func setAppId(_ appId: String)
-    func setDisableAdvertisingIdentifiers(_ disable: Bool)
-    func enableTcfDataCollection(_ enable: Bool)
+    func validateAndLogPurchase(purchaseType: String?, transactionId: String?, productId: String?, price: String?, currency: String?, additionalParameters: [String: Any]?)
     func setSharingFilterForPartners(_ partners: [String]?)
-    func updateServerUninstallToken(_ token: String)
-    func setIsUpdate(_ isUpdate: Bool)
-    func setAdditionalData(_ data: [String: Any])
-    func registerUninstall(deviceToken: Data?)
-    func setUseUninstallSandbox(_ sandbox: Bool)
+    func appendCustomData(_ data: [String: Any])
+    func setCurrentDeviceLanguage(_ language: String)
+    func setPartnerData(partnerId: String, partnerInfo: [String: Any])
+    func appendParametersToDeepLinkingURL(contains: String, parameters: [String: String])
 }
 
 public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
@@ -88,19 +77,27 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
             return
         }
         
-        // Handle flat configuration structure (like Android)
         if let debug = settings[AppsFlyerConstants.Configuration.debug] as? Bool {
             appsFlyer.isDebug = debug
         }
+        // TODO: Remove, splited into disableAdvertisingIdentifier and disableIDFVCollection
         if let disableAdTracking = settings[AppsFlyerConstants.Configuration.disableAdTracking] as? Bool {
             appsFlyer.disableAdvertisingIdentifier = disableAdTracking
             appsFlyer.disableIDFVCollection = disableAdTracking
         }
+        // Legacy configuration key (maintained for backward compatibility)
         if let disableAppleAdTracking = settings[AppsFlyerConstants.Configuration.disableAppleAdTracking] as? Bool {
             appsFlyer.disableSKAdNetwork = disableAppleAdTracking
         }
-        if let disableNetworkData = settings[AppsFlyerConstants.Configuration.disableNetworkData] as? Bool {
-            appsFlyer.disableCollectASA = disableNetworkData
+        // Alternative naming for better consistency with SDK property name
+        if let disableSKAdNetwork = settings[AppsFlyerConstants.Configuration.disableSKAdNetwork] as? Bool {
+            appsFlyer.disableSKAdNetwork = disableSKAdNetwork
+        }
+        if let disableAppleAdsAttribution = settings[AppsFlyerConstants.Configuration.disableAppleAdsAttribution] as? Bool {
+            appsFlyer.disableAppleAdsAttribution = disableAppleAdsAttribution
+        }
+        if let disableCollectASA = settings[AppsFlyerConstants.Configuration.disableCollectASA] as? Bool {
+            appsFlyer.disableCollectASA = disableCollectASA
         }
         if let minTimeBetweenSessions = settings[AppsFlyerConstants.Configuration.minTimeBetweenSessions] as? Int {
             appsFlyer.minTimeBetweenSessions = UInt(minTimeBetweenSessions)
@@ -113,6 +110,39 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         }
         if let customData = settings[AppsFlyerConstants.Configuration.customData] as? [AnyHashable: Any] {
             appsFlyer.customData = customData
+        }
+        if let useUninstallSandbox = settings[AppsFlyerConstants.Configuration.useUninstallSandbox] as? Bool {
+            appsFlyer.useUninstallSandbox = useUninstallSandbox
+        }
+        if let enableTCFDataCollection = settings[AppsFlyerConstants.Configuration.enableTCFDataCollection] as? Bool {
+            appsFlyer.enableTCFDataCollection(enableTCFDataCollection)
+        }
+        if let disableAdvertisingIdentifier = settings[AppsFlyerConstants.Configuration.disableAdvertisingIdentifier] as? Bool {
+            appsFlyer.disableAdvertisingIdentifier = disableAdvertisingIdentifier
+        }
+        if let disableIDFVCollection = settings[AppsFlyerConstants.Configuration.disableIDFVCollection] as? Bool {
+            appsFlyer.disableIDFVCollection = disableIDFVCollection
+        }
+        if let appInviteOneLinkID = settings[AppsFlyerConstants.Configuration.appInviteOneLinkID] as? String {
+            appsFlyer.appInviteOneLinkID = appInviteOneLinkID
+        }
+        if let deepLinkTimeout = settings[AppsFlyerConstants.Configuration.deepLinkTimeout] as? Int {
+            appsFlyer.deepLinkTimeout = UInt(deepLinkTimeout)
+        }
+        if let oneLinkCustomDomains = settings[AppsFlyerConstants.Configuration.oneLinkCustomDomains] as? [String] {
+            appsFlyer.oneLinkCustomDomains = oneLinkCustomDomains
+        }
+        if let useReceiptValidationSandbox = settings[AppsFlyerConstants.Configuration.useReceiptValidationSandbox] as? Bool {
+            appsFlyer.useReceiptValidationSandbox = useReceiptValidationSandbox
+        }
+        // Wait for ATT authorization if configured (iOS 14+ only)
+        if let attTimeout = settings[AppsFlyerConstants.Configuration.waitForATTUserAuthorizationTimeoutInterval] as? Int {
+            if #available(iOS 14, *) {
+                appsFlyer.waitForATTUserAuthorization(withTimeoutInterval: TimeInterval(attTimeout))
+            }
+        }
+        if let resolveDeepLinks = settings[AppsFlyerConstants.Configuration.resolveDeepLinks] as? [String] {
+            appsFlyer.resolveDeepLinkURLs = resolveDeepLinks
         }
     }
 
@@ -137,11 +167,11 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         AppsFlyerLib.shared().setUserEmails(emails, with: emailCryptType)
     }
 
-    public func setCurrencyCode(_ currency: String) {
+    public func currencyCode(_ currency: String) {
         AppsFlyerLib.shared().currencyCode = currency
     }
 
-    public func setCustomerId(_ id: String) {
+    public func customerId(_ id: String) {
         AppsFlyerLib.shared().customerUserID = id
     }
 
@@ -153,6 +183,7 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         AppsFlyerLib.shared().anonymizeUser = anonymize
     }
 
+    // TiQ: resolve_deep_links
     public func resolveDeepLinkURLs(_ urls: [String]) {
         AppsFlyerLib.shared().resolveDeepLinkURLs = urls
     }
@@ -198,44 +229,29 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         }
     }
 
-    public func setDisableNetworkData(_ disable: Bool) {
-        AppsFlyerLib.shared().disableCollectASA = disable
-    }
-
     public func setPhoneNumber(_ phoneNumber: String) {
         AppsFlyerLib.shared().phoneNumber = phoneNumber
-    }
-
-    public func setOutOfStore(_ source: String) {
-        // iOS doesn't have direct out-of-store equivalent, set as custom data
-        var customData = AppsFlyerLib.shared().customData ?? [:]
-        customData["out_of_store_source"] = source
-        AppsFlyerLib.shared().customData = customData
     }
 
     public func addPushNotificationDeepLinkPath(_ paths: [String]) {
         AppsFlyerLib.shared().addPushNotificationDeepLinkPath(paths)
     }
 
-    public func sendPushNotificationData(_ data: [String: Any]) {
-        // Store push notification data for later use
-        AppsFlyerLib.shared().handlePushNotification(data)
-    }
-
-    public func validateAndLogPurchase(purchaseType: String?, token: String?, productId: String?, price: String?, currency: String?, additionalParameters: [String: Any]?) {
+    public func validateAndLogPurchase(purchaseType: String?, transactionId: String?, productId: String?, price: String?, currency: String?, additionalParameters: [String: Any]?) {
         guard let productId = productId,
               let price = price,
-              let currency = currency else {
+              let currency = currency,
+              let transactionId = transactionId
+              else {
             return
         }
         
         onReady { appsFlyer in
-            // Use official iOS SDK validateAndLogInAppPurchase method (SDK v6.14.1+)
             let purchaseDetails = AFSDKPurchaseDetails(
                 productId: productId,
                 price: price,
                 currency: currency,
-                transactionId: token ?? "" // 'token' parameter maps to 'transactionId' in iOS (equivalent to 'purchaseToken' in Android)
+                transactionId: transactionId
             )
             
             // Note: purchaseType is not part of official iOS SDK AFSDKPurchaseDetails
@@ -261,74 +277,26 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         }
     }
 
-    public func logSession() {
-        // iOS doesn't have explicit session logging - it's automatic
-        // We can track a custom event to indicate manual session logging
-        onReady { appsFlyer in
-            appsFlyer.logEvent("af_session", withValues: [:])
-        }
-    }
-
-    public func waitForCustomerUserId(_ wait: Bool) {
-        if wait {
-            AppsFlyerLib.shared().waitForATTUserAuthorization(timeoutInterval: 30)
-        }
-    }
-
-    public func setCustomerIdAndLogSession(_ customerId: String) {
-        AppsFlyerLib.shared().customerUserID = customerId
-        logSession()
-    }
-
-    public func setMinTimeBetweenSessions(_ seconds: Int) {
-        AppsFlyerLib.shared().minTimeBetweenSessions = UInt(seconds)
-    }
-
-    public func setAppId(_ appId: String) {
-        AppsFlyerLib.shared().appleAppID = appId
-    }
-
-    public func setDisableAdvertisingIdentifiers(_ disable: Bool) {
-        AppsFlyerLib.shared().disableAdvertisingIdentifier = disable
-        AppsFlyerLib.shared().disableIDFVCollection = disable
-    }
-
-    public func enableTcfDataCollection(_ enable: Bool) {
-        // Use official iOS SDK enableTCFDataCollection API for DMA compliance (SDK v6.13.0+)
-        AppsFlyerLib.shared().enableTCFDataCollection(enable)
-    }
-
     public func setSharingFilterForPartners(_ partners: [String]?) {
-        guard let partners = partners else { return }
         AppsFlyerLib.shared().setSharingFilterForPartners(partners)
     }
 
-    public func updateServerUninstallToken(_ token: String) {
-        // iOS uses different mechanism for uninstall tracking
-        var customData = AppsFlyerLib.shared().customData ?? [:]
-        customData["uninstall_token"] = token
-        AppsFlyerLib.shared().customData = customData
-    }
-
-    public func setIsUpdate(_ isUpdate: Bool) {
-        // iOS doesn't have direct equivalent, store in custom data
-        var customData = AppsFlyerLib.shared().customData ?? [:]
-        customData["is_update"] = isUpdate
-        AppsFlyerLib.shared().customData = customData
-    }
-
-    public func setAdditionalData(_ data: [String: Any]) {
+    public func appendCustomData(_ data: [String: Any]) {
         var customData = AppsFlyerLib.shared().customData ?? [:]
         customData.merge(data) { (_, new) in new }
         AppsFlyerLib.shared().customData = customData
     }
 
-    public func registerUninstall(deviceToken: Data?) {
-        AppsFlyerLib.shared().registerUninstall(deviceToken)
+    public func setCurrentDeviceLanguage(_ language: String) {
+        AppsFlyerLib.shared().currentDeviceLanguage = language
     }
 
-    public func setUseUninstallSandbox(_ sandbox: Bool) {
-        AppsFlyerLib.shared().useUninstallSandbox = sandbox
+    public func setPartnerData(partnerId: String, partnerInfo: [String: Any]) {
+        AppsFlyerLib.shared().setPartnerData(partnerId, partnerInfo: partnerInfo)
+    }
+
+    public func appendParametersToDeepLinkingURL(contains: String, parameters: [String: String]) {
+        AppsFlyerLib.shared().appendParametersToDeepLinkingURL(contains, parameters: parameters)
     }
 
 }

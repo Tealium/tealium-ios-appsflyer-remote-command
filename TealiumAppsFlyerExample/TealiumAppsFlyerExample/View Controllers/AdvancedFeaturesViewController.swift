@@ -60,22 +60,6 @@ class AdvancedFeaturesViewController: UIViewController {
         showAlert(message: "Phone number set: \(phoneNumber)")
     }
     
-    // MARK: - Customer ID Actions
-    @IBAction func setCustomerIdAndLogSession(_ sender: UIButton) {
-        guard let customerId = customerIdTextField.text, !customerId.isEmpty else {
-            showAlert(message: "Please enter a customer ID")
-            return
-        }
-        
-        let data: [String: Any] = [
-            "command_name": "setcustomeridandlogsession",
-            "customer_id": customerId
-        ]
-        
-        TealiumHelper.trackEvent(title: "set_customer_id_and_log_session", data: data)
-        showAlert(message: "Customer ID set and session logged: \(customerId)")
-    }
-    
     // MARK: - Advanced AppsFlyer Features
     @IBAction func logAdRevenue(_ sender: UIButton) {
         let data: [String: Any] = [
@@ -101,7 +85,7 @@ class AdvancedFeaturesViewController: UIViewController {
             "product_id": "premium_monthly",
             "price": "9.99",
             "purchase_currency": "USD",
-            "purchase_token": "sample_receipt_token_123",
+            "transaction_id": "sample_transaction_id_123",
             "additional_parameters": [
                 "subscription_period": "monthly",
                 "trial_period": "7_days"
@@ -138,27 +122,6 @@ class AdvancedFeaturesViewController: UIViewController {
         showAlert(message: "User anonymized")
     }
     
-    // MARK: - Additional Features
-    @IBAction func enableTCFDataCollection(_ sender: UIButton) {
-        let data: [String: Any] = [
-            "command_name": "enabletcfdatacollection",
-            "enable_tcf_data_collection": true
-        ]
-        
-        TealiumHelper.trackEvent(title: "enable_tcf", data: data)
-        showAlert(message: "TCF Data Collection enabled")
-    }
-    
-    @IBAction func setOutOfStore(_ sender: UIButton) {
-        let data: [String: Any] = [
-            "command_name": "setoutofstore",
-            "out_of_store_source": "amazon_appstore"
-        ]
-        
-        TealiumHelper.trackEvent(title: "set_out_of_store", data: data)
-        showAlert(message: "Out of store source set: Amazon Appstore")
-    }
-    
     @IBAction func setSharingFilter(_ sender: UIButton) {
         let data: [String: Any] = [
             "command_name": "setsharingfilterforpartners",
@@ -169,10 +132,10 @@ class AdvancedFeaturesViewController: UIViewController {
         showAlert(message: "Sharing filter set for selected partners")
     }
     
-    @IBAction func setAdditionalData(_ sender: UIButton) {
+    @IBAction func appendCustomData(_ sender: UIButton) {
         let data: [String: Any] = [
-            "command_name": "setadditionaldata",
-            "additional_data": [
+            "command_name": "appendcustomdata",
+            "custom_data_to_append": [
                 "custom_attribute_1": "value1",
                 "custom_attribute_2": "value2",
                 "user_segment": "premium",
@@ -180,7 +143,7 @@ class AdvancedFeaturesViewController: UIViewController {
             ]
         ]
         
-        TealiumHelper.trackEvent(title: "set_additional_data", data: data)
+        TealiumHelper.trackEvent(title: "append_custom_data", data: data)
         showAlert(message: "Additional data set with custom attributes")
     }
     

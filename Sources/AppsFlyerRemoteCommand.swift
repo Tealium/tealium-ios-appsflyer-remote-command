@@ -71,17 +71,14 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     configSettings[AppsFlyerConstants.Configuration.debug] = debugValue
                     debug = debugValue
                 }
-                if let disableNetworkData = payload[AppsFlyerConstants.Configuration.disableNetworkData] as? Bool {
-                    configSettings[AppsFlyerConstants.Configuration.disableNetworkData] = disableNetworkData
+                if let disableCollectASA = payload[AppsFlyerConstants.Configuration.disableCollectASA] as? Bool {
+                    configSettings[AppsFlyerConstants.Configuration.disableCollectASA] = disableCollectASA
                 }
                 if let anonymizeUser = payload[AppsFlyerConstants.Configuration.anonymizeUser] as? Bool {
                     configSettings[AppsFlyerConstants.Configuration.anonymizeUser] = anonymizeUser
                 }
                 if let minTimeBetweenSessions = payload[AppsFlyerConstants.Configuration.minTimeBetweenSessions] as? Int {
                     configSettings[AppsFlyerConstants.Configuration.minTimeBetweenSessions] = minTimeBetweenSessions
-                }
-                if let disableAppsetId = payload[AppsFlyerConstants.Configuration.disableAppsetId] as? Bool {
-                    configSettings[AppsFlyerConstants.Configuration.disableAppsetId] = disableAppsetId
                 }
                 if let collectDeviceName = payload[AppsFlyerConstants.Configuration.collectDeviceName] as? Bool {
                     configSettings[AppsFlyerConstants.Configuration.collectDeviceName] = collectDeviceName
@@ -92,8 +89,44 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 if let disableAppleAdTracking = payload[AppsFlyerConstants.Configuration.disableAppleAdTracking] as? Bool {
                     configSettings[AppsFlyerConstants.Configuration.disableAppleAdTracking] = disableAppleAdTracking
                 }
+                if let disableSKAdNetwork = payload[AppsFlyerConstants.Configuration.disableSKAdNetwork] as? Bool {
+                    configSettings[AppsFlyerConstants.Configuration.disableSKAdNetwork] = disableSKAdNetwork
+                }
+                if let resolveDeepLinks = payload[AppsFlyerConstants.Configuration.resolveDeepLinks] as? [String] {
+                    configSettings[AppsFlyerConstants.Configuration.resolveDeepLinks] = resolveDeepLinks
+                }
+                if let disableAppleAdsAttribution = payload[AppsFlyerConstants.Configuration.disableAppleAdsAttribution] as? Bool {
+                    configSettings[AppsFlyerConstants.Configuration.disableAppleAdsAttribution] = disableAppleAdsAttribution
+                }
                 if let customData = payload[AppsFlyerConstants.Configuration.customData] as? [AnyHashable: Any] {
                     configSettings[AppsFlyerConstants.Configuration.customData] = customData
+                }
+                if let useUninstallSandbox = payload[AppsFlyerConstants.Configuration.useUninstallSandbox] as? Bool {
+                    configSettings[AppsFlyerConstants.Configuration.useUninstallSandbox] = useUninstallSandbox
+                }
+                if let enableTCFDataCollection = payload[AppsFlyerConstants.Configuration.enableTCFDataCollection] as? Bool {
+                    configSettings[AppsFlyerConstants.Configuration.enableTCFDataCollection] = enableTCFDataCollection
+                }
+                if let disableAdvertisingIdentifier = payload[AppsFlyerConstants.Configuration.disableAdvertisingIdentifier] as? Bool {
+                    configSettings[AppsFlyerConstants.Configuration.disableAdvertisingIdentifier] = disableAdvertisingIdentifier
+                }
+                if let disableIDFVCollection = payload[AppsFlyerConstants.Configuration.disableIDFVCollection] as? Bool {
+                    configSettings[AppsFlyerConstants.Configuration.disableIDFVCollection] = disableIDFVCollection
+                }
+                if let appInviteOneLinkID = payload[AppsFlyerConstants.Configuration.appInviteOneLinkID] as? String {
+                    configSettings[AppsFlyerConstants.Configuration.appInviteOneLinkID] = appInviteOneLinkID
+                }
+                if let deepLinkTimeout = payload[AppsFlyerConstants.Configuration.deepLinkTimeout] as? Int {
+                    configSettings[AppsFlyerConstants.Configuration.deepLinkTimeout] = deepLinkTimeout
+                }
+                if let oneLinkCustomDomains = payload[AppsFlyerConstants.Configuration.oneLinkCustomDomains] as? [String] {
+                    configSettings[AppsFlyerConstants.Configuration.oneLinkCustomDomains] = oneLinkCustomDomains
+                }
+                if let useReceiptValidationSandbox = payload[AppsFlyerConstants.Configuration.useReceiptValidationSandbox] as? Bool {
+                    configSettings[AppsFlyerConstants.Configuration.useReceiptValidationSandbox] = useReceiptValidationSandbox
+                }
+                if let attTimeout = payload[AppsFlyerConstants.Configuration.waitForATTUserAuthorizationTimeoutInterval] as? Int {
+                    configSettings[AppsFlyerConstants.Configuration.waitForATTUserAuthorizationTimeoutInterval] = attTimeout
                 }
                 
                 // Handle legacy nested settings structure for backward compatibility
@@ -144,22 +177,22 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                         return
                 }
                 appsFlyerInstance.setUserEmails(emails: emails, with: cryptType)
-            case .setCurrencyCode:
+            case .currencyCode:
                 guard let currency = payload[AppsFlyerConstants.Parameters.currency] as? String else {
                     if debug {
                         print("\(AppsFlyerConstants.errorPrefix)Must map af_currency in the AppsFlyer Mobile Remote Command tag to call set currency")
                     }
                     return
                 }
-                appsFlyerInstance.setCurrencyCode(currency)
-            case .setCustomerId:
+                appsFlyerInstance.currencyCode(currency)
+            case .customerId:
                 guard let customerId = payload[AppsFlyerConstants.Parameters.customerId] as? String else {
                     if debug {
                         print("\(AppsFlyerConstants.errorPrefix)Must map af_customer_user_id in the AppsFlyer Mobile Remote Command tag to call set customer id")
                     }
                     return
                 }
-                appsFlyerInstance.setCustomerId(customerId)
+                appsFlyerInstance.customerId(customerId)
             case .anonymizeUser:
                 guard let anonymize = payload[AppsFlyerConstants.Configuration.anonymizeUser] as? Bool else {
                     if debug {
@@ -218,14 +251,6 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 let consentForAdsPersonalization = payload[AppsFlyerConstants.Parameters.consentForAdsPersonalization] as? Bool
                 let consentForAdStorage = payload[AppsFlyerConstants.Parameters.consentForAdStorage] as? Bool
                 appsFlyerInstance.setDMAConsent(gdprApplies: gdprApplies, consentForDataUsage: consentForDataUsage, consentForAdsPersonalization: consentForAdsPersonalization, consentForAdStorage: consentForAdStorage)
-            case .setDisableNetworkData:
-                guard let disable = payload[AppsFlyerConstants.Configuration.disableNetworkData] as? Bool else {
-                    if debug {
-                        print("\(AppsFlyerConstants.errorPrefix)Must provide disable_network_data parameter")
-                    }
-                    return
-                }
-                appsFlyerInstance.setDisableNetworkData(disable)
             case .setPhoneNumber:
                 guard let phoneNumber = payload[AppsFlyerConstants.Parameters.phoneNumber] as? String else {
                     if debug {
@@ -234,14 +259,6 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     return
                 }
                 appsFlyerInstance.setPhoneNumber(phoneNumber)
-            case .setOutOfStore:
-                guard let source = payload[AppsFlyerConstants.Parameters.outOfStoreSource] as? String else {
-                    if debug {
-                        print("\(AppsFlyerConstants.errorPrefix)Must provide out_of_store_source parameter")
-                    }
-                    return
-                }
-                appsFlyerInstance.setOutOfStore(source)
             case .addPushNotificationDeepLinkPath:
                 guard let paths = payload[AppsFlyerConstants.Parameters.pushDeepLinkPath] as? [String] else {
                     if debug {
@@ -250,123 +267,35 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     return
                 }
                 appsFlyerInstance.addPushNotificationDeepLinkPath(paths)
-            case .sendPushNotificationData:
-                guard let data = payload[AppsFlyerConstants.Parameters.pushPayload] as? [String: Any] else {
-                    if debug {
-                        print("\(AppsFlyerConstants.errorPrefix)Must provide push notification data")
-                    }
-                    return
-                }
-                appsFlyerInstance.sendPushNotificationData(data)
             case .validateAndLogPurchase:
                 let purchaseType = payload[AppsFlyerConstants.Parameters.purchaseType] as? String
-                let token = payload[AppsFlyerConstants.Parameters.purchaseToken] as? String
+                let transactionId = payload[AppsFlyerConstants.Parameters.transactionId] as? String
                 let productId = payload[AppsFlyerConstants.Parameters.productId] as? String
                 let price = payload[AppsFlyerConstants.Parameters.price] as? String
                 let currency = payload[AppsFlyerConstants.Parameters.purchaseCurrency] as? String
                 let additionalParameters = payload[AppsFlyerConstants.Parameters.purchaseAdditionalParameters] as? [String: Any]
-                appsFlyerInstance.validateAndLogPurchase(purchaseType: purchaseType, token: token, productId: productId, price: price, currency: currency, additionalParameters: additionalParameters)
-            case .logSession:
-                appsFlyerInstance.logSession()
-            case .waitForCustomerUserId:
-                guard let wait = payload[AppsFlyerConstants.Parameters.waitForCustomerUserId] as? Bool else {
-                    if debug {
-                        print("\(AppsFlyerConstants.errorPrefix)Must provide wait_for_customer_user_id parameter")
-                    }
-                    return
-                }
-                appsFlyerInstance.waitForCustomerUserId(wait)
-            case .setCustomerIdAndLogSession:
-                guard let customerId = payload[AppsFlyerConstants.Parameters.customerId] as? String else {
-                    if debug {
-                        print("\(AppsFlyerConstants.errorPrefix)Must provide customer_id parameter")
-                    }
-                    return
-                }
-                appsFlyerInstance.setCustomerIdAndLogSession(customerId)
-            case .setMinTimeBetweenSessions:
-                guard let seconds = payload[AppsFlyerConstants.Parameters.minTimeBetweenSessions] as? Int else {
-                    if debug {
-                        print("\(AppsFlyerConstants.errorPrefix)Must provide min_time_between_sessions parameter")
-                    }
-                    return
-                }
-                appsFlyerInstance.setMinTimeBetweenSessions(seconds)
-            case .setAppId:
-                guard let appId = payload[AppsFlyerConstants.Parameters.appId] as? String else {
-                    if debug {
-                        print("\(AppsFlyerConstants.errorPrefix)Must provide app_id parameter")
-                    }
-                    return
-                }
-                appsFlyerInstance.setAppId(appId)
-            case .setDisableAdvertisingIdentifiers:
-                guard let disable = payload[AppsFlyerConstants.Parameters.disableAdvertisingIdentifiers] as? Bool else {
-                    if debug {
-                        print("\(AppsFlyerConstants.errorPrefix)Must provide disable_advertising_identifiers parameter")
-                    }
-                    return
-                }
-                appsFlyerInstance.setDisableAdvertisingIdentifiers(disable)
-            case .enableTcfDataCollection:
-                guard let enable = payload[AppsFlyerConstants.Parameters.enableTcfDataCollection] as? Bool else {
-                    if debug {
-                        print("\(AppsFlyerConstants.errorPrefix)Must provide enable_tcf_data_collection parameter")
-                    }
-                    return
-                }
-                appsFlyerInstance.enableTcfDataCollection(enable)
+                appsFlyerInstance.validateAndLogPurchase(purchaseType: purchaseType, transactionId: transactionId, productId: productId, price: price, currency: currency, additionalParameters: additionalParameters)
             case .setSharingFilterForPartners:
                 let partners = payload[AppsFlyerConstants.Parameters.sharingFilterPartners] as? [String]
                 appsFlyerInstance.setSharingFilterForPartners(partners)
-            case .updateServerUninstallToken:
-                guard let token = payload[AppsFlyerConstants.Parameters.uninstallToken] as? String else {
-                    if debug {
-                        print("\(AppsFlyerConstants.errorPrefix)Must provide uninstall_token parameter")
-                    }
-                    return
+            case .appendCustomData:
+                if let customDataToAppend = payload[AppsFlyerConstants.Parameters.customDataToAppend] as? [String: Any] {
+                    appsFlyerInstance.appendCustomData(customDataToAppend)
                 }
-                appsFlyerInstance.updateServerUninstallToken(token)
-            case .setIsUpdate:
-                guard let isUpdate = payload[AppsFlyerConstants.Parameters.isUpdate] as? Bool else {
-                    if debug {
-                        print("\(AppsFlyerConstants.errorPrefix)Must provide is_update parameter")
-                    }
-                    return
+            case .setCurrentDeviceLanguage:
+                if let deviceLanguage = payload[AppsFlyerConstants.Parameters.deviceLanguage] as? String {
+                    appsFlyerInstance.setCurrentDeviceLanguage(deviceLanguage)
                 }
-                appsFlyerInstance.setIsUpdate(isUpdate)
-            case .setAdditionalData:
-                guard let data = payload[AppsFlyerConstants.Parameters.additionalData] as? [String: Any] else {
-                    if debug {
-                        print("\(AppsFlyerConstants.errorPrefix)Must provide additional_data parameter")
-                    }
-                    return
+            case .setPartnerData:
+                if let partnerId = payload[AppsFlyerConstants.Parameters.partnerId] as? String,
+                   let partnerInfo = payload[AppsFlyerConstants.Parameters.partnerInfo] as? [String: Any] {
+                    appsFlyerInstance.setPartnerData(partnerId: partnerId, partnerInfo: partnerInfo)
                 }
-                appsFlyerInstance.setAdditionalData(data)
-            case .registerUninstall:
-                // Handle device token for uninstall measurement
-                // Device token can be passed as Data or String (hex representation)
-                let deviceToken: Data?
-                if let tokenData = payload[AppsFlyerConstants.Parameters.deviceToken] as? Data {
-                    deviceToken = tokenData
-                } else if let tokenString = payload[AppsFlyerConstants.Parameters.deviceToken] as? String {
-                    // Convert hex string to Data if provided as string
-                    deviceToken = Data(tokenString.utf8)
-                } else {
-                    if debug {
-                        print("\(AppsFlyerConstants.errorPrefix)Must provide device_token parameter for uninstall registration")
-                    }
-                    return
+            case .appendParametersToDeepLinkingURL:
+                if let urlContains = payload[AppsFlyerConstants.Parameters.urlContains] as? String,
+                   let urlParameters = payload[AppsFlyerConstants.Parameters.urlParameters] as? [String: String] {
+                    appsFlyerInstance.appendParametersToDeepLinkingURL(contains: urlContains, parameters: urlParameters)
                 }
-                appsFlyerInstance.registerUninstall(deviceToken: deviceToken)
-            case .setUseUninstallSandbox:
-                guard let sandbox = payload[AppsFlyerConstants.Parameters.useUninstallSandbox] as? Bool else {
-                    if debug {
-                        print("\(AppsFlyerConstants.errorPrefix)Must provide use_uninstall_sandbox parameter")
-                    }
-                    return
-                }
-                appsFlyerInstance.setUseUninstallSandbox(sandbox)
             default:
                 appsFlyerInstance.logEvent(getEventName(command: $0), values: getEventParameters(payload: payload))
                 break
@@ -400,13 +329,24 @@ fileprivate extension Dictionary where Key == String, Value == Any {
             $0.key != AppsFlyerConstants.Configuration.appId &&
             $0.key != AppsFlyerConstants.Configuration.settings &&
             $0.key != AppsFlyerConstants.Configuration.anonymizeUser &&
-            $0.key != AppsFlyerConstants.Configuration.disableNetworkData &&
-            $0.key != AppsFlyerConstants.Configuration.disableAppsetId &&
+            $0.key != AppsFlyerConstants.Configuration.disableCollectASA &&
             $0.key != AppsFlyerConstants.Configuration.minTimeBetweenSessions &&
             $0.key != AppsFlyerConstants.Configuration.collectDeviceName &&
             $0.key != AppsFlyerConstants.Configuration.disableAdTracking &&
             $0.key != AppsFlyerConstants.Configuration.disableAppleAdTracking &&
-            $0.key != AppsFlyerConstants.Configuration.customData
+            $0.key != AppsFlyerConstants.Configuration.disableSKAdNetwork &&
+            $0.key != AppsFlyerConstants.Configuration.disableAppleAdsAttribution &&
+            $0.key != AppsFlyerConstants.Configuration.customData &&
+            $0.key != AppsFlyerConstants.Configuration.useUninstallSandbox &&
+            $0.key != AppsFlyerConstants.Configuration.enableTCFDataCollection &&
+            $0.key != AppsFlyerConstants.Configuration.disableAdvertisingIdentifier &&
+            $0.key != AppsFlyerConstants.Configuration.disableIDFVCollection &&
+            $0.key != AppsFlyerConstants.Configuration.appInviteOneLinkID &&
+            $0.key != AppsFlyerConstants.Configuration.deepLinkTimeout &&
+            $0.key != AppsFlyerConstants.Configuration.oneLinkCustomDomains &&
+            $0.key != AppsFlyerConstants.Configuration.useReceiptValidationSandbox &&
+            $0.key != AppsFlyerConstants.Configuration.waitForATTUserAuthorizationTimeoutInterval &&
+            $0.key != AppsFlyerConstants.Configuration.resolveDeepLinks
         }
     }
 }

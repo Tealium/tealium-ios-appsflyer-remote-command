@@ -62,7 +62,7 @@ class OrderViewController: UIViewController {
             "product_id": "premium_product_bundle",
             "price": String(format: "%.2f", orderPrice),
             "currency": "USD",
-            "purchase_token": "receipt_\(orderId)",
+            "transaction_id": "txn_\(orderId)",
             "additional_parameters": [
                 "order_id": orderId,
                 "category": "physical_goods",
@@ -85,7 +85,7 @@ class OrderViewController: UIViewController {
             "product_id": "premium_\(selectedType)",
             "price": String(format: "%.2f", price),
             "currency": "USD",
-            "purchase_token": "sub_receipt_\(Int.random(in: 10000...99999))",
+            "transaction_id": "sub_txn_\(Int.random(in: 10000...99999))",
             "additional_parameters": [
                 "subscription_period": selectedType,
                 "trial_period": selectedType == "monthly" ? "7_days" : "14_days",
@@ -99,8 +99,8 @@ class OrderViewController: UIViewController {
     
     @objc func trackReceiptValidation() {
         let data: [String: Any] = [
-            "command_name": "setadditionaldata",
-            "additional_data": [
+            "command_name": "appendcustomdata",
+            "custom_data_to_append": [
                 "receipt_validation_status": "success",
                 "receipt_id": "receipt_\(Int.random(in: 100000...999999))",
                 "validation_timestamp": Date().timeIntervalSince1970,

@@ -146,7 +146,7 @@ class GamingViewController: UIViewController {
             "product_id": "remove_ads",
             "price": "2.99",
             "currency": "USD",
-            "purchase_token": "gaming_iap_token_\(Int.random(in: 1000...9999))",
+            "transaction_id": "gaming_txn_\(Int.random(in: 1000...9999))",
             "additional_parameters": [
                 "category": "monetization",
                 "player_level": levelLabel.text ?? "1"
@@ -167,8 +167,8 @@ class GamingViewController: UIViewController {
         ]
         
         let data: [String: Any] = [
-            "command_name": "setadditionaldata",
-            "additional_data": sessionData
+            "command_name": "appendcustomdata",
+            "custom_data_to_append": sessionData
         ]
         
         TealiumHelper.trackEvent(title: "track_game_session", data: data)

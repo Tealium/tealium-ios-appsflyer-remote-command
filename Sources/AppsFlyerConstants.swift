@@ -49,6 +49,9 @@ public enum AppsFlyerConstants {
         case locationchanged = "locationchanged"
         case locationcoordinates = "locationcoordinates"
         case orderid = "orderid"
+        // in TiQ achievelevel instead of levelachieved
+        // in TiQ completetutorial instead of tutorialcompletion
+        // in TiQ viewedcontent instead of contentview
     }
     
     public enum CommandNames: String {
@@ -56,33 +59,21 @@ public enum AppsFlyerConstants {
         case trackLocation = "tracklocation"
         case setHost = "sethost"
         case setUserEmails = "setuseremails"
-        case setCurrencyCode = "setcurrencycode"
-        case setCustomerId = "setcustomerid"
+        case currencyCode = "currencycode"
+        case customerId = "customerid"
         case anonymizeUser = "anonymizeuser"
         case resolveDeepLinkUrls = "resolvedeeplinkurls"
         case stopTracking = "stoptracking"
         case logAdRevenue = "logadrevenue"
-        case disableAppsetId = "disableappsetid"
         case setDMAConsent = "setdmaconsent"
-        case setDisableNetworkData = "setdisablenetworkdata"
         case setPhoneNumber = "setphonenumber"
-        case setOutOfStore = "setoutofstore"
         case addPushNotificationDeepLinkPath = "addpushnotificationdeeplinkpath"
-        case sendPushNotificationData = "sendpushnotificationdata"
         case validateAndLogPurchase = "validateandlogpurchase"
-        case logSession = "logsession"
-        case waitForCustomerUserId = "waitforcustomeruserid"
-        case setCustomerIdAndLogSession = "setcustomeridandlogsession"
-        case setMinTimeBetweenSessions = "setmintimebetweensessions"
-        case setAppId = "setappid"
-        case setDisableAdvertisingIdentifiers = "setdisableadvertisingidentifiers"
-        case enableTcfDataCollection = "enabletcfdatacollection"
         case setSharingFilterForPartners = "setsharingfilterforpartners"
-        case updateServerUninstallToken = "updateserveruninstalltoken"
-        case setIsUpdate = "setisupdate"
-        case setAdditionalData = "setadditionaldata"
-        case registerUninstall = "registeruninstall"
-        case setUseUninstallSandbox = "setuseuninstallsandbox"
+        case appendCustomData = "appendcustomdata"
+        case setCurrentDeviceLanguage = "setcurrentdevicelanguage"
+        case setPartnerData = "setpartnerdata"
+        case appendParametersToDeepLinkingURL = "appendparameterstodeeplinkingurl"
     }
     
     public enum Configuration {
@@ -91,96 +82,53 @@ public enum AppsFlyerConstants {
         static let debug = "debug"
         static let disableAdTracking = "disable_ad_tracking"
         static let disableAppleAdTracking = "disable_apple_ad_tracking"
-        static let disableNetworkData = "disable_network_data"
-        static let disableAppsetId = "disable_appset_id"
+        static let disableSKAdNetwork = "disable_skad_network"
+        static let disableAppleAdsAttribution = "disable_apple_ads_attribution"
+        static let disableCollectASA = "disable_collect_asa"
         static let minTimeBetweenSessions = "time_between_sessions"
         static let anonymizeUser = "anonymize_user"
         static let collectDeviceName = "collect_device_name"
         static let customData = "custom_data"
         static let settings = "settings"
+        static let useUninstallSandbox = "use_uninstall_sandbox"
+        static let enableTCFDataCollection = "enable_tcf_data_collection"
+        static let disableAdvertisingIdentifier = "disable_advertising_identifier"
+        static let disableIDFVCollection = "disable_idfv_collection"
+        static let appInviteOneLinkID = "app_invite_onelink_id"
+        static let deepLinkTimeout = "deeplink_timeout"
+        static let oneLinkCustomDomains = "onelink_custom_domains"
+        static let useReceiptValidationSandbox = "use_receipt_validation_sandbox"
+        static let waitForATTUserAuthorizationTimeoutInterval = "wait_for_att_user_authorization_timeout_interval"
+        static let resolveDeepLinks = "resolve_deep_links"
+        // stop_tracking, customer_emails, email_hash_type, host, host_prefix
+        // are supported in TiQ
     }
 
     public enum Parameters {
-        static let latitude = "af_lat"
-        static let longitude = "af_long"
-        static let pushPayload = "af_push_payload"
-        static let host = "host"
-        static let hostPrefix = "host_prefix"
-        static let emails = "customer_emails"
-        static let cryptType = "email_hash_type"
-        static let currency = "af_currency"
-        static let customerId = "af_customer_user_id"
-        static let stopTracking = "stop_tracking"
-        static let deepLinkUrls = "af_deep_link"
+        // Configuration Parameters (not af_ prefix)
         static let event = "event"
-        
-        // Ad Revenue Parameters
-        static let adMonetizationNetwork = "monetization_network"
-        static let adMediationNetwork = "mediation_network"
-        static let adRevenue = "revenue"
-        static let adAdditionalParameters = "additional_parameters"
-        
-        // DMA Consent Parameters
-        static let gdprApplies = "gdpr_applies"
-        static let consentForDataUsage = "consent_for_data_usage"
-        static let consentForAdsPersonalization = "consent_for_ads_personalization"
-        static let consentForAdStorage = "consent_for_ad_storage"
-        
-        // Phone Number
-        static let phoneNumber = "phone_number"
-        
-        // Out of Store
-        static let outOfStoreSource = "out_of_store_source"
-        
-        // Push Notification
-        static let pushDeepLinkPath = "push_deep_link_path"
-        
-        // In-App Purchase Validation
-        static let purchaseType = "purchase_type"
-        static let purchaseToken = "purchase_token"
-        static let productId = "product_id"
-        static let price = "price"
-        static let purchaseCurrency = "currency"
-        static let purchaseAdditionalParameters = "additional_parameters"
-        
-        // Customer User ID
-        static let waitForCustomerUserId = "wait_for_customer_user_id"
-        
-        // App Config
-        static let appId = "app_id"
-        static let minTimeBetweenSessions = "min_time_between_sessions"
-        
-        // Privacy
-        static let disableAdvertisingIdentifiers = "disable_advertising_identifiers"
-        static let enableTcfDataCollection = "enable_tcf_data_collection"
-        static let sharingFilterPartners = "sharing_filter_partners"
-        
-        // Analytics
-        static let uninstallToken = "uninstall_token"
-        static let deviceToken = "device_token"
-        static let useUninstallSandbox = "use_uninstall_sandbox"
-        static let isUpdate = "is_update"
-        static let additionalData = "additional_data"
-        
+
         // Standard Event Parameters
+        static let afLatitude = "af_lat"
+        static let afLongitude = "af_long"
         static let content = "af_content"
         static let contentId = "af_content_id" 
         static let contentType = "af_content_type"
         static let contentList = "af_content_list"
-        static let registrationMethod = "af_registration_method"
+        static let currency = "af_currency"
+        static let customerId = "af_customer_user_id"
         static let achievementId = "af_achievement_id"
-        static let couponCode = "af_coupon_code"
-        static let quantity = "af_quantity"
-        static let revenue = "af_revenue"
         static let level = "af_level"
         static let score = "af_score"
-        static let orderId = "af_order_id"
         static let success = "af_success"
+        static let eventPrice = "af_price"
+        static let quantity = "af_quantity"
+        static let registrationMethod = "af_registration_method"
+        static let paymentInfoAvailable = "af_payment_info_available"
         static let maxRatingValue = "af_max_rating_value"
         static let ratingValue = "af_rating_value"
         static let searchString = "af_search_string"
         static let validated = "af_validated"
-        static let projectedRevenue = "af_projected_revenue"
         static let receiptId = "af_receipt_id"
         static let tutorialId = "af_tutorial_id"
         static let virtualCurrencyName = "af_virtual_currency_name"
@@ -188,15 +136,20 @@ public enum AppsFlyerConstants {
         static let oldVersion = "af_old_version"
         static let newVersion = "af_new_version"
         static let reviewText = "af_review_text"
-        static let paymentInfoAvailable = "af_payment_info_available"
+        static let className = "af_class"
+        static let eventStart = "af_event_start"
+        static let eventEnd = "af_event_end"
+        static let customerSegment = "af_customer_segment"
+        static let orderId = "af_order_id"
+        static let revenue = "af_revenue"
+        static let projectedRevenue = "af_projected_revenue"
+        static let couponCode = "af_coupon_code"
+        static let purchaseCurrency = "af_purchase_currency"
         static let dateA = "af_date_a"
         static let dateB = "af_date_b"
         static let destinationA = "af_destination_a"
         static let destinationB = "af_destination_b"
         static let description = "af_description"
-        static let className = "af_class"
-        static let eventStart = "af_event_start"
-        static let eventEnd = "af_event_end"
         static let departingDepartureDate = "af_departing_departure_date"
         static let returningDepartureDate = "af_returning_departure_date"
         static let destinationList = "af_destination_list"
@@ -233,11 +186,68 @@ public enum AppsFlyerConstants {
         static let adPlacementId = "af_adrev_placement_id"
         static let adSize = "af_adrev_ad_size"
         static let adMediatedNetworkName = "af_adrev_mediated_network_name"
-        static let touchObj = "af_touch_obj"
-        static let afChannel = "af_channel"
         
-        static let eventTime = "af_event_time"
-        static let userId = "af_user_id"
+        // SDK Method Parameters
+
+        // logLocation() parameters
+        static let latitude = "latitude"
+        static let longitude = "longitude"
+
+        // logAdRevenue() parameters
+        static let adMonetizationNetwork = "monetization_network"
+        static let adMediationNetwork = "mediation_network"
+        static let adRevenue = "revenue"
+        static let adAdditionalParameters = "additional_parameters"
+        
+        // setDMAConsent() parameters
+        static let gdprApplies = "gdpr_applies"
+        static let consentForDataUsage = "consent_for_data_usage"
+        static let consentForAdsPersonalization = "consent_for_ads_personalization"
+        static let consentForAdStorage = "consent_for_ad_storage"
+
+        // setPhoneNumber() parameters
+        static let phoneNumber = "phone_number"
+        
+        // addPushNotificationDeepLinkPath() parameters
+        static let pushDeepLinkPath = "push_deep_link_path"
+        
+        // validateAndLogPurchase() parameters
+        static let purchaseType = "purchase_type"
+        static let transactionId = "transaction_id"
+        static let productId = "product_id"
+        static let price = "price"
+        static let purchaseAdditionalParameters = "purchase_additional_parameters"
+        
+        // setSharingFilterForPartners() parameters
+        static let sharingFilterPartners = "sharing_filter_partners"
+        
+        // appendCustomData() parameters
+        static let customDataToAppend = "custom_data_to_append"
+        
+        // setCurrentDeviceLanguage() parameters
+        static let deviceLanguage = "device_language"
+        
+        // setPartnerData() parameters
+        static let partnerId = "partner_id"
+        static let partnerInfo = "partner_info"
+        
+        // appendParametersToDeepLinkingURL() parameters
+        static let urlContains = "url_contains"
+        static let urlParameters = "url_parameters"
+        
+        // resolveDeepLinkURLs() parameters
+        static let deepLinkUrls = "resolve_deep_links"
+        
+        // setHost() parameters
+        static let host = "host"
+        static let hostPrefix = "host_prefix"
+        
+        // setUserEmails() parameters
+        static let emails = "customer_emails"
+        static let cryptType = "email_hash_type"
+        
+        // stopTracking() parameters
+        static let stopTracking = "stop_tracking"
     }
     
     public enum Attribution {
@@ -248,7 +258,7 @@ public enum AppsFlyerConstants {
         static let conversionFailure = "conversion_data_failure"
         static let errorName = "error_name"
         static let errorDescription = "error_description"
-        static let status = "af_status"
+        static let status = "af_status" // Is this correct? It's not 'Predefined event parameters' https://dev.appsflyer.com/hc/docs/in-app-events-ios
         static let source = "source"
         static let campaign = "campaign"
         static let error = "appsflyer_error"
