@@ -164,7 +164,7 @@ class EcommerceMainViewController: UIViewController {
         
         alert.addAction(UIAlertAction(title: "Yes, Stop", style: .destructive) { _ in
             let data: [String: Any] = [
-                "command_name": "stoptracking",
+                "command_name": "disabletracking",
                 "stop_tracking": true
             ]
             TealiumHelper.trackEvent(title: "stop_tracking", data: data)

@@ -129,7 +129,7 @@ public enum AppsFlyerConstants {
         static let receiptId = "af_receipt_id"
         static let tutorialId = "af_tutorial_id"
         static let virtualCurrencyName = "af_virtual_currency_name"
-        static let deepLinkUrls = "af_deep_link"
+        // static let deepLinkUrls = "af_deep_link" - also used in resolveDeepLinkURLs()
         static let oldVersion = "af_old_version"
         static let newVersion = "af_new_version"
         static let reviewText = "af_review_text"
@@ -210,7 +210,7 @@ public enum AppsFlyerConstants {
         static let phoneNumber = "phone_number"
         
         // addPushNotificationDeepLinkPath() parameters
-        static let pushDeepLinkPath = "push_deep_link_path"
+        static let pushNotificationDeepLinkPath = "push_notification_deep_link_path"
         
         // validateAndLogPurchase() parameters
         static let purchaseType = "purchase_type"

@@ -158,6 +158,17 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     }
     
     func setDMAConsent(gdprApplies: Bool?, consentForDataUsage: Bool?, consentForAdsPersonalization: Bool?, consentForAdStorage: Bool?) {
+        // Mirror the guard logic from real AppsFlyerInstance
+        guard let gdprApplies = gdprApplies else { 
+            // Still record that the method was called for testing purposes
+            lastGdprApplies = gdprApplies
+            lastConsentForDataUsage = consentForDataUsage
+            lastConsentForAdsPersonalization = consentForAdsPersonalization
+            lastConsentForAdStorage = consentForAdStorage
+            setDMAConsentCount += 1
+            return 
+        }
+        
         lastGdprApplies = gdprApplies
         lastConsentForDataUsage = consentForDataUsage
         lastConsentForAdsPersonalization = consentForAdsPersonalization
@@ -176,6 +187,15 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     }
     
     func validateAndLogPurchase(purchaseType: String?, transactionId: String?, productId: String?, price: String?, currency: String?, additionalParameters: [String: Any]?) {
+        // Mirror the guard logic from real AppsFlyerInstance
+        guard let productId = productId,
+              let price = price,
+              let currency = currency,
+              let transactionId = transactionId
+              else {
+            return
+        }
+        
         lastPurchaseType = purchaseType
         lastTransactionId = transactionId
         lastProductId = productId
@@ -210,5 +230,73 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         lastUrlContains = contains
         lastUrlParameters = parameters
         appendParametersToDeeplinkURLCount += 1
+    }
+    
+    // MARK: - Test Helper Methods
+    
+    func reset() {
+        // Reset all counters
+        initWithoutConfigCount = 0
+        initWithConfigCount = 0
+        logEventCount = 0
+        logLocationCount = 0
+        setHostCount = 0
+        setUserEmailsCount = 0
+        setCurrencyCodeCount = 0
+        setCustomerIdCount = 0
+        disableTrackingCount = 0
+        resolveDeepLinkURLsCount = 0
+        anonymizeUserCount = 0
+        logAdRevenueCount = 0
+        setDMAConsentCount = 0
+        setPhoneNumberCount = 0
+        addPushNotificationDeepLinkPathCount = 0
+        validateAndLogPurchaseCount = 0
+        setSharingFilterForPartnersCount = 0
+        appendCustomDataCount = 0
+        setCurrentDeviceLanguageCount = 0
+        setPartnerDataCount = 0
+        appendParametersToDeeplinkURLCount = 0
+        
+        // Reset all last values
+        lastAppId = nil
+        lastAppDevKey = nil
+        lastSettings = nil
+        lastEventName = nil
+        lastEventValues = nil
+        lastLatitude = nil
+        lastLongitude = nil
+        lastHost = nil
+        lastHostPrefix = nil
+        lastEmails = nil
+        lastCryptType = nil
+        lastCurrency = nil
+        lastCustomerId = nil
+        lastAnonymize = nil
+        lastDisable = nil
+        lastDeepLinkUrls = nil
+        lastMonetizationNetwork = nil
+        lastMediationNetwork = nil
+        lastRevenue = nil
+        lastAdditionalParameters = nil
+        lastGdprApplies = nil
+        lastConsentForDataUsage = nil
+        lastConsentForAdsPersonalization = nil
+        lastConsentForAdStorage = nil
+        lastPhoneNumber = nil
+        lastPushDeepLinkPaths = nil
+        lastPurchaseType = nil
+        lastTransactionId = nil
+        lastProductId = nil
+        lastPrice = nil
+        lastPurchaseCurrency = nil
+        lastPurchaseAdditionalParameters = nil
+        lastPartners = nil
+        lastAdditionalData = nil
+        lastDeviceLanguage = nil
+        lastPartnerId = nil
+        lastPartnerInfo = nil
+        lastUrlContains = nil
+        lastUrlParameters = nil
     }
 }

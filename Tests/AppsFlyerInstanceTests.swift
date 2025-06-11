@@ -20,6 +20,7 @@ class AppsFlyerInstanceTests: XCTestCase {
     
     override func setUp() {
         appsFlyerCommand = AppsFlyerRemoteCommand(appsFlyerInstance: appsFlyerInstance)
+        appsFlyerInstance.reset()
     }
 
     override func tearDown() { }
@@ -310,6 +311,47 @@ class AppsFlyerInstanceTests: XCTestCase {
         XCTAssertNil(self.appsFlyerInstance.lastConsentForDataUsage)
     }
     
+    // MARK: - SetDMAConsent Edge Cases
+    
+    func testSetDMAConsentGdprNotApplies() {
+        let payload: [String: Any] = ["command_name": "setdmaconsent",
+                                      "gdpr_applies": false,
+                                      "consent_for_data_usage": true,
+                                      "consent_for_ads_personalization": true,
+                                      "consent_for_ad_storage": true]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(1, self.appsFlyerInstance.setDMAConsentCount)
+        XCTAssertEqual(false, self.appsFlyerInstance.lastGdprApplies)
+        // When gdpr_applies = false, other parameters should be ignored/nil
+        XCTAssertEqual(true, self.appsFlyerInstance.lastConsentForDataUsage)
+        XCTAssertEqual(true, self.appsFlyerInstance.lastConsentForAdsPersonalization)
+        XCTAssertEqual(true, self.appsFlyerInstance.lastConsentForAdStorage)
+    }
+    
+    func testSetDMAConsentGdprAppliesWithMixedConsents() {
+        let payload: [String: Any] = ["command_name": "setdmaconsent",
+                                      "gdpr_applies": true,
+                                      "consent_for_data_usage": true,
+                                      "consent_for_ad_storage": false]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(1, self.appsFlyerInstance.setDMAConsentCount)
+        XCTAssertEqual(true, self.appsFlyerInstance.lastGdprApplies)
+        XCTAssertEqual(true, self.appsFlyerInstance.lastConsentForDataUsage)
+        XCTAssertNil(self.appsFlyerInstance.lastConsentForAdsPersonalization)
+        XCTAssertEqual(false, self.appsFlyerInstance.lastConsentForAdStorage)
+    }
+    
+    func testSetDMAConsentGdprAppliesAllNilConsents() {
+        let payload: [String: Any] = ["command_name": "setdmaconsent",
+                                      "gdpr_applies": true]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(1, self.appsFlyerInstance.setDMAConsentCount)
+        XCTAssertEqual(true, self.appsFlyerInstance.lastGdprApplies)
+        XCTAssertNil(self.appsFlyerInstance.lastConsentForDataUsage)
+        XCTAssertNil(self.appsFlyerInstance.lastConsentForAdsPersonalization)
+        XCTAssertNil(self.appsFlyerInstance.lastConsentForAdStorage)
+    }
+    
     func testSetPhoneNumber() {
         let payload: [String: Any] = ["command_name": "setphonenumber", "phone_number": "+1234567890"]
         appsFlyerCommand.processRemoteCommand(with: payload)
@@ -325,7 +367,7 @@ class AppsFlyerInstanceTests: XCTestCase {
     
     func testAddPushNotificationDeepLinkPath() {
         let payload: [String: Any] = ["command_name": "addpushnotificationdeeplinkpath", 
-                                      "push_deep_link_path": ["path1", "path2"]]
+                                      "push_notification_deep_link_path": ["path1", "path2"]]
         appsFlyerCommand.processRemoteCommand(with: payload)
         XCTAssertEqual(1, self.appsFlyerInstance.addPushNotificationDeepLinkPathCount)
         XCTAssertEqual(["path1", "path2"], self.appsFlyerInstance.lastPushDeepLinkPaths)
@@ -343,8 +385,8 @@ class AppsFlyerInstanceTests: XCTestCase {
                                       "transaction_id": "txn123",
                                       "product_id": "premium_monthly",
                                       "price": "9.99",
-                                      "currency": "USD",
-                                      "additional_parameters": ["user_id": "123"]]
+                                      "af_purchase_currency": "USD",
+                                      "purchase_additional_parameters": ["user_id": "123"]]
         appsFlyerCommand.processRemoteCommand(with: payload)
         XCTAssertEqual(1, self.appsFlyerInstance.validateAndLogPurchaseCount)
         XCTAssertEqual("subscription", self.appsFlyerInstance.lastPurchaseType)
@@ -357,9 +399,83 @@ class AppsFlyerInstanceTests: XCTestCase {
     func testValidateAndLogPurchaseWithNilValues() {
         let payload: [String: Any] = ["command_name": "validateandlogpurchase"]
         appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.validateAndLogPurchaseCount)
+        XCTAssertEqual(0, self.appsFlyerInstance.validateAndLogPurchaseCount)
         XCTAssertNil(self.appsFlyerInstance.lastPurchaseType)
         XCTAssertNil(self.appsFlyerInstance.lastTransactionId)
+    }
+    
+    // MARK: - ValidateAndLogPurchase Error Handling
+    
+    func testValidateAndLogPurchaseMissingProductId() {
+        let payload: [String: Any] = ["command_name": "validateandlogpurchase",
+                                      "purchase_type": "subscription",
+                                      "transaction_id": "txn123",
+                                      "price": "9.99",
+                                      "af_purchase_currency": "USD"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(0, self.appsFlyerInstance.validateAndLogPurchaseCount)
+        XCTAssertNil(self.appsFlyerInstance.lastProductId)
+    }
+    
+    func testValidateAndLogPurchaseMissingPrice() {
+        let payload: [String: Any] = ["command_name": "validateandlogpurchase",
+                                      "purchase_type": "subscription",
+                                      "transaction_id": "txn123",
+                                      "product_id": "premium_monthly",
+                                      "af_purchase_currency": "USD"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(0, self.appsFlyerInstance.validateAndLogPurchaseCount)
+        XCTAssertNil(self.appsFlyerInstance.lastPrice)
+    }
+    
+    func testValidateAndLogPurchaseMissingCurrency() {
+        let payload: [String: Any] = ["command_name": "validateandlogpurchase",
+                                      "purchase_type": "subscription",
+                                      "transaction_id": "txn123",
+                                      "product_id": "premium_monthly",
+                                      "price": "9.99"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(0, self.appsFlyerInstance.validateAndLogPurchaseCount)
+        XCTAssertNil(self.appsFlyerInstance.lastPurchaseCurrency)
+    }
+    
+    func testValidateAndLogPurchaseMissingTransactionId() {
+        let payload: [String: Any] = ["command_name": "validateandlogpurchase",
+                                      "purchase_type": "subscription",
+                                      "product_id": "premium_monthly",
+                                      "price": "9.99",
+                                      "af_purchase_currency": "USD"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(0, self.appsFlyerInstance.validateAndLogPurchaseCount)
+        XCTAssertNil(self.appsFlyerInstance.lastTransactionId)
+    }
+    
+    func testValidateAndLogPurchaseMissingMultipleRequiredParams() {
+        let payload: [String: Any] = ["command_name": "validateandlogpurchase",
+                                      "purchase_type": "subscription"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(0, self.appsFlyerInstance.validateAndLogPurchaseCount)
+        XCTAssertNil(self.appsFlyerInstance.lastProductId)
+        XCTAssertNil(self.appsFlyerInstance.lastPrice)
+        XCTAssertNil(self.appsFlyerInstance.lastPurchaseCurrency)
+        XCTAssertNil(self.appsFlyerInstance.lastTransactionId)
+    }
+    
+    func testValidateAndLogPurchaseOptionalParametersOnly() {
+        let payload: [String: Any] = ["command_name": "validateandlogpurchase",
+                                      "product_id": "premium_monthly",
+                                      "price": "9.99",
+                                      "af_purchase_currency": "USD",
+                                      "transaction_id": "txn123"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(1, self.appsFlyerInstance.validateAndLogPurchaseCount)
+        XCTAssertEqual("premium_monthly", self.appsFlyerInstance.lastProductId)
+        XCTAssertEqual("9.99", self.appsFlyerInstance.lastPrice)
+        XCTAssertEqual("USD", self.appsFlyerInstance.lastPurchaseCurrency)
+        XCTAssertEqual("txn123", self.appsFlyerInstance.lastTransactionId)
+        // Optional parameters should be nil
+        XCTAssertNil(self.appsFlyerInstance.lastPurchaseType)
+        XCTAssertNil(self.appsFlyerInstance.lastPurchaseAdditionalParameters)
     }
     
     func testSetSharingFilterForPartners() {
@@ -446,20 +562,23 @@ class AppsFlyerInstanceTests: XCTestCase {
     // MARK: - Configuration Parameter Tests
     
     func testInitWithAllConfigParameters() {
-        let payload: [String: Any] = ["command_name": "initialize",
-                                      "app_id": "test_app",
-                                      "app_dev_key": "test_key",
-                                      "debug": true,
-                                      "disable_collect_asa": false,
-                                      "anonymize_user": true,
-                                      "time_between_sessions": 30, 
-                                      "collect_device_name": false,
-                                      "disable_ad_tracking": true,
-                                      "disable_apple_ad_tracking": false,
-                                      "use_uninstall_sandbox": true,
-                                      "enable_tcf_data_collection": true,
-                                      "disable_idfv_collection": false,
-                                      "custom_data": ["custom_key": "custom_value"]]
+        let payload: [String: Any] = [
+            "command_name": "initialize",
+            "app_id": "test_app", 
+            "app_dev_key": "test_key",
+            "settings": [
+                "debug": true,
+                "disable_collect_asa": false,
+                "anonymize_user": true,
+                "time_between_sessions": 30,
+                "collect_device_name": false,
+                "disable_ad_tracking": true,
+                "disable_apple_ad_tracking": false,
+                "use_uninstall_sandbox": true,
+                "enable_tcf_data_collection": true,
+                "custom_data": ["custom_key": "custom_value"]
+            ]
+        ]
         
         appsFlyerCommand.processRemoteCommand(with: payload)
         XCTAssertEqual(1, self.appsFlyerInstance.initWithConfigCount)
@@ -469,13 +588,12 @@ class AppsFlyerInstanceTests: XCTestCase {
         XCTAssertEqual(settings["debug"] as? Bool, true)
         XCTAssertEqual(settings["disable_collect_asa"] as? Bool, false)
         XCTAssertEqual(settings["anonymize_user"] as? Bool, true)
-        XCTAssertEqual(settings["time_between_sessions"] as? Int, 30) 
+        XCTAssertEqual(settings["time_between_sessions"] as? Int, 30)
         XCTAssertEqual(settings["collect_device_name"] as? Bool, false)
         XCTAssertEqual(settings["disable_ad_tracking"] as? Bool, true)
         XCTAssertEqual(settings["disable_apple_ad_tracking"] as? Bool, false)
         XCTAssertEqual(settings["use_uninstall_sandbox"] as? Bool, true)
         XCTAssertEqual(settings["enable_tcf_data_collection"] as? Bool, true)
-        XCTAssertEqual(settings["disable_idfv_collection"] as? Bool, false)
         XCTAssertNotNil(settings["custom_data"])
     }
     

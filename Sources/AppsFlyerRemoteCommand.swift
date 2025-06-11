@@ -188,9 +188,9 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 }
                 appsFlyerInstance.setPhoneNumber(phoneNumber)
             case .addPushNotificationDeepLinkPath:
-                guard let paths = payload[AppsFlyerConstants.Parameters.pushDeepLinkPath] as? [String] else {
+                guard let paths = payload[AppsFlyerConstants.Parameters.pushNotificationDeepLinkPath] as? [String] else {
                     if debug {
-                        print("\(AppsFlyerConstants.errorPrefix)Must provide push_deep_link_path parameter")
+                        print("\(AppsFlyerConstants.errorPrefix)Must provide push_notification_deep_link_path parameter")
                     }
                     return
                 }

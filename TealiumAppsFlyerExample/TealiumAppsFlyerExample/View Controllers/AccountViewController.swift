@@ -73,7 +73,7 @@ class AccountViewController: UIViewController {
     @IBAction func addPushDeepLinkPath(_ sender: UIButton) {
         let data: [String: Any] = [
             "command_name": "addpushnotificationdeeplinkpath",
-            "push_deep_link_path": ["offers", "profile", "rewards"]
+            "push_notification_deep_link_path": ["offers", "profile", "rewards"]
         ]
         
         TealiumHelper.trackEvent(title: "add_push_path", data: data)

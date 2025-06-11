@@ -147,6 +147,72 @@ class AdvancedFeaturesViewController: UIViewController {
         showAlert(message: "Additional data set with custom attributes")
     }
     
+    // MARK: - New Advanced Features (Previously Missing)
+    @IBAction func setDeviceLanguage(_ sender: UIButton) {
+        let languages = ["en", "es", "fr", "de", "ja", "zh", "ru"]
+        let selectedLanguage = languages.randomElement()!
+        
+        let data: [String: Any] = [
+            "command_name": "setcurrentdevicelanguage",
+            "device_language": selectedLanguage
+        ]
+        
+        TealiumHelper.trackEvent(title: "set_device_language", data: data)
+        showAlert(message: "Device language set to: \(selectedLanguage)")
+    }
+    
+    @IBAction func setPartnerData(_ sender: UIButton) {
+        let partnerInfo: [String: Any] = [
+            "campaign_id": "summer_2024",
+            "creative_id": "banner_001",
+            "placement": "home_screen",
+            "user_segment": "premium",
+            "partner_user_id": "partner_\(Int.random(in: 1000...9999))"
+        ]
+        
+        let data: [String: Any] = [
+            "command_name": "setpartnerdata",
+            "partner_id": "facebook_int",
+            "partner_info": partnerInfo
+        ]
+        
+        TealiumHelper.trackEvent(title: "set_partner_data", data: data)
+        showAlert(message: "Partner data set for Facebook with campaign info")
+    }
+    
+    @IBAction func appendDeepLinkParameters(_ sender: UIButton) {
+        let urlParameters = [
+            "utm_source": "app",
+            "utm_medium": "share",
+            "utm_campaign": "user_referral",
+            "user_id": customerIdTextField.text ?? "unknown"
+        ]
+        
+        let data: [String: Any] = [
+            "command_name": "appendparameterstodeeplinkurl",
+            "url_contains": "myapp://",
+            "url_parameters": urlParameters
+        ]
+        
+        TealiumHelper.trackEvent(title: "append_deeplink_params", data: data)
+        showAlert(message: "Deep link parameters appended for myapp:// URLs")
+    }
+    
+    @IBAction func setCustomerId(_ sender: UIButton) {
+        guard let customerId = customerIdTextField.text, !customerId.isEmpty else {
+            showAlert(message: "Please enter a customer ID first")
+            return
+        }
+        
+        let data: [String: Any] = [
+            "command_name": "setcustomerid",
+            "af_customer_user_id": customerId
+        ]
+        
+        TealiumHelper.trackEvent(title: "set_customer_id", data: data)
+        showAlert(message: "Customer ID set: \(customerId)")
+    }
+    
     // MARK: - Helper Methods
     private func showAlert(message: String) {
         let alert = UIAlertController(title: "AppsFlyer Advanced", message: message, preferredStyle: .alert)
