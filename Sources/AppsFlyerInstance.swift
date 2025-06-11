@@ -36,7 +36,7 @@ public protocol AppsFlyerCommand {
     func appendCustomData(_ data: [String: Any])
     func setCurrentDeviceLanguage(_ language: String)
     func setPartnerData(partnerId: String, partnerInfo: [String: Any])
-    func appendParametersToDeepLinkingURL(contains: String, parameters: [String: String])
+    func appendParametersToDeeplinkURL(contains: String, parameters: [String: String])
 }
 
 public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
@@ -85,13 +85,9 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
             appsFlyer.disableAdvertisingIdentifier = disableAdTracking
             appsFlyer.disableIDFVCollection = disableAdTracking
         }
-        // Legacy configuration key (maintained for backward compatibility)
+        // TODO: Should be renamed to disableSKAdNetwork
         if let disableAppleAdTracking = settings[AppsFlyerConstants.Configuration.disableAppleAdTracking] as? Bool {
             appsFlyer.disableSKAdNetwork = disableAppleAdTracking
-        }
-        // Alternative naming for better consistency with SDK property name
-        if let disableSKAdNetwork = settings[AppsFlyerConstants.Configuration.disableSKAdNetwork] as? Bool {
-            appsFlyer.disableSKAdNetwork = disableSKAdNetwork
         }
         if let disableAppleAdsAttribution = settings[AppsFlyerConstants.Configuration.disableAppleAdsAttribution] as? Bool {
             appsFlyer.disableAppleAdsAttribution = disableAppleAdsAttribution
@@ -117,12 +113,6 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         if let enableTCFDataCollection = settings[AppsFlyerConstants.Configuration.enableTCFDataCollection] as? Bool {
             appsFlyer.enableTCFDataCollection(enableTCFDataCollection)
         }
-        if let disableAdvertisingIdentifier = settings[AppsFlyerConstants.Configuration.disableAdvertisingIdentifier] as? Bool {
-            appsFlyer.disableAdvertisingIdentifier = disableAdvertisingIdentifier
-        }
-        if let disableIDFVCollection = settings[AppsFlyerConstants.Configuration.disableIDFVCollection] as? Bool {
-            appsFlyer.disableIDFVCollection = disableIDFVCollection
-        }
         if let appInviteOneLinkID = settings[AppsFlyerConstants.Configuration.appInviteOneLinkID] as? String {
             appsFlyer.appInviteOneLinkID = appInviteOneLinkID
         }
@@ -138,11 +128,23 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         // Wait for ATT authorization if configured (iOS 14+ only)
         if let attTimeout = settings[AppsFlyerConstants.Configuration.waitForATTUserAuthorizationTimeoutInterval] as? Int {
             if #available(iOS 14, *) {
-                appsFlyer.waitForATTUserAuthorization(withTimeoutInterval: TimeInterval(attTimeout))
+                appsFlyer.waitForATTUserAuthorization(timeoutInterval: TimeInterval(attTimeout))
             }
         }
         if let resolveDeepLinks = settings[AppsFlyerConstants.Configuration.resolveDeepLinks] as? [String] {
             appsFlyer.resolveDeepLinkURLs = resolveDeepLinks
+        }
+        if let stopTracking = settings[AppsFlyerConstants.Configuration.stopTracking] as? Bool {
+            appsFlyer.isStopped = stopTracking
+        }
+        if let customerEmails = settings[AppsFlyerConstants.Configuration.customerEmails] as? [String],
+           let emailHashType = settings[AppsFlyerConstants.Configuration.emailHashType] as? Int {
+            let emailCryptType = AppsFlyerConstants.EmailHashType.appsFlyerTypeFromInt(emailHashType)
+            appsFlyer.setUserEmails(customerEmails, with: emailCryptType)
+        }
+        if let host = settings[AppsFlyerConstants.Configuration.host] as? String,
+           let hostPrefix = settings[AppsFlyerConstants.Configuration.hostPrefix] as? String {
+            appsFlyer.setHost(host, withHostPrefix: hostPrefix)
         }
     }
 
@@ -292,11 +294,11 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     }
 
     public func setPartnerData(partnerId: String, partnerInfo: [String: Any]) {
-        AppsFlyerLib.shared().setPartnerData(partnerId, partnerInfo: partnerInfo)
+        AppsFlyerLib.shared().setPartnerData(partnerId: partnerId, partnerInfo: partnerInfo)
     }
 
-    public func appendParametersToDeepLinkingURL(contains: String, parameters: [String: String]) {
-        AppsFlyerLib.shared().appendParametersToDeepLinkingURL(contains, parameters: parameters)
+    public func appendParametersToDeeplinkURL(contains: String, parameters: [String: String]) {
+        AppsFlyerLib.shared().appendParametersToDeeplinkURL(contains: contains, parameters: parameters)
     }
 
 }

@@ -441,7 +441,6 @@ class AppsFlyerInstanceTests: XCTestCase {
                                       "disable_apple_ad_tracking": false,
                                       "use_uninstall_sandbox": true,
                                       "enable_tcf_data_collection": true,
-                                      "disable_advertising_identifier": true,
                                       "disable_idfv_collection": false,
                                       "custom_data": ["custom_key": "custom_value"]]
         
@@ -459,7 +458,6 @@ class AppsFlyerInstanceTests: XCTestCase {
         XCTAssertEqual(settings["disable_apple_ad_tracking"] as? Bool, false)
         XCTAssertEqual(settings["use_uninstall_sandbox"] as? Bool, true)
         XCTAssertEqual(settings["enable_tcf_data_collection"] as? Bool, true)
-        XCTAssertEqual(settings["disable_advertising_identifier"] as? Bool, true)
         XCTAssertEqual(settings["disable_idfv_collection"] as? Bool, false)
         XCTAssertNotNil(settings["custom_data"])
     }

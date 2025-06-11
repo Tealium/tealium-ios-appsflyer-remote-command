@@ -21,13 +21,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         notificationRegistration(application)
-        
-        // Initialize AppsFlyer through Tealium Remote Command
-        TealiumHelper.trackEvent(title: "initialize", data: [
-            "app_id": "1234567890",
-            "app_dev_key": "YOUR_APPSFLYER_DEV_KEY"
-        ])
-        
         return true
     }
     

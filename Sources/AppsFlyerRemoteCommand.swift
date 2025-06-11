@@ -89,9 +89,6 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 if let disableAppleAdTracking = payload[AppsFlyerConstants.Configuration.disableAppleAdTracking] as? Bool {
                     configSettings[AppsFlyerConstants.Configuration.disableAppleAdTracking] = disableAppleAdTracking
                 }
-                if let disableSKAdNetwork = payload[AppsFlyerConstants.Configuration.disableSKAdNetwork] as? Bool {
-                    configSettings[AppsFlyerConstants.Configuration.disableSKAdNetwork] = disableSKAdNetwork
-                }
                 if let resolveDeepLinks = payload[AppsFlyerConstants.Configuration.resolveDeepLinks] as? [String] {
                     configSettings[AppsFlyerConstants.Configuration.resolveDeepLinks] = resolveDeepLinks
                 }
@@ -106,12 +103,6 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 }
                 if let enableTCFDataCollection = payload[AppsFlyerConstants.Configuration.enableTCFDataCollection] as? Bool {
                     configSettings[AppsFlyerConstants.Configuration.enableTCFDataCollection] = enableTCFDataCollection
-                }
-                if let disableAdvertisingIdentifier = payload[AppsFlyerConstants.Configuration.disableAdvertisingIdentifier] as? Bool {
-                    configSettings[AppsFlyerConstants.Configuration.disableAdvertisingIdentifier] = disableAdvertisingIdentifier
-                }
-                if let disableIDFVCollection = payload[AppsFlyerConstants.Configuration.disableIDFVCollection] as? Bool {
-                    configSettings[AppsFlyerConstants.Configuration.disableIDFVCollection] = disableIDFVCollection
                 }
                 if let appInviteOneLinkID = payload[AppsFlyerConstants.Configuration.appInviteOneLinkID] as? String {
                     configSettings[AppsFlyerConstants.Configuration.appInviteOneLinkID] = appInviteOneLinkID
@@ -128,6 +119,21 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 if let attTimeout = payload[AppsFlyerConstants.Configuration.waitForATTUserAuthorizationTimeoutInterval] as? Int {
                     configSettings[AppsFlyerConstants.Configuration.waitForATTUserAuthorizationTimeoutInterval] = attTimeout
                 }
+                if let stopTracking = payload[AppsFlyerConstants.Configuration.stopTracking] as? Bool {
+                    configSettings[AppsFlyerConstants.Configuration.stopTracking] = stopTracking
+                }
+                if let customerEmails = payload[AppsFlyerConstants.Configuration.customerEmails] as? [String] {
+                    configSettings[AppsFlyerConstants.Configuration.customerEmails] = customerEmails
+                }
+                if let emailHashType = payload[AppsFlyerConstants.Configuration.emailHashType] as? Int {
+                    configSettings[AppsFlyerConstants.Configuration.emailHashType] = emailHashType
+                }
+                if let host = payload[AppsFlyerConstants.Configuration.host] as? String {
+                    configSettings[AppsFlyerConstants.Configuration.host] = host
+                }
+                if let hostPrefix = payload[AppsFlyerConstants.Configuration.hostPrefix] as? String {
+                    configSettings[AppsFlyerConstants.Configuration.hostPrefix] = hostPrefix
+                }
                 
                 // Handle legacy nested settings structure for backward compatibility
                 if let legacySettings = payload[AppsFlyerConstants.Configuration.settings] as? [String: Any] {
@@ -142,10 +148,10 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 
                 return appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: configSettings.isEmpty ? nil : configSettings)
             case .trackLocation:
-                guard let latitude = payload[AppsFlyerConstants.Parameters.latitude] as? Double,
-                    let longitude = payload[AppsFlyerConstants.Parameters.longitude] as? Double else {
-                    guard let latitude = payload[AppsFlyerConstants.Parameters.latitude] as? Int,
-                          let longitude = payload[AppsFlyerConstants.Parameters.longitude] as? Int else {
+                guard let latitude = payload[AppsFlyerConstants.Parameters.afLatitude] as? Double,
+                    let longitude = payload[AppsFlyerConstants.Parameters.afLongitude] as? Double else {
+                    guard let latitude = payload[AppsFlyerConstants.Parameters.afLatitude] as? Int,
+                          let longitude = payload[AppsFlyerConstants.Parameters.afLongitude] as? Int else {
                         if debug {
                             print("\(AppsFlyerConstants.errorPrefix)Must map af_lat and af_long in the AppsFlyer Mobile Remote Command tag to track location")
                         }
@@ -291,10 +297,10 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                    let partnerInfo = payload[AppsFlyerConstants.Parameters.partnerInfo] as? [String: Any] {
                     appsFlyerInstance.setPartnerData(partnerId: partnerId, partnerInfo: partnerInfo)
                 }
-            case .appendParametersToDeepLinkingURL:
+            case .appendParametersToDeeplinkURL:
                 if let urlContains = payload[AppsFlyerConstants.Parameters.urlContains] as? String,
                    let urlParameters = payload[AppsFlyerConstants.Parameters.urlParameters] as? [String: String] {
-                    appsFlyerInstance.appendParametersToDeepLinkingURL(contains: urlContains, parameters: urlParameters)
+                    appsFlyerInstance.appendParametersToDeeplinkURL(contains: urlContains, parameters: urlParameters)
                 }
             default:
                 appsFlyerInstance.logEvent(getEventName(command: $0), values: getEventParameters(payload: payload))
@@ -311,7 +317,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     }
     
     func getEventName(command: String) -> String {
-        if let standardEvent = AppsFlyerConstants.StandardEvent(rawValue: command.lowercased()) {
+        if let standardEvent = AppsFlyerConstants.EventCommandNames(rawValue: command.lowercased()) {
             return standardEvent.appsFlyerEventName
         }
         return command
@@ -334,19 +340,21 @@ fileprivate extension Dictionary where Key == String, Value == Any {
             $0.key != AppsFlyerConstants.Configuration.collectDeviceName &&
             $0.key != AppsFlyerConstants.Configuration.disableAdTracking &&
             $0.key != AppsFlyerConstants.Configuration.disableAppleAdTracking &&
-            $0.key != AppsFlyerConstants.Configuration.disableSKAdNetwork &&
             $0.key != AppsFlyerConstants.Configuration.disableAppleAdsAttribution &&
             $0.key != AppsFlyerConstants.Configuration.customData &&
             $0.key != AppsFlyerConstants.Configuration.useUninstallSandbox &&
             $0.key != AppsFlyerConstants.Configuration.enableTCFDataCollection &&
-            $0.key != AppsFlyerConstants.Configuration.disableAdvertisingIdentifier &&
-            $0.key != AppsFlyerConstants.Configuration.disableIDFVCollection &&
             $0.key != AppsFlyerConstants.Configuration.appInviteOneLinkID &&
             $0.key != AppsFlyerConstants.Configuration.deepLinkTimeout &&
             $0.key != AppsFlyerConstants.Configuration.oneLinkCustomDomains &&
             $0.key != AppsFlyerConstants.Configuration.useReceiptValidationSandbox &&
             $0.key != AppsFlyerConstants.Configuration.waitForATTUserAuthorizationTimeoutInterval &&
-            $0.key != AppsFlyerConstants.Configuration.resolveDeepLinks
+            $0.key != AppsFlyerConstants.Configuration.resolveDeepLinks &&
+            $0.key != AppsFlyerConstants.Configuration.stopTracking &&
+            $0.key != AppsFlyerConstants.Configuration.customerEmails &&
+            $0.key != AppsFlyerConstants.Configuration.emailHashType &&
+            $0.key != AppsFlyerConstants.Configuration.host &&
+            $0.key != AppsFlyerConstants.Configuration.hostPrefix
         }
     }
 }
