@@ -15,25 +15,24 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var initWithConfigCount = 0
     var logEventCount = 0
     var logLocationCount = 0
-    var handlePushNotificationCount = 0
+
     var setHostCount = 0
     var setUserEmailsCount = 0
-    var currencyCodeCount = 0
-    var customerIdCount = 0
+    var setCurrencyCodeCount = 0
+    var setCustomerIdCount = 0
+    var disableTrackingCount = 0
     var resolveDeepLinkURLsCount = 0
-    
-    // New method counters
-    var stopTrackingCount = 0
     var anonymizeUserCount = 0
     var logAdRevenueCount = 0
     var setDMAConsentCount = 0 
     var setPhoneNumberCount = 0
     var addPushNotificationDeepLinkPathCount = 0
-
     var validateAndLogPurchaseCount = 0
-
     var setSharingFilterForPartnersCount = 0
     var appendCustomDataCount = 0
+    var setCurrentDeviceLanguageCount = 0
+    var setPartnerDataCount = 0
+    var appendParametersToDeeplinkURLCount = 0
     
     // Last received values for verification
     var lastAppId: String?
@@ -50,7 +49,7 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var lastCurrency: String?
     var lastCustomerId: String?
     var lastAnonymize: Bool?
-    var lastStop: Bool?
+    var lastDisable: Bool?
     var lastDeepLinkUrls: [String]?
     var lastMonetizationNetwork: String?
     var lastMediationNetwork: String?
@@ -60,7 +59,6 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var lastConsentForDataUsage: Bool?
     var lastConsentForAdsPersonalization: Bool?
     var lastConsentForAdStorage: Bool?
-    var lastEnable: Bool?
 
     var lastPhoneNumber: String?
     var lastPushDeepLinkPaths: [String]?
@@ -74,6 +72,11 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
 
     var lastPartners: [String]?
     var lastAdditionalData: [String: Any]?
+    var lastDeviceLanguage: String?
+    var lastPartnerId: String?
+    var lastPartnerInfo: [String: Any]?
+    var lastUrlContains: String?
+    var lastUrlParameters: [String: String]?
     
     func initialize(appId: String, appDevKey: String) {
         lastAppId = appId
@@ -104,10 +107,6 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         logLocationCount += 1
     }
     
-    func handlePushNofification(payload: [String : Any]?) {
-        handlePushNotificationCount += 1
-    }
-    
     func setHost(_ host: String, with prefix: String) {
         lastHost = host
         lastHostPrefix = prefix
@@ -122,12 +121,17 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     
     func currencyCode(_ currency: String) {
         lastCurrency = currency
-        currencyCodeCount += 1
+        setCurrencyCodeCount += 1
     }
     
     func customerId(_ id: String) {
         lastCustomerId = id
-        customerIdCount += 1
+        setCustomerIdCount += 1
+    }
+    
+    func disableTracking(_ disable: Bool) {
+        lastDisable = disable
+        disableTrackingCount += 1
     }
     
     func resolveDeepLinkURLs(_ urls: [String]) {
@@ -138,14 +142,7 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {
         onReady(AppsFlyerLib.shared())
     }
-    
-    // MARK: - New Methods
-    
-    func stopTracking(_ stop: Bool) {
-        lastStop = stop
-        stopTrackingCount += 1
-    }
-    
+
     func anonymizeUser(_ anonymize: Bool) {
         lastAnonymize = anonymize
         anonymizeUserCount += 1
@@ -196,5 +193,22 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     func appendCustomData(_ data: [String: Any]) {
         lastAdditionalData = data
         appendCustomDataCount += 1
+    }
+    
+    func setCurrentDeviceLanguage(_ language: String) {
+        lastDeviceLanguage = language
+        setCurrentDeviceLanguageCount += 1
+    }
+    
+    func setPartnerData(partnerId: String, partnerInfo: [String: Any]) {
+        lastPartnerId = partnerId
+        lastPartnerInfo = partnerInfo
+        setPartnerDataCount += 1
+    }
+    
+    func appendParametersToDeeplinkURL(contains: String, parameters: [String: String]) {
+        lastUrlContains = contains
+        lastUrlParameters = parameters
+        appendParametersToDeeplinkURLCount += 1
     }
 }

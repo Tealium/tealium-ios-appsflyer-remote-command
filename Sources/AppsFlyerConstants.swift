@@ -237,7 +237,7 @@ public enum AppsFlyerConstants {
         static let urlParameters = "url_parameters"
         
         // resolveDeepLinkURLs() parameters
-        static let deepLinkUrls = "resolve_deep_links"
+        static let deepLinkUrls = "af_deep_link"
         
         // setHost() parameters
         static let host = "host"
