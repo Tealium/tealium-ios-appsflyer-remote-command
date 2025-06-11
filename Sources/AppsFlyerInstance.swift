@@ -24,9 +24,9 @@ public protocol AppsFlyerCommand {
     func setUserEmails(emails: [String], with cryptType: Int)
     func currencyCode(_ currency: String)
     func customerId(_ id: String)
-    func stopTracking(_ stop: Bool)
-    func anonymizeUser(_ anonymize: Bool)
+    func disableTracking(_ disable: Bool)
     func resolveDeepLinkURLs(_ urls: [String])
+    func anonymizeUser(_ anonymize: Bool)
     func logAdRevenue(monetizationNetwork: String, mediationNetwork: String, revenue: Double, currency: String, additionalParameters: [String: Any]?)
     func setDMAConsent(gdprApplies: Bool?, consentForDataUsage: Bool?, consentForAdsPersonalization: Bool?, consentForAdStorage: Bool?)
     func setPhoneNumber(_ phoneNumber: String)
@@ -80,12 +80,10 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         if let debug = settings[AppsFlyerConstants.Configuration.debug] as? Bool {
             appsFlyer.isDebug = debug
         }
-        // TODO: Remove, splited into disableAdvertisingIdentifier and disableIDFVCollection
         if let disableAdTracking = settings[AppsFlyerConstants.Configuration.disableAdTracking] as? Bool {
             appsFlyer.disableAdvertisingIdentifier = disableAdTracking
             appsFlyer.disableIDFVCollection = disableAdTracking
         }
-        // TODO: Should be renamed to disableSKAdNetwork
         if let disableAppleAdTracking = settings[AppsFlyerConstants.Configuration.disableAppleAdTracking] as? Bool {
             appsFlyer.disableSKAdNetwork = disableAppleAdTracking
         }
@@ -177,15 +175,14 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         AppsFlyerLib.shared().customerUserID = id
     }
 
-    public func stopTracking(_ stop: Bool) {
-        AppsFlyerLib.shared().isStopped = stop
+    public func disableTracking(_ disable: Bool) {
+        AppsFlyerLib.shared().isStopped = disable
     }
 
     public func anonymizeUser(_ anonymize: Bool) {
         AppsFlyerLib.shared().anonymizeUser = anonymize
     }
 
-    // TiQ: resolve_deep_links
     public func resolveDeepLinkURLs(_ urls: [String]) {
         AppsFlyerLib.shared().resolveDeepLinkURLs = urls
     }

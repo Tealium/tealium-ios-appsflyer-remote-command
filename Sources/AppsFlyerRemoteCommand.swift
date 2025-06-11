@@ -62,96 +62,18 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                         print("\(AppsFlyerConstants.errorPrefix) Must set an app_id and api_key in AppsFlyer Mobile Remote Command tag to initialize")
                         return
                 }
-                
-                // Collect all configuration parameters from payload (flat structure like Android)
-                var configSettings: [String: Any] = [:]
-                
-                // Add all config parameters if they exist in payload
-                if let debugValue = payload[AppsFlyerConstants.Configuration.debug] as? Bool {
-                    configSettings[AppsFlyerConstants.Configuration.debug] = debugValue
-                    debug = debugValue
+                guard let settings = payload[AppsFlyerConstants.Configuration.settings] as? [String: Any] else {
+                    return appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: nil)
                 }
-                if let disableCollectASA = payload[AppsFlyerConstants.Configuration.disableCollectASA] as? Bool {
-                    configSettings[AppsFlyerConstants.Configuration.disableCollectASA] = disableCollectASA
-                }
-                if let anonymizeUser = payload[AppsFlyerConstants.Configuration.anonymizeUser] as? Bool {
-                    configSettings[AppsFlyerConstants.Configuration.anonymizeUser] = anonymizeUser
-                }
-                if let minTimeBetweenSessions = payload[AppsFlyerConstants.Configuration.minTimeBetweenSessions] as? Int {
-                    configSettings[AppsFlyerConstants.Configuration.minTimeBetweenSessions] = minTimeBetweenSessions
-                }
-                if let collectDeviceName = payload[AppsFlyerConstants.Configuration.collectDeviceName] as? Bool {
-                    configSettings[AppsFlyerConstants.Configuration.collectDeviceName] = collectDeviceName
-                }
-                if let disableAdTracking = payload[AppsFlyerConstants.Configuration.disableAdTracking] as? Bool {
-                    configSettings[AppsFlyerConstants.Configuration.disableAdTracking] = disableAdTracking
-                }
-                if let disableAppleAdTracking = payload[AppsFlyerConstants.Configuration.disableAppleAdTracking] as? Bool {
-                    configSettings[AppsFlyerConstants.Configuration.disableAppleAdTracking] = disableAppleAdTracking
-                }
-                if let resolveDeepLinks = payload[AppsFlyerConstants.Configuration.resolveDeepLinks] as? [String] {
-                    configSettings[AppsFlyerConstants.Configuration.resolveDeepLinks] = resolveDeepLinks
-                }
-                if let disableAppleAdsAttribution = payload[AppsFlyerConstants.Configuration.disableAppleAdsAttribution] as? Bool {
-                    configSettings[AppsFlyerConstants.Configuration.disableAppleAdsAttribution] = disableAppleAdsAttribution
-                }
-                if let customData = payload[AppsFlyerConstants.Configuration.customData] as? [AnyHashable: Any] {
-                    configSettings[AppsFlyerConstants.Configuration.customData] = customData
-                }
-                if let useUninstallSandbox = payload[AppsFlyerConstants.Configuration.useUninstallSandbox] as? Bool {
-                    configSettings[AppsFlyerConstants.Configuration.useUninstallSandbox] = useUninstallSandbox
-                }
-                if let enableTCFDataCollection = payload[AppsFlyerConstants.Configuration.enableTCFDataCollection] as? Bool {
-                    configSettings[AppsFlyerConstants.Configuration.enableTCFDataCollection] = enableTCFDataCollection
-                }
-                if let appInviteOneLinkID = payload[AppsFlyerConstants.Configuration.appInviteOneLinkID] as? String {
-                    configSettings[AppsFlyerConstants.Configuration.appInviteOneLinkID] = appInviteOneLinkID
-                }
-                if let deepLinkTimeout = payload[AppsFlyerConstants.Configuration.deepLinkTimeout] as? Int {
-                    configSettings[AppsFlyerConstants.Configuration.deepLinkTimeout] = deepLinkTimeout
-                }
-                if let oneLinkCustomDomains = payload[AppsFlyerConstants.Configuration.oneLinkCustomDomains] as? [String] {
-                    configSettings[AppsFlyerConstants.Configuration.oneLinkCustomDomains] = oneLinkCustomDomains
-                }
-                if let useReceiptValidationSandbox = payload[AppsFlyerConstants.Configuration.useReceiptValidationSandbox] as? Bool {
-                    configSettings[AppsFlyerConstants.Configuration.useReceiptValidationSandbox] = useReceiptValidationSandbox
-                }
-                if let attTimeout = payload[AppsFlyerConstants.Configuration.waitForATTUserAuthorizationTimeoutInterval] as? Int {
-                    configSettings[AppsFlyerConstants.Configuration.waitForATTUserAuthorizationTimeoutInterval] = attTimeout
-                }
-                if let stopTracking = payload[AppsFlyerConstants.Configuration.stopTracking] as? Bool {
-                    configSettings[AppsFlyerConstants.Configuration.stopTracking] = stopTracking
-                }
-                if let customerEmails = payload[AppsFlyerConstants.Configuration.customerEmails] as? [String] {
-                    configSettings[AppsFlyerConstants.Configuration.customerEmails] = customerEmails
-                }
-                if let emailHashType = payload[AppsFlyerConstants.Configuration.emailHashType] as? Int {
-                    configSettings[AppsFlyerConstants.Configuration.emailHashType] = emailHashType
-                }
-                if let host = payload[AppsFlyerConstants.Configuration.host] as? String {
-                    configSettings[AppsFlyerConstants.Configuration.host] = host
-                }
-                if let hostPrefix = payload[AppsFlyerConstants.Configuration.hostPrefix] as? String {
-                    configSettings[AppsFlyerConstants.Configuration.hostPrefix] = hostPrefix
-                }
-                
-                // Handle legacy nested settings structure for backward compatibility
-                if let legacySettings = payload[AppsFlyerConstants.Configuration.settings] as? [String: Any] {
-                    if configSettings.isEmpty {
-                        // Use legacy structure if no flat config found
-                        configSettings = legacySettings
-                        if let settingsDebug = legacySettings[AppsFlyerConstants.Configuration.debug] as? Bool {
+                if let settingsDebug = settings[AppsFlyerConstants.Configuration.debug] as? Bool {
                             debug = settingsDebug
                         }
-                    }
-                }
-                
-                return appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: configSettings.isEmpty ? nil : configSettings)
+                return appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: settings)
             case .trackLocation:
-                guard let latitude = payload[AppsFlyerConstants.Parameters.afLatitude] as? Double,
-                    let longitude = payload[AppsFlyerConstants.Parameters.afLongitude] as? Double else {
-                    guard let latitude = payload[AppsFlyerConstants.Parameters.afLatitude] as? Int,
-                          let longitude = payload[AppsFlyerConstants.Parameters.afLongitude] as? Int else {
+                guard let latitude = payload[AppsFlyerConstants.Parameters.latitude] as? Double,
+                    let longitude = payload[AppsFlyerConstants.Parameters.longitude] as? Double else {
+                    guard let latitude = payload[AppsFlyerConstants.Parameters.latitude] as? Int,
+                          let longitude = payload[AppsFlyerConstants.Parameters.longitude] as? Int else {
                         if debug {
                             print("\(AppsFlyerConstants.errorPrefix)Must map af_lat and af_long in the AppsFlyer Mobile Remote Command tag to track location")
                         }
@@ -183,7 +105,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                         return
                 }
                 appsFlyerInstance.setUserEmails(emails: emails, with: cryptType)
-            case .currencyCode:
+            case .setCurrencyCode:
                 guard let currency = payload[AppsFlyerConstants.Parameters.currency] as? String else {
                     if debug {
                         print("\(AppsFlyerConstants.errorPrefix)Must map af_currency in the AppsFlyer Mobile Remote Command tag to call set currency")
@@ -191,7 +113,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     return
                 }
                 appsFlyerInstance.currencyCode(currency)
-            case .customerId:
+            case .setCustomerId:
                 guard let customerId = payload[AppsFlyerConstants.Parameters.customerId] as? String else {
                     if debug {
                         print("\(AppsFlyerConstants.errorPrefix)Must map af_customer_user_id in the AppsFlyer Mobile Remote Command tag to call set customer id")
@@ -207,14 +129,14 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     return
                 }
                 appsFlyerInstance.anonymizeUser(anonymize)
-            case .stopTracking:
-                guard let stop = payload[AppsFlyerConstants.Parameters.stopTracking] as? Bool else {
+            case .disableTracking:
+                guard let disable = payload[AppsFlyerConstants.Parameters.stopTracking] as? Bool else {
                     if debug {
-                        print("\(AppsFlyerConstants.errorPrefix)Must provide stop_tracking parameter")
+                        print("\(AppsFlyerConstants.errorPrefix)If you would like to disable all tracking, please set the enabled/disabled flag in the configuration settings of the AppsFlyer Mobile Remote Command tag")
                     }
-                    return
+                    return appsFlyerInstance.disableTracking(false)
                 }
-                appsFlyerInstance.stopTracking(stop)
+                appsFlyerInstance.disableTracking(disable)
             case .resolveDeepLinkUrls:
                 guard let deepLinkUrls = payload[AppsFlyerConstants.Parameters.deepLinkUrls] as? [String] else {
                     if debug {

@@ -5,6 +5,7 @@
 //  Created by Christina S on 5/29/19.
 //  Copyright © 2019 Tealium. All rights reserved.
 //
+
 import Foundation
 import AppsFlyerLib
 
@@ -20,31 +21,31 @@ public enum AppsFlyerConstants {
 
     public enum EventCommandNames: String, CaseIterable {
         case achievelevel = "achievelevel"
+        case adclick = "adclick"
+        case adview = "adview"
         case addpaymentinfo = "addpaymentinfo"
         case addtocart = "addtocart"
         case addtowishlist = "addtowishlist"
         case completeregistration = "completeregistration"
         case completetutorial = "tutorialcompletion"
+        case viewedcontent = "viewedcontent"
+        case search = "search"
+        case rate = "rate"
+        case starttrial = "starttrial"
+        case subscribe = "subscribe"
         case initiatecheckout = "initiatecheckout"
         case purchase = "purchase"
-        case subscribe = "subscribe"
-        case starttrial = "starttrial"
-        case rate = "rate"
-        case spentcredits = "spentcredits"
         case unlockachievement = "unlockachievement"
-        case viewedcontent = "viewedcontent"
+        case spentcredits = "spentcredits"
         case listview = "listview"
-        case adclick = "adclick"
-        case adview = "adview"
+        case travelbooking = "travelbooking"
         case share = "share"
         case invite = "invite"
-        case login = "login"
         case reengage = "reengage"
-        case pushnotificationopened = "pushnotificationopened"
         case update = "update"
-        case search = "search"
-        case travelbooking = "travelbooking"
+        case login = "login"
         case customersegment = "customersegment"
+        case pushnotificationopened = "pushnotificationopened"
         case locationchanged = "locationchanged"
         case locationcoordinates = "locationcoordinates"
         case orderid = "orderid"
@@ -55,11 +56,11 @@ public enum AppsFlyerConstants {
         case trackLocation = "tracklocation"
         case setHost = "sethost"
         case setUserEmails = "setuseremails"
-        case currencyCode = "currencycode"
-        case customerId = "customerid"
-        case anonymizeUser = "anonymizeuser"
+        case setCurrencyCode = "setcurrencycode"
+        case setCustomerId = "setcustomerid"
+        case disableTracking = "disabletracking"
         case resolveDeepLinkUrls = "resolvedeeplinkurls"
-        case stopTracking = "stoptracking"
+        case anonymizeUser = "anonymizeuser"
         case logAdRevenue = "logadrevenue"
         case setDMAConsent = "setdmaconsent"
         case setPhoneNumber = "setphonenumber"
@@ -101,7 +102,7 @@ public enum AppsFlyerConstants {
     }
 
     public enum Parameters {
-        // Configuration Parameters (not af_ prefix)
+        // Configuration Parameters
         static let event = "event"
 
         // Standard Event Parameters
@@ -128,7 +129,7 @@ public enum AppsFlyerConstants {
         static let receiptId = "af_receipt_id"
         static let tutorialId = "af_tutorial_id"
         static let virtualCurrencyName = "af_virtual_currency_name"
-        static let deepLink = "af_deep_link"
+        static let deepLinkUrls = "af_deep_link"
         static let oldVersion = "af_old_version"
         static let newVersion = "af_new_version"
         static let reviewText = "af_review_text"
@@ -182,12 +183,16 @@ public enum AppsFlyerConstants {
         static let adPlacementId = "af_adrev_placement_id"
         static let adSize = "af_adrev_ad_size"
         static let adMediatedNetworkName = "af_adrev_mediated_network_name"
-        
+        static let pushDeepLinkPath = "af_push_deep_link_path"
+
         // SDK Method Parameters
 
         // logLocation() parameters
         static let latitude = "af_lat"
         static let longitude = "af_long"
+        
+        // ??
+        static let pushPayload = "af_push_payload"
 
         // logAdRevenue() parameters
         static let adMonetizationNetwork = "monetization_network"
@@ -254,7 +259,7 @@ public enum AppsFlyerConstants {
         static let conversionFailure = "conversion_data_failure"
         static let errorName = "error_name"
         static let errorDescription = "error_description"
-        static let status = "af_status" // Is this correct? It's not 'Predefined event parameters' https://dev.appsflyer.com/hc/docs/in-app-events-ios
+        static let status = "af_status"
         static let source = "source"
         static let campaign = "campaign"
         static let error = "appsflyer_error"
