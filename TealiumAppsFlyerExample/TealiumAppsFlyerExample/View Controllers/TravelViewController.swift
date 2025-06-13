@@ -10,7 +10,6 @@ import UIKit
 
 class TravelViewController: UIViewController {
 
-    
     @IBOutlet weak var originTextField: UITextField!
     @IBOutlet weak var destinationTextField: UITextField!
     @IBOutlet weak var startDateTextField: UITextField!
@@ -91,19 +90,18 @@ class TravelViewController: UIViewController {
         let travelPrice = Double.random(in: 299.99...2999.99)
         
         let data: [String: Any] = [
-            "command_name": "travelbooking",
-            "af_destination_a": origin,
-            "af_destination_b": destination,
-            "af_departing_departure_date": startDateTextField.text ?? "",
-            "af_returning_departure_date": endDateTextField.text ?? "",
-            "af_num_adults": Int(numberOfPassengersLabel.text ?? "1") ?? 1,
-            "af_num_children": 0,
-            "af_num_infants": 0,
-            "af_class": travelClassLabel.titleForSegment(at: travelClassLabel.selectedSegmentIndex) ?? "Economy",
-            "af_city": destination,
-            "af_country": "Unknown",
-            "af_revenue": travelPrice,
-            "af_currency": "USD",
+            "destination_a": origin,
+            "destination_b": destination,
+            "departing_departure_date": startDateTextField.text ?? "",
+            "returning_departure_date": endDateTextField.text ?? "",
+            "num_adults": Int(numberOfPassengersLabel.text ?? "1") ?? 1,
+            "num_children": 0,
+            "num_infants": 0,
+            "class": travelClassLabel.titleForSegment(at: travelClassLabel.selectedSegmentIndex) ?? "Economy",
+            "city": destination,
+            "country": "Unknown",
+            "order_total": travelPrice,
+            "currency_code": "USD",
             "additional_parameters": [
                 "booking_source": "mobile_app",
                 "trip_type": "round_trip"
@@ -127,10 +125,9 @@ class TravelViewController: UIViewController {
         let randomLocation = locations.randomElement()!
         
         let data: [String: Any] = [
-            "command_name": "locationcoordinates",
-            "af_lat": randomLocation.1,
-            "af_long": randomLocation.2,
-            "af_city": randomLocation.0
+            "latitude": randomLocation.1,
+            "longitude": randomLocation.2,
+            "city": randomLocation.0
         ]
         
         TealiumHelper.trackEvent(title: "track_location_coordinates", data: data)
@@ -141,10 +138,9 @@ class TravelViewController: UIViewController {
         let newLocation = destinationTextField.text ?? "Paris"
         
         let data: [String: Any] = [
-            "command_name": "locationchanged",
-            "af_city": newLocation,
-            "af_region": "Europe",
-            "af_country": "France"
+            "city": newLocation,
+            "region": "Europe",
+            "country": "France"
         ]
         
         TealiumHelper.trackEvent(title: "location_changed", data: data)
@@ -161,7 +157,6 @@ class TravelViewController: UIViewController {
         ]
         
         let data: [String: Any] = [
-            "command_name": "update",
             "additional_parameters": preferences
         ]
         

@@ -52,8 +52,7 @@ class AdvancedFeaturesViewController: UIViewController {
         }
         
         let data: [String: Any] = [
-            "command_name": "setphonenumber",
-            "phone_number": phoneNumber
+            "user_phone_number": phoneNumber
         ]
         
         TealiumHelper.trackEvent(title: "set_phone_number", data: data)
@@ -63,12 +62,11 @@ class AdvancedFeaturesViewController: UIViewController {
     // MARK: - Advanced AppsFlyer Features
     @IBAction func logAdRevenue(_ sender: UIButton) {
         let data: [String: Any] = [
-            "command_name": "logadrevenue",
-            "monetization_network": "Unity Ads",
-            "mediation_network": "ironsource",
+            "ad_monetization_network": "Unity Ads",
+            "ad_mediation_network": "ironsource",
             "ad_revenue": 0.25,
-            "af_currency": "USD",
-            "additional_parameters": [
+            "currency_code": "USD",
+            "ad_additional_parameters": [
                 "placement": "rewarded_video",
                 "ad_unit": "main_menu"
             ]
@@ -80,19 +78,18 @@ class AdvancedFeaturesViewController: UIViewController {
     
     @IBAction func validatePurchase(_ sender: UIButton) {
         let data: [String: Any] = [
-            "command_name": "validateandlogpurchase",
-            "purchase_type": "subscription",
-            "product_id": "premium_monthly",
-            "price": "9.99",
-            "purchase_currency": "USD",
-            "transaction_id": "sample_transaction_id_123",
-            "additional_parameters": [
+            "purchase_validation_type": "subscription",
+            "purchase_validation_product_id": "premium_monthly",
+            "purchase_validation_price": "9.99",
+            "purchase_validation_currency": "USD",
+            "purchase_validation_transaction_id": "sample_transaction_id_123",
+            "purchase_validation_additional_parameters": [
                 "subscription_period": "monthly",
                 "trial_period": "7_days"
             ]
         ]
         
-        TealiumHelper.trackEvent(title: "validate_purchase", data: data)
+        TealiumHelper.trackEvent(title: "validate_and_log_purchase", data: data)
         showAlert(message: "Purchase validated: Premium Monthly $9.99")
     }
     
@@ -101,7 +98,6 @@ class AdvancedFeaturesViewController: UIViewController {
         let consentValue = consentSwitch.isOn
         
         let data: [String: Any] = [
-            "command_name": "setdmaconsent",
             "gdpr_applies": true,
             "consent_for_data_usage": consentValue,
             "consent_for_ads_personalization": consentValue,
@@ -114,7 +110,6 @@ class AdvancedFeaturesViewController: UIViewController {
     
     @IBAction func anonymizeUser(_ sender: UIButton) {
         let data: [String: Any] = [
-            "command_name": "anonymizeuser",
             "anonymize_user": true
         ]
         
@@ -124,17 +119,15 @@ class AdvancedFeaturesViewController: UIViewController {
     
     @IBAction func setSharingFilter(_ sender: UIButton) {
         let data: [String: Any] = [
-            "command_name": "setsharingfilterforpartners",
             "sharing_filter_partners": ["facebook_int", "googleadwords_int", "snapchat_int"]
         ]
         
-        TealiumHelper.trackEvent(title: "set_sharing_filter", data: data)
+        TealiumHelper.trackEvent(title: "set_sharing_filter_for_partners", data: data)
         showAlert(message: "Sharing filter set for selected partners")
     }
     
     @IBAction func appendCustomData(_ sender: UIButton) {
         let data: [String: Any] = [
-            "command_name": "appendcustomdata",
             "custom_data_to_append": [
                 "custom_attribute_1": "value1",
                 "custom_attribute_2": "value2",
@@ -153,7 +146,6 @@ class AdvancedFeaturesViewController: UIViewController {
         let selectedLanguage = languages.randomElement()!
         
         let data: [String: Any] = [
-            "command_name": "setcurrentdevicelanguage",
             "device_language": selectedLanguage
         ]
         
@@ -171,7 +163,6 @@ class AdvancedFeaturesViewController: UIViewController {
         ]
         
         let data: [String: Any] = [
-            "command_name": "setpartnerdata",
             "partner_id": "facebook_int",
             "partner_info": partnerInfo
         ]
@@ -189,12 +180,11 @@ class AdvancedFeaturesViewController: UIViewController {
         ]
         
         let data: [String: Any] = [
-            "command_name": "appendparameterstodeeplinkurl",
             "url_contains": "myapp://",
             "url_parameters": urlParameters
         ]
         
-        TealiumHelper.trackEvent(title: "append_deeplink_params", data: data)
+        TealiumHelper.trackEvent(title: "append_parameters_to_deeplink", data: data)
         showAlert(message: "Deep link parameters appended for myapp:// URLs")
     }
     
@@ -205,8 +195,7 @@ class AdvancedFeaturesViewController: UIViewController {
         }
         
         let data: [String: Any] = [
-            "command_name": "setcustomerid",
-            "af_customer_user_id": customerId
+            "customer_id": customerId
         ]
         
         TealiumHelper.trackEvent(title: "set_customer_id", data: data)

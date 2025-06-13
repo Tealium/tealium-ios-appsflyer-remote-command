@@ -30,8 +30,8 @@
     "mappings": {
         "latitude": "af_lat",
         "longitude": "af_long",
-        "customer_email": "customer_emails",
-        "hash_type": "email_hash_type",
+        "customer_emails": "customer_emails",
+        "email_hash_type": "email_hash_type",
         "currency_code": "af_currency",
         "customer_id": "af_customer_user_id",
         "ad_monetization_network": "monetization_network",
@@ -149,7 +149,9 @@
         "user_id": "user_id",
         "push_payload": "push_payload",
         "event_latitude": "event.af_lat",
-        "event_longitude": "event.af_long"
+        "event_longitude": "event.af_long",
+        "stop_tracking": "stop_tracking",
+        "anonymize_user": "anonymize_user"
     },
     "commands": {
         "launch": "initialize",

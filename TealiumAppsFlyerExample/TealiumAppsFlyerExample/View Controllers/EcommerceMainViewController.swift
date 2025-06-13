@@ -117,7 +117,6 @@ class EcommerceMainViewController: UIViewController {
         
         alert.addAction(UIAlertAction(title: "Accept All", style: .default) { _ in
             let data: [String: Any] = [
-                "command_name": "setdmaconsent",
                 "gdpr_applies": true,
                 "consent_for_data_usage": true,
                 "consent_for_ads_personalization": true,
@@ -129,13 +128,12 @@ class EcommerceMainViewController: UIViewController {
         
         alert.addAction(UIAlertAction(title: "Decline", style: .destructive) { _ in
             let data: [String: Any] = [
-                "command_name": "setdmaconsent",
                 "gdpr_applies": true,
                 "consent_for_data_usage": false,
                 "consent_for_ads_personalization": false,
                 "consent_for_ad_storage": false
             ]
-            TealiumHelper.trackEvent(title: "gdpr_consent_decline", data: data)
+            TealiumHelper.trackEvent(title: "set_dma_consent", data: data)
             self.showAlert(title: "Consent", message: "All consents declined")
         })
         
@@ -151,8 +149,7 @@ class EcommerceMainViewController: UIViewController {
         ]
         
         let data: [String: Any] = [
-            "command_name": "resolvedeeplinkurls",
-            "af_deep_link": deepLinks
+            "deep_link": deepLinks
         ]
         
         TealiumHelper.trackEvent(title: "resolve_deep_links", data: data)
@@ -164,7 +161,6 @@ class EcommerceMainViewController: UIViewController {
         
         alert.addAction(UIAlertAction(title: "Yes, Stop", style: .destructive) { _ in
             let data: [String: Any] = [
-                "command_name": "disabletracking",
                 "stop_tracking": true
             ]
             TealiumHelper.trackEvent(title: "stop_tracking", data: data)
