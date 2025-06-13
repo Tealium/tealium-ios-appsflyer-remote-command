@@ -57,15 +57,15 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
             let commandName = AppsFlyerConstants.CommandNames(rawValue: $0.lowercased())
             switch commandName {
             case .initialize:
-                guard let appId = payload[AppsFlyerConstants.Configuration.appId] as? String,
-                    let appDevKey = payload[AppsFlyerConstants.Configuration.appDevKey] as? String else {
+                guard let appId = payload[AppsFlyerConstants.Configuration.appId.rawValue] as? String,
+                    let appDevKey = payload[AppsFlyerConstants.Configuration.appDevKey.rawValue] as? String else {
                         print("\(AppsFlyerConstants.errorPrefix) Must set an app_id and api_key in AppsFlyer Mobile Remote Command tag to initialize")
                         return
                 }
-                guard let settings = payload[AppsFlyerConstants.Configuration.settings] as? [String: Any] else {
+                guard let settings = payload[AppsFlyerConstants.Configuration.settings.rawValue] as? [String: Any] else {
                     return appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: nil)
                 }
-                if let settingsDebug = settings[AppsFlyerConstants.Configuration.debug] as? Bool {
+                if let settingsDebug = settings[AppsFlyerConstants.Configuration.debug.rawValue] as? Bool {
                             debug = settingsDebug
                         }
                 return appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: settings)
@@ -122,7 +122,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 }
                 appsFlyerInstance.customerId(customerId)
             case .anonymizeUser:
-                guard let anonymize = payload[AppsFlyerConstants.Configuration.anonymizeUser] as? Bool else {
+                guard let anonymize = payload[AppsFlyerConstants.Parameters.anonymizeUser] as? Bool else {
                     if debug {
                         print("\(AppsFlyerConstants.errorPrefix)Must provide anonymize_user parameter")
                     }
@@ -239,44 +239,52 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     }
     
     func getEventName(command: String) -> String {
-        if let standardEvent = AppsFlyerConstants.EventCommandNames(rawValue: command.lowercased()) {
-            return standardEvent.appsFlyerEventName
+        if let appsFlyerEvent = AppsFlyerConstants.EventCommandNames(rawValue: command.lowercased()) {
+            let eventName = standardEventMapping[appsFlyerEvent] ?? command
+            return eventName
         }
         return command
     }
+    
+    private let standardEventMapping: [AppsFlyerConstants.EventCommandNames: String] = [
+        .achievelevel: AppsFlyerConstants.Events.achievedLevel,
+        .adclick: AppsFlyerConstants.Events.adClick,
+        .adview: AppsFlyerConstants.Events.adView,
+        .addpaymentinfo: AppsFlyerConstants.Events.addPaymentInfo,
+        .addtocart: AppsFlyerConstants.Events.addToCart,
+        .addtowishlist: AppsFlyerConstants.Events.addToWishlist,
+        .completeregistration: AppsFlyerConstants.Events.completeRegistration,
+        .completetutorial: AppsFlyerConstants.Events.completeTutorial,
+        .viewedcontent: AppsFlyerConstants.Events.contentView,
+        .search: AppsFlyerConstants.Events.search,
+        .rate: AppsFlyerConstants.Events.rate,
+        .starttrial: AppsFlyerConstants.Events.startTrial,
+        .subscribe: AppsFlyerConstants.Events.subscribe,
+        .initiatecheckout: AppsFlyerConstants.Events.initiateCheckout,
+        .purchase: AppsFlyerConstants.Events.purchase,
+        .unlockachievement: AppsFlyerConstants.Events.unlockAchievement,
+        .spentcredits: AppsFlyerConstants.Events.spentCredits,
+        .listview: AppsFlyerConstants.Events.listView,
+        .travelbooking: AppsFlyerConstants.Events.travelBooking,
+        .share: AppsFlyerConstants.Events.share,
+        .invite: AppsFlyerConstants.Events.invite,
+        .reengage: AppsFlyerConstants.Events.reEngage,
+        .update: AppsFlyerConstants.Events.update,
+        .login: AppsFlyerConstants.Events.login,
+        .customersegment: AppsFlyerConstants.Events.customerSegment,
+        .pushnotificationopened: AppsFlyerConstants.Events.pushNotificationOpened,
+        .locationcoordinates: AppsFlyerConstants.Events.locationCoordinates
+    ]
 
 }
 
 fileprivate extension Dictionary where Key == String, Value == Any {
     func filterVariables() -> [String: Any] {
-        self.filter {
-            $0.key != "method" &&
-            $0.key != AppsFlyerConstants.commandName &&
-            $0.key != AppsFlyerConstants.Configuration.debug &&
-            $0.key != AppsFlyerConstants.Configuration.appDevKey &&
-            $0.key != AppsFlyerConstants.Configuration.appId &&
-            $0.key != AppsFlyerConstants.Configuration.settings &&
-            $0.key != AppsFlyerConstants.Configuration.anonymizeUser &&
-            $0.key != AppsFlyerConstants.Configuration.disableCollectASA &&
-            $0.key != AppsFlyerConstants.Configuration.minTimeBetweenSessions &&
-            $0.key != AppsFlyerConstants.Configuration.collectDeviceName &&
-            $0.key != AppsFlyerConstants.Configuration.disableAdTracking &&
-            $0.key != AppsFlyerConstants.Configuration.disableAppleAdTracking &&
-            $0.key != AppsFlyerConstants.Configuration.disableAppleAdsAttribution &&
-            $0.key != AppsFlyerConstants.Configuration.customData &&
-            $0.key != AppsFlyerConstants.Configuration.useUninstallSandbox &&
-            $0.key != AppsFlyerConstants.Configuration.enableTCFDataCollection &&
-            $0.key != AppsFlyerConstants.Configuration.appInviteOneLinkID &&
-            $0.key != AppsFlyerConstants.Configuration.deepLinkTimeout &&
-            $0.key != AppsFlyerConstants.Configuration.oneLinkCustomDomains &&
-            $0.key != AppsFlyerConstants.Configuration.useReceiptValidationSandbox &&
-            $0.key != AppsFlyerConstants.Configuration.waitForATTUserAuthorizationTimeoutInterval &&
-            $0.key != AppsFlyerConstants.Configuration.resolveDeepLinks &&
-            $0.key != AppsFlyerConstants.Configuration.stopTracking &&
-            $0.key != AppsFlyerConstants.Configuration.customerEmails &&
-            $0.key != AppsFlyerConstants.Configuration.emailHashType &&
-            $0.key != AppsFlyerConstants.Configuration.host &&
-            $0.key != AppsFlyerConstants.Configuration.hostPrefix
-        }
+        let excludedKeys: Set<String> = ["method", AppsFlyerConstants.commandName]
+        let allExcludedKeys = excludedKeys.union(AppsFlyerConstants.Configuration.allConfigurationKeys)
+        
+        return self.filter { !allExcludedKeys.contains($0.key) }
     }
 }
+
+

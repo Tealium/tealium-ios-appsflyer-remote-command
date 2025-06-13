@@ -73,75 +73,75 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         appsFlyer.appsFlyerDevKey = appDevKey
         appsFlyer.appleAppID = appId
         
-        guard let settings = settings else {
+        guard let settings: [String : Any] else {
             return
         }
         
-        if let debug = settings[AppsFlyerConstants.Configuration.debug] as? Bool {
+        if let debug = settings[AppsFlyerConstants.Configuration.debug.rawValue] as? Bool {
             appsFlyer.isDebug = debug
         }
-        if let disableAdTracking = settings[AppsFlyerConstants.Configuration.disableAdTracking] as? Bool {
+        if let disableAdTracking = settings[AppsFlyerConstants.Configuration.disableAdTracking.rawValue] as? Bool {
             appsFlyer.disableAdvertisingIdentifier = disableAdTracking
             appsFlyer.disableIDFVCollection = disableAdTracking
         }
-        if let disableAppleAdTracking = settings[AppsFlyerConstants.Configuration.disableAppleAdTracking] as? Bool {
+        if let disableAppleAdTracking = settings[AppsFlyerConstants.Configuration.disableAppleAdTracking.rawValue] as? Bool {
             appsFlyer.disableSKAdNetwork = disableAppleAdTracking
         }
-        if let disableAppleAdsAttribution = settings[AppsFlyerConstants.Configuration.disableAppleAdsAttribution] as? Bool {
+        if let disableAppleAdsAttribution = settings[AppsFlyerConstants.Configuration.disableAppleAdsAttribution.rawValue] as? Bool {
             appsFlyer.disableAppleAdsAttribution = disableAppleAdsAttribution
         }
-        if let disableCollectASA = settings[AppsFlyerConstants.Configuration.disableCollectASA] as? Bool {
+        if let disableCollectASA = settings[AppsFlyerConstants.Configuration.disableCollectASA.rawValue] as? Bool {
             appsFlyer.disableCollectASA = disableCollectASA
         }
-        if let minTimeBetweenSessions = settings[AppsFlyerConstants.Configuration.minTimeBetweenSessions] as? Int {
+        if let minTimeBetweenSessions = settings[AppsFlyerConstants.Configuration.minTimeBetweenSessions.rawValue] as? Int {
             appsFlyer.minTimeBetweenSessions = UInt(minTimeBetweenSessions)
         }
-        if let anonymizeUser = settings[AppsFlyerConstants.Configuration.anonymizeUser] as? Bool {
+        if let anonymizeUser = settings[AppsFlyerConstants.Configuration.anonymizeUser.rawValue] as? Bool {
             appsFlyer.anonymizeUser = anonymizeUser
         }
-        if let shouldCollectDeviceName = settings[AppsFlyerConstants.Configuration.collectDeviceName] as? Bool {
+        if let shouldCollectDeviceName = settings[AppsFlyerConstants.Configuration.collectDeviceName.rawValue] as? Bool {
             appsFlyer.shouldCollectDeviceName = shouldCollectDeviceName
         }
-        if let customData = settings[AppsFlyerConstants.Configuration.customData] as? [AnyHashable: Any] {
+        if let customData = settings[AppsFlyerConstants.Configuration.customData.rawValue] as? [AnyHashable: Any] {
             appsFlyer.customData = customData
         }
-        if let useUninstallSandbox = settings[AppsFlyerConstants.Configuration.useUninstallSandbox] as? Bool {
+        if let useUninstallSandbox = settings[AppsFlyerConstants.Configuration.useUninstallSandbox.rawValue] as? Bool {
             appsFlyer.useUninstallSandbox = useUninstallSandbox
         }
-        if let enableTCFDataCollection = settings[AppsFlyerConstants.Configuration.enableTCFDataCollection] as? Bool {
+        if let enableTCFDataCollection = settings[AppsFlyerConstants.Configuration.enableTCFDataCollection.rawValue] as? Bool {
             appsFlyer.enableTCFDataCollection(enableTCFDataCollection)
         }
-        if let appInviteOneLinkID = settings[AppsFlyerConstants.Configuration.appInviteOneLinkID] as? String {
+        if let appInviteOneLinkID = settings[AppsFlyerConstants.Configuration.appInviteOneLinkID.rawValue] as? String {
             appsFlyer.appInviteOneLinkID = appInviteOneLinkID
         }
-        if let deepLinkTimeout = settings[AppsFlyerConstants.Configuration.deepLinkTimeout] as? Int {
+        if let deepLinkTimeout = settings[AppsFlyerConstants.Configuration.deepLinkTimeout.rawValue] as? Int {
             appsFlyer.deepLinkTimeout = UInt(deepLinkTimeout)
         }
-        if let oneLinkCustomDomains = settings[AppsFlyerConstants.Configuration.oneLinkCustomDomains] as? [String] {
+        if let oneLinkCustomDomains = settings[AppsFlyerConstants.Configuration.oneLinkCustomDomains.rawValue] as? [String] {
             appsFlyer.oneLinkCustomDomains = oneLinkCustomDomains
         }
-        if let useReceiptValidationSandbox = settings[AppsFlyerConstants.Configuration.useReceiptValidationSandbox] as? Bool {
+        if let useReceiptValidationSandbox = settings[AppsFlyerConstants.Configuration.useReceiptValidationSandbox.rawValue] as? Bool {
             appsFlyer.useReceiptValidationSandbox = useReceiptValidationSandbox
         }
         // Wait for ATT authorization if configured (iOS 14+ only)
-        if let attTimeout = settings[AppsFlyerConstants.Configuration.waitForATTUserAuthorizationTimeoutInterval] as? Int {
+        if let attTimeout = settings[AppsFlyerConstants.Configuration.waitForATTUserAuthorizationTimeoutInterval.rawValue] as? Int {
             if #available(iOS 14, *) {
                 appsFlyer.waitForATTUserAuthorization(timeoutInterval: TimeInterval(attTimeout))
             }
         }
-        if let resolveDeepLinks = settings[AppsFlyerConstants.Configuration.resolveDeepLinks] as? [String] {
+        if let resolveDeepLinks = settings[AppsFlyerConstants.Configuration.resolveDeepLinks.rawValue] as? [String] {
             appsFlyer.resolveDeepLinkURLs = resolveDeepLinks
         }
-        if let stopTracking = settings[AppsFlyerConstants.Configuration.stopTracking] as? Bool {
+        if let stopTracking = settings[AppsFlyerConstants.Configuration.stopTracking.rawValue] as? Bool {
             appsFlyer.isStopped = stopTracking
         }
-        if let customerEmails = settings[AppsFlyerConstants.Configuration.customerEmails] as? [String],
-           let emailHashType = settings[AppsFlyerConstants.Configuration.emailHashType] as? Int {
+        if let customerEmails = settings[AppsFlyerConstants.Configuration.customerEmails.rawValue] as? [String],
+           let emailHashType = settings[AppsFlyerConstants.Configuration.emailHashType.rawValue] as? Int {
             let emailCryptType = AppsFlyerConstants.EmailHashType.appsFlyerTypeFromInt(emailHashType)
             appsFlyer.setUserEmails(customerEmails, with: emailCryptType)
         }
-        if let host = settings[AppsFlyerConstants.Configuration.host] as? String,
-           let hostPrefix = settings[AppsFlyerConstants.Configuration.hostPrefix] as? String {
+        if let host = settings[AppsFlyerConstants.Configuration.host.rawValue] as? String,
+           let hostPrefix = settings[AppsFlyerConstants.Configuration.hostPrefix.rawValue] as? String {
             appsFlyer.setHost(host, withHostPrefix: hostPrefix)
         }
     }
@@ -159,32 +159,46 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     }
 
     public func setHost(_ host: String, with prefix: String) {
-        AppsFlyerLib.shared().setHost(host, withHostPrefix: prefix)
+        onReady { appsFlyer in
+            appsFlyer.setHost(host, withHostPrefix: prefix)
+        }
     }
 
     public func setUserEmails(emails: [String], with cryptType: Int) {
         let emailCryptType = AppsFlyerConstants.EmailHashType.appsFlyerTypeFromInt(cryptType)
-        AppsFlyerLib.shared().setUserEmails(emails, with: emailCryptType)
+        onReady { appsFlyer in
+            appsFlyer.setUserEmails(emails, with: emailCryptType)
+        }
     }
 
     public func currencyCode(_ currency: String) {
-        AppsFlyerLib.shared().currencyCode = currency
+        onReady { appsFlyer in
+            appsFlyer.currencyCode = currency
+        }
     }
 
     public func customerId(_ id: String) {
-        AppsFlyerLib.shared().customerUserID = id
+        onReady { appsFlyer in
+            appsFlyer.customerUserID = id
+        }
     }
 
     public func disableTracking(_ disable: Bool) {
-        AppsFlyerLib.shared().isStopped = disable
+        onReady { appsFlyer in
+            appsFlyer.isStopped = disable
+        }
     }
 
     public func anonymizeUser(_ anonymize: Bool) {
-        AppsFlyerLib.shared().anonymizeUser = anonymize
+        onReady { appsFlyer in
+            appsFlyer.anonymizeUser = anonymize
+        }
     }
 
     public func resolveDeepLinkURLs(_ urls: [String]) {
-        AppsFlyerLib.shared().resolveDeepLinkURLs = urls
+        onReady { appsFlyer in
+            appsFlyer.resolveDeepLinkURLs = urls
+        }
     }
 
     public func logAdRevenue(monetizationNetwork: String, mediationNetwork: String, revenue: Double, currency: String, additionalParameters: [String: Any]?) {
@@ -205,42 +219,48 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     }
 
     public func setDMAConsent(gdprApplies: Bool?, consentForDataUsage: Bool?, consentForAdsPersonalization: Bool?, consentForAdStorage: Bool?) {
-        guard let gdprApplies = gdprApplies else { return }
+        guard let gdprApplies else { return }
         
-        if gdprApplies {
-            // User is subject to GDPR
-            let consent = AppsFlyerConsent(
-                isUserSubjectToGDPR: true,
-                hasConsentForDataUsage: consentForDataUsage.map { NSNumber(value: $0) },
-                hasConsentForAdsPersonalization: consentForAdsPersonalization.map { NSNumber(value: $0) },
-                hasConsentForAdStorage: consentForAdStorage.map { NSNumber(value: $0) }
-            )
-            AppsFlyerLib.shared().setConsentData(consent)
-        } else {
-            // User is not subject to GDPR - other parameters must be null
-            let consent = AppsFlyerConsent(
-                isUserSubjectToGDPR: false,
-                hasConsentForDataUsage: nil,
-                hasConsentForAdsPersonalization: nil,
-                hasConsentForAdStorage: nil
-            )
-            AppsFlyerLib.shared().setConsentData(consent)
+        onReady { appsFlyer in
+            if gdprApplies {
+                // User is subject to GDPR
+                let consent = AppsFlyerConsent(
+                    isUserSubjectToGDPR: true,
+                    hasConsentForDataUsage: consentForDataUsage.map { NSNumber(value: $0) },
+                    hasConsentForAdsPersonalization: consentForAdsPersonalization.map { NSNumber(value: $0) },
+                    hasConsentForAdStorage: consentForAdStorage.map { NSNumber(value: $0) }
+                )
+                    appsFlyer.setConsentData(consent)
+            } else {
+                // User is not subject to GDPR - other parameters must be null
+                let consent = AppsFlyerConsent(
+                    isUserSubjectToGDPR: false,
+                    hasConsentForDataUsage: nil,
+                    hasConsentForAdsPersonalization: nil,
+                    hasConsentForAdStorage: nil
+                )
+                appsFlyer.setConsentData(consent)
+            }
         }
     }
 
     public func setPhoneNumber(_ phoneNumber: String) {
-        AppsFlyerLib.shared().phoneNumber = phoneNumber
+        onReady { appsFlyer in
+            appsFlyer.phoneNumber = phoneNumber
+        }
     }
 
     public func addPushNotificationDeepLinkPath(_ paths: [String]) {
-        AppsFlyerLib.shared().addPushNotificationDeepLinkPath(paths)
+        onReady { appsFlyer in
+            appsFlyer.addPushNotificationDeepLinkPath(paths)
+        }
     }
 
     public func validateAndLogPurchase(purchaseType: String?, transactionId: String?, productId: String?, price: String?, currency: String?, additionalParameters: [String: Any]?) {
-        guard let productId = productId,
-              let price = price,
-              let currency = currency,
-              let transactionId = transactionId
+        guard let productId ,
+              let price ,
+              let currency ,
+              let transactionId 
               else {
             return
         }
@@ -277,25 +297,35 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     }
 
     public func setSharingFilterForPartners(_ partners: [String]?) {
-        AppsFlyerLib.shared().setSharingFilterForPartners(partners)
+        onReady { appsFlyer in
+            appsFlyer.setSharingFilterForPartners(partners)
+        }
     }
 
     public func appendCustomData(_ data: [String: Any]) {
-        var customData = AppsFlyerLib.shared().customData ?? [:]
-        customData.merge(data) { (_, new) in new }
-        AppsFlyerLib.shared().customData = customData
+        onReady { appsFlyer in
+            var customData = appsFlyer.customData ?? [:]
+            customData.merge(data) { (_, new) in new }
+            appsFlyer.customData = customData
+        }
     }
 
     public func setCurrentDeviceLanguage(_ language: String) {
-        AppsFlyerLib.shared().currentDeviceLanguage = language
+        onReady { appsFlyer in
+            appsFlyer.currentDeviceLanguage = language
+        }
     }
 
     public func setPartnerData(partnerId: String, partnerInfo: [String: Any]) {
-        AppsFlyerLib.shared().setPartnerData(partnerId: partnerId, partnerInfo: partnerInfo)
+        onReady { appsFlyer in
+            appsFlyer.setPartnerData(partnerId: partnerId, partnerInfo: partnerInfo)
+        }
     }
 
     public func appendParametersToDeeplinkURL(contains: String, parameters: [String: String]) {
-        AppsFlyerLib.shared().appendParametersToDeeplinkURL(contains: contains, parameters: parameters)
+        onReady { appsFlyer in
+            appsFlyer.appendParametersToDeeplinkURL(contains: contains, parameters: parameters)
+        }
     }
 
 }
