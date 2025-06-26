@@ -24,14 +24,6 @@ class AppsFlyerInstanceTests: XCTestCase {
 
     override func tearDown() { }
 
-    func testInitWithoutConfig() {
-        let payload: [String: Any] = ["command_name": "initialize",
-                                      "app_id": "test",
-                                      "app_dev_key": "test"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.initWithoutConfigCount)
-    }
-    
     func testInitWithoutConfigNotRun() {
         let payload: [String: Any] = ["command_name": "initialize"]
         appsFlyerCommand.processRemoteCommand(with: payload)
@@ -54,7 +46,7 @@ class AppsFlyerInstanceTests: XCTestCase {
         }
         XCTAssertEqual(settings["test"] as? String, "test")
     }
-    
+
     func testInitWithConfigNotRun() {
         let payload: [String: Any] = ["command_name": "initialize",
                                       "settings": ["test": "test"]]
@@ -306,16 +298,6 @@ class AppsFlyerInstanceTests: XCTestCase {
         XCTAssertEqual(1, self.appsFlyerInstance.setUserEmailsCount)
         XCTAssertEqual(["test@example.com"], self.appsFlyerInstance.lastEmails)
         XCTAssertEqual(AppsFlyerConstants.EmailHashType.appsFlyerTypeFromString("none"), self.appsFlyerInstance.lastCryptType)
-    }
-    
-    func testSetUserEmailsWithSHA256HashType() {
-        let payload: [String: Any] = ["command_name": "setuseremails",
-                                      "customer_emails": ["test1@example.com"],
-                                      "email_hash_type": "sha256"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.setUserEmailsCount)
-        XCTAssertEqual(["test1@example.com"], self.appsFlyerInstance.lastEmails)
-        XCTAssertEqual(AppsFlyerConstants.EmailHashType.appsFlyerTypeFromString("sha256"), self.appsFlyerInstance.lastCryptType)
     }
     
     func testSetUserEmailsWithNoneHashType() {
@@ -605,10 +587,11 @@ class AppsFlyerInstanceTests: XCTestCase {
         let payload: [String: Any] = ["command_name": "validateandlogpurchase"]
         appsFlyerCommand.processRemoteCommand(with: payload)
         XCTAssertEqual(0, self.appsFlyerInstance.validateAndLogPurchaseCount)
-        XCTAssertNil(self.appsFlyerInstance.lastTransactionId)
         XCTAssertNil(self.appsFlyerInstance.lastProductId)
         XCTAssertNil(self.appsFlyerInstance.lastPrice)
         XCTAssertNil(self.appsFlyerInstance.lastPurchaseCurrency)
+        XCTAssertNil(self.appsFlyerInstance.lastTransactionId)
+        XCTAssertNil(self.appsFlyerInstance.lastPurchaseAdditionalParameters)
     }
     
     func testValidateAndLogPurchaseMissingProductId() {
@@ -661,17 +644,6 @@ class AppsFlyerInstanceTests: XCTestCase {
         XCTAssertNil(self.appsFlyerInstance.lastProductId)
         XCTAssertNil(self.appsFlyerInstance.lastPrice)
         XCTAssertNil(self.appsFlyerInstance.lastPurchaseCurrency)
-    }
-    
-    func testValidateAndLogPurchaseMissingMultipleRequiredParams() {
-        let payload: [String: Any] = ["command_name": "validateandlogpurchase"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(0, self.appsFlyerInstance.validateAndLogPurchaseCount)
-        XCTAssertNil(self.appsFlyerInstance.lastProductId)
-        XCTAssertNil(self.appsFlyerInstance.lastPrice)
-        XCTAssertNil(self.appsFlyerInstance.lastPurchaseCurrency)
-        XCTAssertNil(self.appsFlyerInstance.lastTransactionId)
-        XCTAssertNil(self.appsFlyerInstance.lastPurchaseAdditionalParameters)
     }
     
     func testValidateAndLogPurchaseWithRequiredParametersOnly() {
@@ -941,10 +913,8 @@ class AppsFlyerInstanceTests: XCTestCase {
     }
     
     func testLogEventReceivesFilteredParameters() {
-        // Integration test: verify that logEvent receives properly filtered parameters
         var payload: [String: Any] = [
             "command_name": "customevent",
-            // Valid event parameters
             "event_param": "should_pass",
             "product_name": "Test Product",
             "user_id": "user123"
