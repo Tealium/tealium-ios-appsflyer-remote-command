@@ -102,6 +102,7 @@
         "anonymize_user": "anonymize_user"
     },
     "commands": {
+        "screen_view": "viewedcontent",
         "launch": "initialize",
         "track_location": "tracklocation",
         "user_login": "login",
@@ -117,7 +118,9 @@
         "category": "listview",
         "share": "share",
         "rate": "rate",
+        "reengage": "reengage",
         "checkout": "initiatecheckout",
+        "checkout_progress": "initiatecheckout",
         "order": "purchase",
         "currency_code": "setcurrencycode",
         "set_dma_consent": "setdmaconsent",
@@ -139,6 +142,7 @@
         "set_device_language": "setcurrentdevicelanguage",
         "set_partner_data": "setpartnerdata",
         "append_parameters_to_deeplink": "appendparameterstodeeplinkurl",
-        "custom_event": "custom_event"
+        "resolve_deep_links": "resolvedeeplinkurls",
+        "custom_event": "viewedcontent"
     }
 }

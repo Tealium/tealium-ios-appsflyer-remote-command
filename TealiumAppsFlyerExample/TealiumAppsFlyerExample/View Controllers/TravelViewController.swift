@@ -143,7 +143,7 @@ class TravelViewController: UIViewController {
             "country": "France"
         ]
         
-        TealiumHelper.trackEvent(title: "location_changed", data: data)
+        TealiumHelper.trackEvent(title: "location_coordinates", data: data)
         showAlert(title: "Travel", message: "Location changed to: \(newLocation)")
     }
 
