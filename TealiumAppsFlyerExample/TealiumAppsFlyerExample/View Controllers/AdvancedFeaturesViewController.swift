@@ -78,7 +78,6 @@ class AdvancedFeaturesViewController: UIViewController {
     
     @IBAction func validatePurchase(_ sender: UIButton) {
         let data: [String: Any] = [
-            "purchase_validation_type": "subscription",
             "purchase_validation_product_id": "premium_monthly",
             "purchase_validation_price": "9.99",
             "purchase_validation_currency": "USD",
