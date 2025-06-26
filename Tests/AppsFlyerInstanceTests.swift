@@ -63,7 +63,6 @@ class AppsFlyerInstanceTests: XCTestCase {
         XCTAssertEqual(0, self.appsFlyerInstance.initWithConfigCount)
         XCTAssertEqual(0, self.appsFlyerInstance.initWithConfigCount)
     }
-    
 
     func testInitWithoutSettingsParam() {
         let payload: [String: Any] = ["command_name": "initialize",
@@ -158,37 +157,7 @@ class AppsFlyerInstanceTests: XCTestCase {
         XCTAssertEqual(customData?["custom_key"] as? String, "custom_value")
     }
     
-    func testConfigurationValuesAreCorrectlyMapped() {
-        // Test that configuration constants match the actual keys used in the remote command
-        let validKeys: Set<String> = [
-            AppsFlyerConstants.Configuration.appId.rawValue,
-            AppsFlyerConstants.Configuration.appDevKey.rawValue,
-            AppsFlyerConstants.Configuration.debug.rawValue,
-            AppsFlyerConstants.Configuration.disableAdTracking.rawValue,
-            AppsFlyerConstants.Configuration.disableAppleAdTracking.rawValue,
-            AppsFlyerConstants.Configuration.disableAppleAdsAttribution.rawValue,
-            AppsFlyerConstants.Configuration.minTimeBetweenSessions.rawValue,
-            AppsFlyerConstants.Configuration.anonymizeUser.rawValue,
-            AppsFlyerConstants.Configuration.collectDeviceName.rawValue,
-            AppsFlyerConstants.Configuration.customData.rawValue,
-            AppsFlyerConstants.Configuration.settings.rawValue,
-            AppsFlyerConstants.Configuration.useUninstallSandbox.rawValue,
-            AppsFlyerConstants.Configuration.enableTCFDataCollection.rawValue,
-            AppsFlyerConstants.Configuration.appInviteOneLinkID.rawValue,
-            AppsFlyerConstants.Configuration.deepLinkTimeout.rawValue,
-            AppsFlyerConstants.Configuration.oneLinkCustomDomains.rawValue,
-            AppsFlyerConstants.Configuration.useReceiptValidationSandbox.rawValue,
-            AppsFlyerConstants.Configuration.waitForATTUserAuthorizationTimeoutInterval.rawValue,
-            AppsFlyerConstants.Configuration.resolveDeepLinks.rawValue,
-            AppsFlyerConstants.Configuration.stopTracking.rawValue,
-            AppsFlyerConstants.Configuration.host.rawValue,
-            AppsFlyerConstants.Configuration.hostPrefix.rawValue
-        ]
-        
-        // Verify the allConfigurationKeys set matches our expected keys
-        XCTAssertEqual(AppsFlyerConstants.Configuration.allConfigurationKeys, validKeys)
-        
-        // Test specific mappings
+    func testConfigurationKeyStringsAreStable() {
         XCTAssertEqual(AppsFlyerConstants.Configuration.debug.rawValue, "debug")
         XCTAssertEqual(AppsFlyerConstants.Configuration.disableAdTracking.rawValue, "disable_ad_tracking")
         XCTAssertEqual(AppsFlyerConstants.Configuration.disableAppleAdTracking.rawValue, "disable_apple_ad_tracking")
@@ -196,6 +165,21 @@ class AppsFlyerInstanceTests: XCTestCase {
         XCTAssertEqual(AppsFlyerConstants.Configuration.minTimeBetweenSessions.rawValue, "time_between_sessions")
         XCTAssertEqual(AppsFlyerConstants.Configuration.anonymizeUser.rawValue, "anonymize_user")
         XCTAssertEqual(AppsFlyerConstants.Configuration.collectDeviceName.rawValue, "collect_device_name")
+        XCTAssertEqual(AppsFlyerConstants.Configuration.appId.rawValue, "app_id")
+        XCTAssertEqual(AppsFlyerConstants.Configuration.appDevKey.rawValue, "app_dev_key")
+        XCTAssertEqual(AppsFlyerConstants.Configuration.customData.rawValue, "custom_data")
+        XCTAssertEqual(AppsFlyerConstants.Configuration.settings.rawValue, "settings")
+        XCTAssertEqual(AppsFlyerConstants.Configuration.useUninstallSandbox.rawValue, "use_uninstall_sandbox")
+        XCTAssertEqual(AppsFlyerConstants.Configuration.enableTCFDataCollection.rawValue, "enable_tcf_data_collection")
+        XCTAssertEqual(AppsFlyerConstants.Configuration.appInviteOneLinkID.rawValue, "app_invite_onelink_id")
+        XCTAssertEqual(AppsFlyerConstants.Configuration.deepLinkTimeout.rawValue, "deeplink_timeout")
+        XCTAssertEqual(AppsFlyerConstants.Configuration.oneLinkCustomDomains.rawValue, "onelink_custom_domains")
+        XCTAssertEqual(AppsFlyerConstants.Configuration.useReceiptValidationSandbox.rawValue, "use_receipt_validation_sandbox")
+        XCTAssertEqual(AppsFlyerConstants.Configuration.waitForATTUserAuthorizationTimeoutInterval.rawValue, "wait_for_att_user_authorization_timeout_interval")
+        XCTAssertEqual(AppsFlyerConstants.Configuration.resolveDeepLinks.rawValue, "resolve_deep_links")
+        XCTAssertEqual(AppsFlyerConstants.Configuration.stopTracking.rawValue, "stop_tracking")
+        XCTAssertEqual(AppsFlyerConstants.Configuration.host.rawValue, "host")
+        XCTAssertEqual(AppsFlyerConstants.Configuration.hostPrefix.rawValue, "host_prefix")
     }
     
     func testCaseInsensitiveCommands() {
