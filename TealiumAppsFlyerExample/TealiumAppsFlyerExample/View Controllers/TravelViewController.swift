@@ -83,7 +83,7 @@ class TravelViewController: UIViewController {
     @IBAction func bookTravelWithAdvancedData(_ sender: UIButton) {
         guard let origin = originTextField.text, !origin.isEmpty,
               let destination = destinationTextField.text, !destination.isEmpty else {
-            showAlert(message: "Please enter origin and destination")
+            showAlert(title: "Travel", message: "Please enter origin and destination")
             return
         }
         
@@ -108,8 +108,8 @@ class TravelViewController: UIViewController {
             ]
         ]
         
-        TealiumHelper.trackEvent(title: "advanced_travel_booking", data: data)
-        showAlert(message: "Travel booked: \(origin) → \(destination) $\(String(format: "%.2f", travelPrice))")
+        TealiumHelper.trackEvent(title: "travel_booking", data: data)
+        showAlert(title: "Travel", message: "Travel booked: \(origin) → \(destination) $\(String(format: "%.2f", travelPrice))")
     }
     
     @IBAction func trackLocationCoordinates(_ sender: UIButton) {
@@ -130,8 +130,8 @@ class TravelViewController: UIViewController {
             "city": randomLocation.0
         ]
         
-        TealiumHelper.trackEvent(title: "track_location_coordinates", data: data)
-        showAlert(message: "Location tracked: \(randomLocation.0) (\(randomLocation.1), \(randomLocation.2))")
+        TealiumHelper.trackEvent(title: "track_location", data: data)
+        showAlert(title: "Travel", message: "Location tracked: \(randomLocation.0) (\(randomLocation.1), \(randomLocation.2))")
     }
     
     @IBAction func trackLocationChanged(_ sender: UIButton) {
@@ -144,34 +144,9 @@ class TravelViewController: UIViewController {
         ]
         
         TealiumHelper.trackEvent(title: "location_changed", data: data)
-        showAlert(message: "Location changed to: \(newLocation)")
-    }
-    
-    @IBAction func updateTravelPreferences(_ sender: UIButton) {
-        let preferences: [String: Any] = [
-            "preferred_airlines": ["Delta", "United", "American"],
-            "seat_preference": "Window",
-            "meal_preference": "Vegetarian",
-            "frequent_flyer_number": "FF123456789",
-            "travel_insurance": true
-        ]
-        
-        let data: [String: Any] = [
-            "additional_parameters": preferences
-        ]
-        
-        TealiumHelper.trackEvent(title: "update_travel_preferences", data: data)
-        showAlert(message: "Travel preferences updated")
-    }
-    
-    // MARK: - Helper Method
-    private func showAlert(message: String) {
-        let alert = UIAlertController(title: "Travel", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
+        showAlert(title: "Travel", message: "Location changed to: \(newLocation)")
     }
 
-    
 }
 
 extension TravelViewController: UITextFieldDelegate {

@@ -2,7 +2,7 @@ import UIKit
 
 class AdvancedFeaturesViewController: UIViewController {
     
-    // MARK: - Outlets (tylko te które są w storyboard)
+    // MARK: - Outlets
     @IBOutlet weak var phoneTextField: UITextField!
     @IBOutlet weak var customerIdTextField: UITextField!
     @IBOutlet weak var consentSwitch: UISwitch!
@@ -47,7 +47,7 @@ class AdvancedFeaturesViewController: UIViewController {
     // MARK: - Phone Number Actions
     @IBAction func setPhoneNumber(_ sender: UIButton) {
         guard let phoneNumber = phoneTextField.text, !phoneNumber.isEmpty else {
-            showAlert(message: "Please enter a phone number")
+            showAlert(title: "Phone Number Required", message: "Please enter a phone number")
             return
         }
         
@@ -56,7 +56,7 @@ class AdvancedFeaturesViewController: UIViewController {
         ]
         
         TealiumHelper.trackEvent(title: "set_phone_number", data: data)
-        showAlert(message: "Phone number set: \(phoneNumber)")
+        showAlert(title: "AppsFlyer Advanced", message: "Phone number set: \(phoneNumber)")
     }
     
     // MARK: - Advanced AppsFlyer Features
@@ -73,7 +73,7 @@ class AdvancedFeaturesViewController: UIViewController {
         ]
         
         TealiumHelper.trackEvent(title: "log_ad_revenue", data: data)
-        showAlert(message: "Ad revenue logged: $0.25 USD")
+        showAlert(title: "AppsFlyer Advanced", message: "Ad revenue logged: $0.25 USD")
     }
     
     @IBAction func validatePurchase(_ sender: UIButton) {
@@ -90,7 +90,7 @@ class AdvancedFeaturesViewController: UIViewController {
         ]
         
         TealiumHelper.trackEvent(title: "validate_and_log_purchase", data: data)
-        showAlert(message: "Purchase validated: Premium Monthly $9.99")
+        showAlert(title: "AppsFlyer Advanced", message: "Purchase validated: Premium Monthly $9.99")
     }
     
     // MARK: - Privacy & Consent
@@ -105,7 +105,7 @@ class AdvancedFeaturesViewController: UIViewController {
         ]
         
         TealiumHelper.trackEvent(title: "set_dma_consent", data: data)
-        showAlert(message: "DMA Consent set to: \(consentValue ? "Granted" : "Denied")")
+        showAlert(title: "AppsFlyer Advanced", message: "DMA Consent set to: \(consentValue ? "Granted" : "Denied")")
     }
     
     @IBAction func anonymizeUser(_ sender: UIButton) {
@@ -114,7 +114,7 @@ class AdvancedFeaturesViewController: UIViewController {
         ]
         
         TealiumHelper.trackEvent(title: "anonymize_user", data: data)
-        showAlert(message: "User anonymized")
+        showAlert(title: "AppsFlyer Advanced", message: "User anonymized")
     }
     
     @IBAction func setSharingFilter(_ sender: UIButton) {
@@ -123,7 +123,7 @@ class AdvancedFeaturesViewController: UIViewController {
         ]
         
         TealiumHelper.trackEvent(title: "set_sharing_filter_for_partners", data: data)
-        showAlert(message: "Sharing filter set for selected partners")
+        showAlert(title: "AppsFlyer Advanced", message: "Sharing filter set for selected partners")
     }
     
     @IBAction func appendCustomData(_ sender: UIButton) {
@@ -137,10 +137,9 @@ class AdvancedFeaturesViewController: UIViewController {
         ]
         
         TealiumHelper.trackEvent(title: "append_custom_data", data: data)
-        showAlert(message: "Additional data set with custom attributes")
+        showAlert(title: "AppsFlyer Advanced", message: "Additional data set with custom attributes")
     }
-    
-    // MARK: - New Advanced Features (Previously Missing)
+
     @IBAction func setDeviceLanguage(_ sender: UIButton) {
         let languages = ["en", "es", "fr", "de", "ja", "zh", "ru"]
         let selectedLanguage = languages.randomElement()!
@@ -150,7 +149,7 @@ class AdvancedFeaturesViewController: UIViewController {
         ]
         
         TealiumHelper.trackEvent(title: "set_device_language", data: data)
-        showAlert(message: "Device language set to: \(selectedLanguage)")
+        showAlert(title: "AppsFlyer Advanced", message: "Device language set to: \(selectedLanguage)")
     }
     
     @IBAction func setPartnerData(_ sender: UIButton) {
@@ -168,7 +167,7 @@ class AdvancedFeaturesViewController: UIViewController {
         ]
         
         TealiumHelper.trackEvent(title: "set_partner_data", data: data)
-        showAlert(message: "Partner data set for Facebook with campaign info")
+        showAlert(title: "AppsFlyer Advanced", message: "Partner data set for Facebook with campaign info")
     }
     
     @IBAction func appendDeepLinkParameters(_ sender: UIButton) {
@@ -185,12 +184,12 @@ class AdvancedFeaturesViewController: UIViewController {
         ]
         
         TealiumHelper.trackEvent(title: "append_parameters_to_deeplink", data: data)
-        showAlert(message: "Deep link parameters appended for myapp:// URLs")
+        showAlert(title: "AppsFlyer Advanced", message: "Deep link parameters appended for myapp:// URLs")
     }
     
     @IBAction func setCustomerId(_ sender: UIButton) {
         guard let customerId = customerIdTextField.text, !customerId.isEmpty else {
-            showAlert(message: "Please enter a customer ID first")
+            showAlert(title: "Customer ID Required", message: "Please enter a customer ID first")
             return
         }
         
@@ -199,13 +198,7 @@ class AdvancedFeaturesViewController: UIViewController {
         ]
         
         TealiumHelper.trackEvent(title: "set_customer_id", data: data)
-        showAlert(message: "Customer ID set: \(customerId)")
+        showAlert(title: "AppsFlyer Advanced", message: "Customer ID set: \(customerId)")
     }
-    
-    // MARK: - Helper Methods
-    private func showAlert(message: String) {
-        let alert = UIAlertController(title: "AppsFlyer Advanced", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
-    }
+
 } 

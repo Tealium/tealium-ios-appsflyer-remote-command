@@ -45,14 +45,14 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var lastHost: String?
     var lastHostPrefix: String?
     var lastEmails: [String]?
-    var lastCryptType: Int?
+    var lastCryptType: EmailCryptType?
     var lastCurrency: String?
     var lastCustomerId: String?
     var lastAnonymize: Bool?
     var lastDisable: Bool?
     var lastDeepLinkUrls: [String]?
     var lastMonetizationNetwork: String?
-    var lastMediationNetwork: String?
+    var lastMediationNetwork: MediationNetworkType?
     var lastRevenue: Double?
     var lastAdditionalParameters: [String: Any]?
     var lastGdprApplies: Bool?
@@ -63,7 +63,6 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var lastPhoneNumber: String?
     var lastPushDeepLinkPaths: [String]?
 
-    var lastPurchaseType: String?
     var lastTransactionId: String?
     var lastProductId: String?
     var lastPrice: String?
@@ -77,6 +76,31 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var lastPartnerInfo: [String: Any]?
     var lastUrlContains: String?
     var lastUrlParameters: [String: String]?
+    
+    // Computed property summing all method call counters
+    var totalMethodCallCount: Int {
+        return initWithoutConfigCount + 
+               initWithConfigCount + 
+               logEventCount + 
+               logLocationCount + 
+               setHostCount + 
+               setUserEmailsCount + 
+               setCurrencyCodeCount + 
+               setCustomerIdCount + 
+               disableTrackingCount + 
+               resolveDeepLinkURLsCount + 
+               anonymizeUserCount + 
+               logAdRevenueCount + 
+               setDMAConsentCount + 
+               setPhoneNumberCount + 
+               addPushNotificationDeepLinkPathCount + 
+               validateAndLogPurchaseCount + 
+               setSharingFilterForPartnersCount + 
+               appendCustomDataCount + 
+               setCurrentDeviceLanguageCount + 
+               setPartnerDataCount + 
+               appendParametersToDeeplinkURLCount
+    }
     
     func initialize(appId: String, appDevKey: String) {
         lastAppId = appId
@@ -113,7 +137,7 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         setHostCount += 1
     }
     
-    func setUserEmails(emails: [String], with cryptType: Int) {
+    func setUserEmails(emails: [String], with cryptType: EmailCryptType) {
         lastEmails = emails
         lastCryptType = cryptType
         setUserEmailsCount += 1
@@ -148,7 +172,7 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         anonymizeUserCount += 1
     }
     
-    func logAdRevenue(monetizationNetwork: String, mediationNetwork: String, revenue: Double, currency: String, additionalParameters: [String: Any]?) {
+    func logAdRevenue(monetizationNetwork: String, mediationNetwork: MediationNetworkType, revenue: Double, currency: String, additionalParameters: [String: Any]?) {
         lastMonetizationNetwork = monetizationNetwork
         lastMediationNetwork = mediationNetwork
         lastRevenue = revenue
@@ -157,18 +181,7 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         logAdRevenueCount += 1
     }
     
-    func setDMAConsent(gdprApplies: Bool?, consentForDataUsage: Bool?, consentForAdsPersonalization: Bool?, consentForAdStorage: Bool?) {
-        // Mirror the guard logic from real AppsFlyerInstance
-        guard let gdprApplies = gdprApplies else { 
-            // Still record that the method was called for testing purposes
-            lastGdprApplies = gdprApplies
-            lastConsentForDataUsage = consentForDataUsage
-            lastConsentForAdsPersonalization = consentForAdsPersonalization
-            lastConsentForAdStorage = consentForAdStorage
-            setDMAConsentCount += 1
-            return 
-        }
-        
+    func setDMAConsent(gdprApplies: Bool, consentForDataUsage: Bool?, consentForAdsPersonalization: Bool?, consentForAdStorage: Bool?) {
         lastGdprApplies = gdprApplies
         lastConsentForDataUsage = consentForDataUsage
         lastConsentForAdsPersonalization = consentForAdsPersonalization
@@ -186,17 +199,7 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         addPushNotificationDeepLinkPathCount += 1
     }
     
-    func validateAndLogPurchase(purchaseType: String?, transactionId: String?, productId: String?, price: String?, currency: String?, additionalParameters: [String: Any]?) {
-        // Mirror the guard logic from real AppsFlyerInstance
-        guard let productId = productId,
-              let price = price,
-              let currency = currency,
-              let transactionId = transactionId
-              else {
-            return
-        }
-        
-        lastPurchaseType = purchaseType
+    func validateAndLogPurchase(productId: String, price: String, currency: String, transactionId: String, additionalParameters: [String: Any]?) {
         lastTransactionId = transactionId
         lastProductId = productId
         lastPrice = price
@@ -231,72 +234,5 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         lastUrlParameters = parameters
         appendParametersToDeeplinkURLCount += 1
     }
-    
-    // MARK: - Test Helper Methods
-    
-    func reset() {
-        // Reset all counters
-        initWithoutConfigCount = 0
-        initWithConfigCount = 0
-        logEventCount = 0
-        logLocationCount = 0
-        setHostCount = 0
-        setUserEmailsCount = 0
-        setCurrencyCodeCount = 0
-        setCustomerIdCount = 0
-        disableTrackingCount = 0
-        resolveDeepLinkURLsCount = 0
-        anonymizeUserCount = 0
-        logAdRevenueCount = 0
-        setDMAConsentCount = 0
-        setPhoneNumberCount = 0
-        addPushNotificationDeepLinkPathCount = 0
-        validateAndLogPurchaseCount = 0
-        setSharingFilterForPartnersCount = 0
-        appendCustomDataCount = 0
-        setCurrentDeviceLanguageCount = 0
-        setPartnerDataCount = 0
-        appendParametersToDeeplinkURLCount = 0
-        
-        // Reset all last values
-        lastAppId = nil
-        lastAppDevKey = nil
-        lastSettings = nil
-        lastEventName = nil
-        lastEventValues = nil
-        lastLatitude = nil
-        lastLongitude = nil
-        lastHost = nil
-        lastHostPrefix = nil
-        lastEmails = nil
-        lastCryptType = nil
-        lastCurrency = nil
-        lastCustomerId = nil
-        lastAnonymize = nil
-        lastDisable = nil
-        lastDeepLinkUrls = nil
-        lastMonetizationNetwork = nil
-        lastMediationNetwork = nil
-        lastRevenue = nil
-        lastAdditionalParameters = nil
-        lastGdprApplies = nil
-        lastConsentForDataUsage = nil
-        lastConsentForAdsPersonalization = nil
-        lastConsentForAdStorage = nil
-        lastPhoneNumber = nil
-        lastPushDeepLinkPaths = nil
-        lastPurchaseType = nil
-        lastTransactionId = nil
-        lastProductId = nil
-        lastPrice = nil
-        lastPurchaseCurrency = nil
-        lastPurchaseAdditionalParameters = nil
-        lastPartners = nil
-        lastAdditionalData = nil
-        lastDeviceLanguage = nil
-        lastPartnerId = nil
-        lastPartnerInfo = nil
-        lastUrlContains = nil
-        lastUrlParameters = nil
-    }
+
 }

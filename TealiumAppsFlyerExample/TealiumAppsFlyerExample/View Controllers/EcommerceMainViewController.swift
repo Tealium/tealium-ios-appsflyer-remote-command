@@ -103,7 +103,6 @@ class EcommerceMainViewController: UIViewController {
         }
         
         let data: [String: Any] = [
-            "command_name": "setuseremails",
             "customer_emails": [email],
             "email_hash_type": "sha256"
         ]
@@ -122,7 +121,7 @@ class EcommerceMainViewController: UIViewController {
                 "consent_for_ads_personalization": true,
                 "consent_for_ad_storage": true
             ]
-            TealiumHelper.trackEvent(title: "gdpr_consent_accept", data: data)
+            TealiumHelper.trackEvent(title: "set_dma_consent", data: data)
             self.showAlert(title: "Consent", message: "All consents granted")
         })
         
@@ -170,13 +169,7 @@ class EcommerceMainViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         present(alert, animated: true)
     }
-    
-    // MARK: - Helper Method
-    private func showAlert(title: String, message: String) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
-    }
+
 
     func hideAllViews(except: UIView) {
         views.forEach { view in

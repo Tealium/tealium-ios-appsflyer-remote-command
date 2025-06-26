@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		9E2AD2E42DE89E6F00EF4649 /* AdvancedFeaturesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E2AD2E32DE89E6F00EF4649 /* AdvancedFeaturesViewController.swift */; };
+		9E8242382E05747F009E0F45 /* UIViewControllerAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E8242372E05747F009E0F45 /* UIViewControllerAlert.swift */; };
 		C72F4698A0E98EC6058AC0A2 /* Pods_TealiumAppsFlyerExample.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 003A19B08741348361D73596 /* Pods_TealiumAppsFlyerExample.framework */; };
 		CF030DAA251E853F002999B0 /* appsflyer.json in Resources */ = {isa = PBXBuildFile; fileRef = CF030DA9251E853F002999B0 /* appsflyer.json */; };
 		CF1400C323036575002AC330 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF1400C223036575002AC330 /* AppDelegate.swift */; };
@@ -35,6 +36,7 @@
 		003A19B08741348361D73596 /* Pods_TealiumAppsFlyerExample.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TealiumAppsFlyerExample.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		15D86D0F42D9093103AE4F89 /* Pods-TealiumAppsFlyerExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TealiumAppsFlyerExample.debug.xcconfig"; path = "Target Support Files/Pods-TealiumAppsFlyerExample/Pods-TealiumAppsFlyerExample.debug.xcconfig"; sourceTree = "<group>"; };
 		9E2AD2E32DE89E6F00EF4649 /* AdvancedFeaturesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedFeaturesViewController.swift; sourceTree = "<group>"; };
+		9E8242372E05747F009E0F45 /* UIViewControllerAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewControllerAlert.swift; sourceTree = "<group>"; };
 		CF030DA9251E853F002999B0 /* appsflyer.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = appsflyer.json; sourceTree = "<group>"; };
 		CF1400BF23036575002AC330 /* TealiumAppsFlyerExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TealiumAppsFlyerExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CF1400C223036575002AC330 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -113,6 +115,7 @@
 		CF1400C123036575002AC330 /* TealiumAppsFlyerExample */ = {
 			isa = PBXGroup;
 			children = (
+				9E8242372E05747F009E0F45 /* UIViewControllerAlert.swift */,
 				CFE3050323E20D9700A13B14 /* TealiumAppsFlyerExample.entitlements */,
 				CF1400D4230365B9002AC330 /* TealiumHelper.swift */,
 				CF1400D6230365C2002AC330 /* DateExtensions.swift */,
@@ -255,9 +258,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-TealiumAppsFlyerExample/Pods-TealiumAppsFlyerExample-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-TealiumAppsFlyerExample/Pods-TealiumAppsFlyerExample-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -294,9 +301,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-TealiumAppsFlyerExample/Pods-TealiumAppsFlyerExample-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-TealiumAppsFlyerExample/Pods-TealiumAppsFlyerExample-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -317,6 +328,7 @@
 				CF1400D9230365C3002AC330 /* ProductCell.swift in Sources */,
 				CF1400F1230365E4002AC330 /* GamingViewController.swift in Sources */,
 				CF1400EF230365E4002AC330 /* ProductViewController.swift in Sources */,
+				9E8242382E05747F009E0F45 /* UIViewControllerAlert.swift in Sources */,
 				CF1400F4230365E4002AC330 /* TravelViewController.swift in Sources */,
 				CF1400D5230365B9002AC330 /* TealiumHelper.swift in Sources */,
 				CF1400F6230365E4002AC330 /* RegisterViewController.swift in Sources */,

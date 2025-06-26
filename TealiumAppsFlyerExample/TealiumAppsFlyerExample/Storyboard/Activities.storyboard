@@ -26,19 +26,6 @@
                                             <constraint firstAttribute="height" constant="120" id="gtT-pk-zm7"/>
                                         </constraints>
                                     </imageView>
-                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Group Name" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="emq-Vy-yzm">
-                                        <rect key="frame" x="30" y="143" width="215" height="34"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                        <textInputTraits key="textInputTraits"/>
-                                    </textField>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8tD-Pp-YHd">
-                                        <rect key="frame" x="30" y="200" width="215" height="30"/>
-                                        <inset key="titleEdgeInsets" minX="1" minY="0.0" maxX="0.0" maxY="0.0"/>
-                                        <state key="normal" title="Join group"/>
-                                        <connections>
-                                            <action selector="joinGroupTapped:" destination="VTH-Z2-qN1" eventType="touchUpInside" id="5lu-8D-gsT"/>
-                                        </connections>
-                                    </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Z4H-eo-K0s">
                                         <rect key="frame" x="83" y="253" width="109" height="30"/>
                                         <state key="normal" title="See your offers!"/>
@@ -62,10 +49,6 @@
                                     </button>
                                 </subviews>
                                 <constraints>
-                                    <constraint firstItem="8tD-Pp-YHd" firstAttribute="leading" secondItem="bAc-nl-Rpy" secondAttribute="leading" constant="30" id="0dv-P1-DVY"/>
-                                    <constraint firstAttribute="trailing" secondItem="8tD-Pp-YHd" secondAttribute="trailing" constant="30" id="8kS-c2-Rzu"/>
-                                    <constraint firstAttribute="trailing" secondItem="emq-Vy-yzm" secondAttribute="trailing" constant="30" id="POu-ot-jyv"/>
-                                    <constraint firstItem="emq-Vy-yzm" firstAttribute="leading" secondItem="bAc-nl-Rpy" secondAttribute="leading" constant="30" id="wg8-N6-Wxi"/>
                                 </constraints>
                             </stackView>
                         </subviews>
@@ -79,7 +62,6 @@
                     </view>
                     <tabBarItem key="tabBarItem" title="Account" image="user" id="fct-kz-HyN"/>
                     <connections>
-                        <outlet property="groupNameTextField" destination="emq-Vy-yzm" id="2Fj-So-W2S"/>
                         <outlet property="offersImage" destination="foc-y9-JaI" id="EIf-u3-jwK"/>
                     </connections>
                 </viewController>
@@ -112,35 +94,11 @@
                                             <action selector="customEvent:" destination="0H7-Ps-lXL" eventType="touchUpInside" id="SRd-aT-ETC"/>
                                         </connections>
                                     </button>
-                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="n7a-Ww-kDC">
-                                        <rect key="frame" x="22.5" y="120" width="111" height="30"/>
-                                        <subviews>
-                                            <stackView opaque="NO" contentMode="scaleToFill" spacing="28" translatesAutoresizingMaskIntoConstraints="NO" id="3PB-OV-Jih">
-                                                <rect key="frame" x="0.0" y="0.0" width="111" height="30"/>
-                                                <subviews>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LlT-VH-9jT">
-                                                        <rect key="frame" x="0.0" y="0.0" width="111" height="30"/>
-                                                        <state key="normal" title="Spend Currency"/>
-                                                        <connections>
-                                                            <action selector="spendCurrency:" destination="0H7-Ps-lXL" eventType="touchUpInside" id="mO3-z1-I83"/>
-                                                        </connections>
-                                                    </button>
-                                                </subviews>
-                                            </stackView>
-                                        </subviews>
-                                    </stackView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="orc-sS-LTN">
                                         <rect key="frame" x="44.5" y="180" width="67" height="30"/>
                                         <state key="normal" title="Start Trial"/>
                                         <connections>
                                             <action selector="startTrial:" destination="0H7-Ps-lXL" eventType="touchUpInside" id="EzV-Vw-mrj"/>
-                                        </connections>
-                                    </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oiV-2u-88F">
-                                        <rect key="frame" x="17" y="240" width="122" height="30"/>
-                                        <state key="normal" title="Complete Tutorial"/>
-                                        <connections>
-                                            <action selector="stopTutorial:" destination="0H7-Ps-lXL" eventType="touchUpInside" id="27x-nj-zIe"/>
                                         </connections>
                                     </button>
                                     <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="drj-X6-Igh">
@@ -189,7 +147,6 @@
                         <outlet property="customEventButton" destination="zyR-re-xzZ" id="Pkn-Pp-UZH"/>
                         <outlet property="levelLabel" destination="Vbf-DA-uvG" id="wMm-ab-rRx"/>
                         <outlet property="startTutorialButton" destination="orc-sS-LTN" id="taz-Sf-uvv"/>
-                        <outlet property="stopTutorialButton" destination="oiV-2u-88F" id="8dh-WV-6kb"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="fZY-fl-Ne9" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -218,7 +175,7 @@
                                 </connections>
                             </segmentedControl>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" alignment="center" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="32R-jt-nMN">
-                                <rect key="frame" x="30" y="101" width="315" height="318"/>
+                                <rect key="frame" x="30" y="101" width="315" height="558"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="discount" translatesAutoresizingMaskIntoConstraints="NO" id="OGw-Ul-4eR">
                                         <rect key="frame" x="97.5" y="0.0" width="120" height="120"/>
@@ -250,6 +207,34 @@
                                         <state key="normal" title="Track Location"/>
                                         <connections>
                                             <action selector="trackLocation:" destination="Z3m-zV-96N" eventType="touchUpInside" id="uHU-gE-0Dm"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Eml-Btn-1">
+                                        <rect key="frame" x="125" y="348" width="65" height="30"/>
+                                        <state key="normal" title="Set Emails"/>
+                                        <connections>
+                                            <action selector="setUserEmails:" destination="Z3m-zV-96N" eventType="touchUpInside" id="Eml-Act-1"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Gdpr-Btn-1">
+                                        <rect key="frame" x="115" y="408" width="85" height="30"/>
+                                        <state key="normal" title="GDPR Consent"/>
+                                        <connections>
+                                            <action selector="setGDPRConsent:" destination="Z3m-zV-96N" eventType="touchUpInside" id="Gdpr-Act-1"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Dlnk-Btn-1">
+                                        <rect key="frame" x="108" y="468" width="99" height="30"/>
+                                        <state key="normal" title="Resolve Deep Links"/>
+                                        <connections>
+                                            <action selector="resolveDeepLinks:" destination="Z3m-zV-96N" eventType="touchUpInside" id="Dlnk-Act-1"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Stop-Btn-1">
+                                        <rect key="frame" x="119" y="528" width="77" height="30"/>
+                                        <state key="normal" title="Stop Tracking"/>
+                                        <connections>
+                                            <action selector="stopTracking:" destination="Z3m-zV-96N" eventType="touchUpInside" id="Stop-Act-1"/>
                                         </connections>
                                     </button>
                                 </subviews>

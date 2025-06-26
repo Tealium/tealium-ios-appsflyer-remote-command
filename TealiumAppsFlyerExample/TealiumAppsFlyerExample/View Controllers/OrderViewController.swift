@@ -16,7 +16,7 @@ class OrderViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         orderNumber.text = "Thank you! Your order number is: ORDABC\(Int.random(in: 0...1000) * 1000)"
-            }
+    }
 
 }
 

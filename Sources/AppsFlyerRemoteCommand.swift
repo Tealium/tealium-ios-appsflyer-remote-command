@@ -66,8 +66,8 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     return appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: nil)
                 }
                 if let settingsDebug = settings[AppsFlyerConstants.Configuration.debug.rawValue] as? Bool {
-                            debug = settingsDebug
-                        }
+                    debug = settingsDebug
+                }
                 return appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: settings)
             case .trackLocation:
                 guard let latitude = payload[AppsFlyerConstants.Parameters.latitude] as? Double,
@@ -98,13 +98,19 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     payload[AppsFlyerConstants.Parameters.emails] = [email]
                 }
                 guard let emails = payload[AppsFlyerConstants.Parameters.emails] as? [String],
-                    let cryptType = payload[AppsFlyerConstants.Parameters.cryptType] as? Int else {
+                    let cryptTypeString = payload[AppsFlyerConstants.Parameters.cryptType] as? String else {
                     if debug {
                         print("\(AppsFlyerConstants.errorPrefix)Must map customer_emails and cryptType in the AppsFlyer Mobile Remote Command tag to set user emails")
                     }
                         return
                 }
-                appsFlyerInstance.setUserEmails(emails: emails, with: cryptType)
+                guard let emailCryptType = AppsFlyerConstants.EmailHashType.appsFlyerTypeFromString(cryptTypeString) else {
+                    if debug {
+                        print("\(AppsFlyerConstants.errorPrefix)Invalid email hash type: \(cryptTypeString)")
+                    }
+                    return
+                }
+                appsFlyerInstance.setUserEmails(emails: emails, with: emailCryptType)
             case .setCurrencyCode:
                 guard let currency = payload[AppsFlyerConstants.Parameters.currency] as? String else {
                     if debug {
@@ -152,9 +158,15 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     }
                     return
                 }
-                guard let mediationNetwork = payload[AppsFlyerConstants.Parameters.adMediationNetwork] as? String else {
+                guard let mediationNetworkString = payload[AppsFlyerConstants.Parameters.adMediationNetwork] as? String else {
                     if debug {
                         print("\(AppsFlyerConstants.errorPrefix)Must provide mediation_network parameter")
+                    }
+                    return
+                }
+                guard let mediationNetworkType = AppsFlyerConstants.MediationNetwork.appsFlyerTypeFromString(mediationNetworkString) else {
+                    if debug {
+                        print("\(AppsFlyerConstants.errorPrefix)Invalid mediation network: \(mediationNetworkString)")
                     }
                     return
                 }
@@ -172,9 +184,14 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 }
                 let additionalParameters = payload[AppsFlyerConstants.Parameters.adAdditionalParameters] as? [String: Any]
                 
-                appsFlyerInstance.logAdRevenue(monetizationNetwork: monetizationNetwork, mediationNetwork: mediationNetwork, revenue: revenue, currency: currency, additionalParameters: additionalParameters)
+                appsFlyerInstance.logAdRevenue(monetizationNetwork: monetizationNetwork, mediationNetwork: mediationNetworkType, revenue: revenue, currency: currency, additionalParameters: additionalParameters)
             case .setDMAConsent:
-                let gdprApplies = payload[AppsFlyerConstants.Parameters.gdprApplies] as? Bool
+                guard let gdprApplies = payload[AppsFlyerConstants.Parameters.gdprApplies] as? Bool else {
+                    if debug {
+                        print("\(AppsFlyerConstants.errorPrefix)Must provide gdpr_applies parameter")
+                    }
+                    return
+                }
                 let consentForDataUsage = payload[AppsFlyerConstants.Parameters.consentForDataUsage] as? Bool
                 let consentForAdsPersonalization = payload[AppsFlyerConstants.Parameters.consentForAdsPersonalization] as? Bool
                 let consentForAdStorage = payload[AppsFlyerConstants.Parameters.consentForAdStorage] as? Bool
@@ -196,13 +213,20 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 }
                 appsFlyerInstance.addPushNotificationDeepLinkPath(paths)
             case .validateAndLogPurchase:
-                let purchaseType = payload[AppsFlyerConstants.Parameters.purchaseType] as? String
                 let transactionId = payload[AppsFlyerConstants.Parameters.transactionId] as? String
                 let productId = payload[AppsFlyerConstants.Parameters.productId] as? String
                 let price = payload[AppsFlyerConstants.Parameters.price] as? String
                 let currency = payload[AppsFlyerConstants.Parameters.purchaseCurrency] as? String
                 let additionalParameters = payload[AppsFlyerConstants.Parameters.purchaseAdditionalParameters] as? [String: Any]
-                appsFlyerInstance.validateAndLogPurchase(purchaseType: purchaseType, transactionId: transactionId, productId: productId, price: price, currency: currency, additionalParameters: additionalParameters)
+                
+                guard let productId, let price, let currency, let transactionId else {
+                    if debug {
+                        print("\(AppsFlyerConstants.errorPrefix)Must provide productId, price, currency, and transactionId parameters for purchase validation")
+                    }
+                    return
+                }
+                
+                appsFlyerInstance.validateAndLogPurchase(productId: productId, price: price, currency: currency, transactionId: transactionId, additionalParameters: additionalParameters)
             case .setSharingFilterForPartners:
                 let partners = payload[AppsFlyerConstants.Parameters.sharingFilterPartners] as? [String]
                 appsFlyerInstance.setSharingFilterForPartners(partners)

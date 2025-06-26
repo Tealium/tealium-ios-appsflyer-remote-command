@@ -78,7 +78,6 @@ public enum AppsFlyerConstants {
         case disableAdTracking = "disable_ad_tracking"
         case disableAppleAdTracking = "disable_apple_ad_tracking"
         case disableAppleAdsAttribution = "disable_apple_ads_attribution"
-        case disableCollectASA = "disable_collect_asa"
         case minTimeBetweenSessions = "time_between_sessions"
         case anonymizeUser = "anonymize_user"
         case collectDeviceName = "collect_device_name"
@@ -93,8 +92,6 @@ public enum AppsFlyerConstants {
         case waitForATTUserAuthorizationTimeoutInterval = "wait_for_att_user_authorization_timeout_interval"
         case resolveDeepLinks = "resolve_deep_links"
         case stopTracking = "stop_tracking"
-        case customerEmails = "customer_emails"
-        case emailHashType = "email_hash_type"
         case host = "host"
         case hostPrefix = "host_prefix"
         
@@ -106,93 +103,85 @@ public enum AppsFlyerConstants {
         static let event = "event"
 
         // Standard Event Parameters
-        static let afLatitude = "af_lat"
-        static let afLongitude = "af_long"
-        static let content = "af_content"
-        static let contentId = "af_content_id" 
-        static let contentType = "af_content_type"
-        static let contentList = "af_content_list"
-        static let currency = "af_currency"
-        static let customerId = "af_customer_user_id"
-        static let achievementId = "af_achievement_id"
-        static let level = "af_level"
-        static let score = "af_score"
-        static let success = "af_success"
-        static let eventPrice = "af_price"
-        static let quantity = "af_quantity"
-        static let registrationMethod = "af_registration_method"
-        static let paymentInfoAvailable = "af_payment_info_available"
-        static let maxRatingValue = "af_max_rating_value"
-        static let ratingValue = "af_rating_value"
-        static let searchString = "af_search_string"
-        static let validated = "af_validated"
-        static let receiptId = "af_receipt_id"
-        static let tutorialId = "af_tutorial_id"
-        static let virtualCurrencyName = "af_virtual_currency_name"
-        // static let deepLinkUrls = "af_deep_link" - also used in resolveDeepLinkURLs()
-        static let oldVersion = "af_old_version"
-        static let newVersion = "af_new_version"
-        static let reviewText = "af_review_text"
-        static let className = "af_class"
-        static let eventStart = "af_event_start"
-        static let eventEnd = "af_event_end"
-        static let customerSegment = "af_customer_segment"
-        static let orderId = "af_order_id"
-        static let revenue = "af_revenue"
-        static let projectedRevenue = "af_projected_revenue"
-        static let couponCode = "af_coupon_code"
-        static let purchaseCurrency = "af_purchase_currency"
-        static let dateA = "af_date_a"
-        static let dateB = "af_date_b"
-        static let destinationA = "af_destination_a"
-        static let destinationB = "af_destination_b"
-        static let description = "af_description"
-        static let departingDepartureDate = "af_departing_departure_date"
-        static let returningDepartureDate = "af_returning_departure_date"
-        static let destinationList = "af_destination_list"
-        static let city = "af_city"
-        static let region = "af_region"
-        static let country = "af_country"
-        static let departingArrivalDate = "af_departing_arrival_date"
-        static let returningArrivalDate = "af_returning_arrival_date"
-        static let suggestedDestinations = "af_suggested_destinations"
-        static let travelStart = "af_travel_start"
-        static let travelEnd = "af_travel_end"
-        static let numAdults = "af_num_adults"
-        static let numChildren = "af_num_children"
-        static let numInfants = "af_num_infants"
-        static let suggestedHotels = "af_suggested_hotels"
-        static let userScore = "af_user_score"
-        static let hotelScore = "af_hotel_score"
-        static let preferredStarRatings = "af_preferred_star_ratings"
-        static let preferredPriceRange = "af_preferred_price_range"
-        static let preferredNeighborhoods = "af_preferred_neighborhoods"
-        static let preferredNumStops = "af_preferred_num_stops"
-        static let param1 = "af_param_1"
-        static let param2 = "af_param_2"
-        static let param3 = "af_param_3"
-        static let param4 = "af_param_4"
-        static let param5 = "af_param_5"
-        static let param6 = "af_param_6"
-        static let param7 = "af_param_7"
-        static let param8 = "af_param_8"
-        static let param9 = "af_param_9"
-        static let param10 = "af_param_10"
+        static let content = AFEventParamContent
+        static let contentId = AFEventParamContentId
+        static let contentType = AFEventParamContentType
+        static let contentList = AFEventParamContentList
+        static let currency = AFEventParamCurrency
+        static let customerId = AFEventParamCustomerUserId
+        static let achievementId = AFEventParamAchievementId
+        static let level = AFEventParamLevel
+        static let score = AFEventParamScore
+        static let success = AFEventParamSuccess
+        static let eventPrice = AFEventParamPrice
+        static let quantity = AFEventParamQuantity
+        static let registrationMethod = AFEventParamRegistrationMethod
+        static let paymentInfoAvailable = AFEventParamPaymentInfoAvailable
+        static let maxRatingValue = AFEventParamMaxRatingValue
+        static let ratingValue = AFEventParamRatingValue
+        static let searchString = AFEventParamSearchString
+        static let validated = AFEventParamValidated
+        static let receiptId = AFEventParamReceiptId
+        static let tutorialId = AFEventParamTutorialId
+        static let virtualCurrencyName = AFEventParamVirtualCurrencyName
+        static let oldVersion = AFEventParamOldVersion
+        static let newVersion = AFEventParamNewVersion
+        static let reviewText = AFEventParamReviewText
+        static let className = AFEventParamClass
+        static let eventStart = AFEventParamEventStart
+        static let eventEnd = AFEventParamEventEnd
+        static let orderId = AFEventParamOrderId
+        static let revenue = AFEventParamRevenue
+        static let projectedRevenue = AFEventProjectedParamRevenue
+        static let couponCode = AFEventParamCouponCode
+        static let purchaseCurrency = AFEventParamPurchaseCurrency
+        static let dateA = AFEventParamDateA
+        static let dateB = AFEventParamDateB
+        static let destinationA = AFEventParamDestinationA
+        static let destinationB = AFEventParamDestinationB
+        static let description = AFEventParamDescription
+        static let departingDepartureDate = AFEventParamDepartingDepartureDate
+        static let returningDepartureDate = AFEventParamReturningDepartureDate
+        static let destinationList = AFEventParamDestinationList
+        static let city = AFEventParamCity
+        static let region = AFEventParamRegion
+        static let country = AFEventParamCountry
+        static let departingArrivalDate = AFEventParamDepartingArrivalDate
+        static let returningArrivalDate = AFEventParamReturningArrivalDate
+        static let suggestedDestinations = AFEventParamSuggestedDestinations
+        static let travelStart = AFEventParamTravelStart
+        static let travelEnd = AFEventParamTravelEnd
+        static let numAdults = AFEventParamNumAdults
+        static let numChildren = AFEventParamNumChildren
+        static let numInfants = AFEventParamNumInfants
+        static let suggestedHotels = AFEventParamSuggestedHotels
+        static let userScore = AFEventParamUserScore
+        static let hotelScore = AFEventParamHotelScore
+        static let preferredStarRatings = AFEventParamPreferredStarRatings
+        static let preferredPriceRange = AFEventParamPreferredPriceRange
+        static let preferredNeighborhoods = AFEventParamPreferredNeighborhoods
+        static let preferredNumStops = AFEventParamPreferredNumStops
+        static let param1 = AFEventParam1
+        static let param2 = AFEventParam2
+        static let param3 = AFEventParam3
+        static let param4 = AFEventParam4
+        static let param5 = AFEventParam5
+        static let param6 = AFEventParam6
+        static let param7 = AFEventParam7
+        static let param8 = AFEventParam8
+        static let param9 = AFEventParam9
+        static let param10 = AFEventParam10
+
+        // exist in documentation but not in codebase
         static let adType = "af_adrev_ad_type"
         static let adNetworkName = "af_adrev_network_name"
         static let adPlacementId = "af_adrev_placement_id"
         static let adSize = "af_adrev_ad_size"
         static let adMediatedNetworkName = "af_adrev_mediated_network_name"
-        static let pushDeepLinkPath = "af_push_deep_link_path"
-
-        // SDK Method Parameters
 
         // logLocation() parameters
-        static let latitude = "af_lat"
-        static let longitude = "af_long"
-        
-        // ??
-        static let pushPayload = "af_push_payload"
+        static let latitude = AFEventParamLat
+        static let longitude = AFEventParamLong
 
         // logAdRevenue() parameters
         static let adMonetizationNetwork = "monetization_network"
@@ -237,7 +226,7 @@ public enum AppsFlyerConstants {
         static let urlParameters = "url_parameters"
         
         // resolveDeepLinkURLs() parameters
-        static let deepLinkUrls = "af_deep_link"
+        static let deepLinkUrls = AFEventParamDeepLink
         
         // setHost() parameters
         static let host = "host"
@@ -299,72 +288,60 @@ public enum AppsFlyerConstants {
     }
     
     public enum MediationNetwork: String, CaseIterable {
-        case ironsource = "ironsource"
-        case applovinmax = "applovinmax"
-        case googleadmob = "googleadmob"
-        case fyber = "fyber"
-        case appodeal = "appodeal"
-        case admost = "admost"
-        case topon = "topon"
-        case tradplus = "tradplus"
-        case yandex = "yandex"
-        case chartboost = "chartboost"
-        case unity = "unity"
-        case toponpte = "toponpte"
-        case custommediation = "custommediation"
-        case directmonetizationnetwork = "directmonetizationnetwork"
-
-        public static func fromString(_ value: String) -> MediationNetwork? {
-            return MediationNetwork(rawValue: value.lowercased())
-        }
-        
-        // Convert to AppsFlyerLib's MediationNetworkType
-        public func toAppsFlyerType() -> MediationNetworkType {
-            switch self {
-            case .ironsource:
-                return MediationNetworkType.ironSource
-            case .applovinmax:
-                return MediationNetworkType.applovinMax
-            case .googleadmob:
-                return MediationNetworkType.googleAdMob
-            case .fyber:
-                return MediationNetworkType.fyber
-            case .appodeal:
-                return MediationNetworkType.appodeal
-            case .admost:
-                return MediationNetworkType.admost
-            case .topon:
-                return MediationNetworkType.topon
-            case .tradplus:
-                return MediationNetworkType.tradplus
-            case .yandex:
-                return MediationNetworkType.yandex
-            case .chartboost:
-                return MediationNetworkType.chartBoost
-            case .unity:
-                return MediationNetworkType.unity
-            case .toponpte:
-                return MediationNetworkType.toponPte
-            case .custommediation:
-                return MediationNetworkType.custom
-            case .directmonetizationnetwork:
-                return MediationNetworkType.directMonetization
-            }
-        }
+        case ironsource
+        case applovinmax
+        case googleadmob
+        case fyber
+        case appodeal
+        case admost
+        case topon
+        case tradplus
+        case yandex
+        case chartboost
+        case unity
+        case toponpte
+        case custommediation
+        case directmonetizationnetwork
         
         // Convenience method to convert string directly to AppsFlyerLib type
-        public static func appsFlyerTypeFromString(_ value: String) -> MediationNetworkType {
-            return fromString(value)?.toAppsFlyerType() ?? MediationNetworkType.googleAdMob
+        public static func appsFlyerTypeFromString(_ value: String) -> MediationNetworkType? {
+            guard let mediationNetwork = MediationNetwork(rawValue: value.lowercased()) else {
+                return nil
+            }
+            return mediationNetworkMapping[mediationNetwork]
         }
+        
+        private static let mediationNetworkMapping: [MediationNetwork: MediationNetworkType] = [
+            .ironsource: MediationNetworkType.ironSource,
+            .applovinmax: MediationNetworkType.applovinMax,
+            .googleadmob: MediationNetworkType.googleAdMob,
+            .fyber: MediationNetworkType.fyber,
+            .appodeal: MediationNetworkType.appodeal,
+            .admost: MediationNetworkType.admost,
+            .topon: MediationNetworkType.topon,
+            .tradplus: MediationNetworkType.tradplus,
+            .yandex: MediationNetworkType.yandex,
+            .chartboost: MediationNetworkType.chartBoost,
+            .unity: MediationNetworkType.unity,
+            .toponpte: MediationNetworkType.toponPte,
+            .custommediation: MediationNetworkType.custom,
+            .directmonetizationnetwork: MediationNetworkType.directMonetization
+        ]
     }
     
-    public enum EmailHashType: Int, CaseIterable {
-        case none = 0
-        case sha256 = 3
+    public enum EmailHashType: String, CaseIterable {
+        case none = "none"
+        case sha256 = "sha256"
         
-        // Convert from int directly to AppsFlyerLib's EmailCryptType
-        public static func appsFlyerTypeFromInt(_ value: Int) -> EmailCryptType {
-            return EmailCryptType(rawValue: UInt32(value))
+        public static func appsFlyerTypeFromString(_ value: String) -> EmailCryptType? {
+            switch value.lowercased() {
+            case EmailHashType.sha256.rawValue:
+                return EmailCryptType(rawValue: 3)  // SHA-256 = 3
+            case EmailHashType.none.rawValue:
+                return EmailCryptType(rawValue: 0)  // NONE = 0
+            default:
+                return nil
+            }
         }
     }
 }

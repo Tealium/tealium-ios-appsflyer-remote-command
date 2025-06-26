@@ -21,17 +21,17 @@ public protocol AppsFlyerCommand {
     func logEvent(_ eventName: String, values: [String: Any])
     func logLocation(longitude: Double, latitude: Double)
     func setHost(_ host: String, with prefix: String)
-    func setUserEmails(emails: [String], with cryptType: Int)
+    func setUserEmails(emails: [String], with cryptType: EmailCryptType)
     func currencyCode(_ currency: String)
     func customerId(_ id: String)
     func disableTracking(_ disable: Bool)
     func resolveDeepLinkURLs(_ urls: [String])
     func anonymizeUser(_ anonymize: Bool)
-    func logAdRevenue(monetizationNetwork: String, mediationNetwork: String, revenue: Double, currency: String, additionalParameters: [String: Any]?)
-    func setDMAConsent(gdprApplies: Bool?, consentForDataUsage: Bool?, consentForAdsPersonalization: Bool?, consentForAdStorage: Bool?)
+    func logAdRevenue(monetizationNetwork: String, mediationNetwork: MediationNetworkType, revenue: Double, currency: String, additionalParameters: [String: Any]?)
+    func setDMAConsent(gdprApplies: Bool, consentForDataUsage: Bool?, consentForAdsPersonalization: Bool?, consentForAdStorage: Bool?)
     func setPhoneNumber(_ phoneNumber: String)
     func addPushNotificationDeepLinkPath(_ paths: [String])
-    func validateAndLogPurchase(purchaseType: String?, transactionId: String?, productId: String?, price: String?, currency: String?, additionalParameters: [String: Any]?)
+    func validateAndLogPurchase(productId: String, price: String, currency: String, transactionId: String, additionalParameters: [String: Any]?)
     func setSharingFilterForPartners(_ partners: [String]?)
     func appendCustomData(_ data: [String: Any])
     func setCurrentDeviceLanguage(_ language: String)
@@ -73,7 +73,7 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         appsFlyer.appsFlyerDevKey = appDevKey
         appsFlyer.appleAppID = appId
         
-        guard let settings: [String : Any] else {
+        guard let settings else {
             return
         }
         
@@ -89,9 +89,6 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         }
         if let disableAppleAdsAttribution = settings[AppsFlyerConstants.Configuration.disableAppleAdsAttribution.rawValue] as? Bool {
             appsFlyer.disableAppleAdsAttribution = disableAppleAdsAttribution
-        }
-        if let disableCollectASA = settings[AppsFlyerConstants.Configuration.disableCollectASA.rawValue] as? Bool {
-            appsFlyer.disableCollectASA = disableCollectASA
         }
         if let minTimeBetweenSessions = settings[AppsFlyerConstants.Configuration.minTimeBetweenSessions.rawValue] as? Int {
             appsFlyer.minTimeBetweenSessions = UInt(minTimeBetweenSessions)
@@ -114,7 +111,7 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         if let appInviteOneLinkID = settings[AppsFlyerConstants.Configuration.appInviteOneLinkID.rawValue] as? String {
             appsFlyer.appInviteOneLinkID = appInviteOneLinkID
         }
-        if let deepLinkTimeout = settings[AppsFlyerConstants.Configuration.deepLinkTimeout.rawValue] as? Int {
+        if let deepLinkTimeout = settings[AppsFlyerConstants.Configuration.deepLinkTimeout.rawValue] as? Int, deepLinkTimeout > 0 {
             appsFlyer.deepLinkTimeout = UInt(deepLinkTimeout)
         }
         if let oneLinkCustomDomains = settings[AppsFlyerConstants.Configuration.oneLinkCustomDomains.rawValue] as? [String] {
@@ -124,9 +121,9 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
             appsFlyer.useReceiptValidationSandbox = useReceiptValidationSandbox
         }
         // Wait for ATT authorization if configured (iOS 14+ only)
-        if let attTimeout = settings[AppsFlyerConstants.Configuration.waitForATTUserAuthorizationTimeoutInterval.rawValue] as? Int {
+        if let attTimeout = settings[AppsFlyerConstants.Configuration.waitForATTUserAuthorizationTimeoutInterval.rawValue] as? Double {
             if #available(iOS 14, *) {
-                appsFlyer.waitForATTUserAuthorization(timeoutInterval: TimeInterval(attTimeout))
+                appsFlyer.waitForATTUserAuthorization(timeoutInterval: attTimeout)
             }
         }
         if let resolveDeepLinks = settings[AppsFlyerConstants.Configuration.resolveDeepLinks.rawValue] as? [String] {
@@ -134,11 +131,6 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         }
         if let stopTracking = settings[AppsFlyerConstants.Configuration.stopTracking.rawValue] as? Bool {
             appsFlyer.isStopped = stopTracking
-        }
-        if let customerEmails = settings[AppsFlyerConstants.Configuration.customerEmails.rawValue] as? [String],
-           let emailHashType = settings[AppsFlyerConstants.Configuration.emailHashType.rawValue] as? Int {
-            let emailCryptType = AppsFlyerConstants.EmailHashType.appsFlyerTypeFromInt(emailHashType)
-            appsFlyer.setUserEmails(customerEmails, with: emailCryptType)
         }
         if let host = settings[AppsFlyerConstants.Configuration.host.rawValue] as? String,
            let hostPrefix = settings[AppsFlyerConstants.Configuration.hostPrefix.rawValue] as? String {
@@ -164,10 +156,9 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         }
     }
 
-    public func setUserEmails(emails: [String], with cryptType: Int) {
-        let emailCryptType = AppsFlyerConstants.EmailHashType.appsFlyerTypeFromInt(cryptType)
+    public func setUserEmails(emails: [String], with cryptType: EmailCryptType) {
         onReady { appsFlyer in
-            appsFlyer.setUserEmails(emails, with: emailCryptType)
+            appsFlyer.setUserEmails(emails, with: cryptType)
         }
     }
 
@@ -201,15 +192,11 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         }
     }
 
-    public func logAdRevenue(monetizationNetwork: String, mediationNetwork: String, revenue: Double, currency: String, additionalParameters: [String: Any]?) {
-
+    public func logAdRevenue(monetizationNetwork: String, mediationNetwork: MediationNetworkType, revenue: Double, currency: String, additionalParameters: [String: Any]?) {
         onReady { appsFlyer in
-            // Use our enum's conversion method
-            let mediationNetworkType = AppsFlyerConstants.MediationNetwork.appsFlyerTypeFromString(mediationNetwork)
-            
             let adRevenueData = AFAdRevenueData(
                 monetizationNetwork: monetizationNetwork,
-                mediationNetwork: mediationNetworkType,
+                mediationNetwork: mediationNetwork,
                 currencyIso4217Code: currency,
                 eventRevenue: NSNumber(value: revenue)
             )
@@ -218,9 +205,7 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         }
     }
 
-    public func setDMAConsent(gdprApplies: Bool?, consentForDataUsage: Bool?, consentForAdsPersonalization: Bool?, consentForAdStorage: Bool?) {
-        guard let gdprApplies else { return }
-        
+    public func setDMAConsent(gdprApplies: Bool, consentForDataUsage: Bool?, consentForAdsPersonalization: Bool?, consentForAdStorage: Bool?) {
         onReady { appsFlyer in
             if gdprApplies {
                 // User is subject to GDPR
@@ -230,7 +215,7 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
                     hasConsentForAdsPersonalization: consentForAdsPersonalization.map { NSNumber(value: $0) },
                     hasConsentForAdStorage: consentForAdStorage.map { NSNumber(value: $0) }
                 )
-                    appsFlyer.setConsentData(consent)
+                appsFlyer.setConsentData(consent)
             } else {
                 // User is not subject to GDPR - other parameters must be null
                 let consent = AppsFlyerConsent(
@@ -256,15 +241,7 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         }
     }
 
-    public func validateAndLogPurchase(purchaseType: String?, transactionId: String?, productId: String?, price: String?, currency: String?, additionalParameters: [String: Any]?) {
-        guard let productId ,
-              let price ,
-              let currency ,
-              let transactionId 
-              else {
-            return
-        }
-        
+    public func validateAndLogPurchase(productId: String, price: String, currency: String, transactionId: String, additionalParameters: [String: Any]?) {
         onReady { appsFlyer in
             let purchaseDetails = AFSDKPurchaseDetails(
                 productId: productId,
@@ -273,24 +250,28 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
                 transactionId: transactionId
             )
             
-            // Note: purchaseType is not part of official iOS SDK AFSDKPurchaseDetails
-            // but can be added as additional parameter for consistency with Android
-            var extraEventValues: [String: Any] = [:]
-            if let type = purchaseType {
-                extraEventValues["purchase_type"] = type
-            }
-            if let additional = additionalParameters {
-                extraEventValues.merge(additional) { (_, new) in new }
-            }
-            
             appsFlyer.validateAndLog(
                 inAppPurchase: purchaseDetails,
-                extraEventValues: extraEventValues.isEmpty ? nil : extraEventValues
+                extraEventValues: additionalParameters
             ) { result in
-                if let result = result {
-                    print("Purchase validation result: \(result)")
-                } else {
-                    print("Purchase validation completed")
+                guard let result = result else {
+                    print("Purchase validation: No result received")
+                    return
+                }
+                
+                switch result.status {
+                case .success:
+                    print("Purchase validation: SUCCESS - Purchase validated and logged")
+                case .failure:  
+                    print("Purchase validation: FAILURE - Purchase was not validated")
+                case .error:
+                    if let error = result.error {
+                        print("Purchase validation: ERROR - \(error.localizedDescription)")
+                    } else {
+                        print("Purchase validation: ERROR - Unknown error occurred")
+                    }
+                @unknown default:
+                    print("Purchase validation: Unknown status - \(result)")
                 }
             }
         }
