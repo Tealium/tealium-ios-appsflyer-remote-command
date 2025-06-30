@@ -29,7 +29,7 @@ class CheckoutViewController: UIViewController {
         }
         if title.contains("Payment") {
             let value = checkoutSegmentedControl.titleForSegment(at: checkoutSegmentedControl.selectedSegmentIndex)
-            TealiumHelper.trackEvent(title: "checkout_progress", data: ["checkout_step": "shipping", "checkout_option": value!])
+            TealiumHelper.trackEvent(title: "checkout", data: ["checkout_step": "shipping", "checkout_option": value!])
             TealiumHelper.trackView(title: "payment", data: ["screen_class": "\(self.classForCoder)"])
             checkoutStepLabel.text = "Payment"
             checkoutTextField1.text = ""
@@ -43,7 +43,7 @@ class CheckoutViewController: UIViewController {
             checkoutProgress.setTitle("Place Order", for: .normal)
         } else {
             let value = checkoutSegmentedControl.titleForSegment(at: checkoutSegmentedControl.selectedSegmentIndex)
-            TealiumHelper.trackEvent(title: "checkout_progress", data: ["checkout_step": "payment", "checkout_option": value!])
+            TealiumHelper.trackEvent(title: "checkout", data: ["checkout_step": "payment", "checkout_option": value!])
             let notification = Notification(name: Notification.Name(CheckoutViewController.placedOrderClicked), object: nil, userInfo: nil)
             NotificationCenter.default.post(notification)
 

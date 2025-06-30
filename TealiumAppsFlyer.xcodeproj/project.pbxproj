@@ -35,7 +35,7 @@
 /* Begin PBXFileReference section */
 		15914AD4277A12F50051BCB2 /* TealiumCore.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:XC939GDC9P:Tealium"; lastKnownFileType = wrapper.xcframework; name = TealiumCore.xcframework; path = Carthage/Build/TealiumCore.xcframework; sourceTree = "<group>"; };
 		15914AD5277A12F50051BCB2 /* TealiumRemoteCommands.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:XC939GDC9P:Tealium"; lastKnownFileType = wrapper.xcframework; name = TealiumRemoteCommands.xcframework; path = Carthage/Build/TealiumRemoteCommands.xcframework; sourceTree = "<group>"; };
-		15914AD6277A12F50051BCB2 /* AppsFlyerLib.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = AppsFlyerLib.xcframework; path = Carthage/Build/AppsFlyerLib.xcframework; sourceTree = "<group>"; };
+		15914AD6277A12F50051BCB2 /* AppsFlyerLib.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:6UQAD4B3U2:APPSFLYER LTD"; lastKnownFileType = wrapper.xcframework; name = AppsFlyerLib.xcframework; path = Carthage/Build/AppsFlyerLib.xcframework; sourceTree = "<group>"; };
 		15914ADF277A28170051BCB2 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		15914AE1277A28250051BCB2 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CF0D01EB232AB7CB005BFE15 /* TealiumAppsFlyer.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TealiumAppsFlyer.framework; sourceTree = BUILT_PRODUCTS_DIR; };

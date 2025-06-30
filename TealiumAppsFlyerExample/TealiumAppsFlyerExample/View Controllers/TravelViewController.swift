@@ -77,7 +77,7 @@ class TravelViewController: UIViewController {
         data[TravelViewController.preferredPriceRange] = [400,500]
         data[TravelViewController.preferredNumberStops] = [0,1]
         data[TravelViewController.ticketPrice] = [1000]
-        TealiumHelper.trackEvent(title: "travel_order", data: data)
+        TealiumHelper.trackEvent(title: "travelbooking", data: data)
     }
 
 }

@@ -42,12 +42,14 @@
         "order_tax_amount": "event.order_tax",
         "order_id": "event.af_order_id",
         "order_total": "event.af_revenue",
-        "currency_type": "event.currency_type"
+        "currency_type": "event.currency_type",
+        "tutorial_id": "event.af_tutorial_id",
+        "character": "event.character",
+        "screen_name": "event.screen_name",
+        "screen_class": "event.screen_class"
     },
     "commands": {
         "launch": "initialize",
-        "geofence_entered": "tracklocation",
-        "geofence_exited": "tracklocation",
         "track_location": "tracklocation",
         "user_login": "login",
         "user_register": "setuseremails,setcustomerid,completeregistration",
@@ -62,10 +64,15 @@
         "category": "listview",
         "share": "share",
         "rate": "rate",
-        "search": "search",
         "checkout": "initiatecheckout",
-        "order":"purchase",
-        "notification_open": "pushnotificationopened",
+        "order": "purchase",
+        "travelbooking": "travelbooking",
+        "completetutorial": "completetutorial",
+        "spentcredits": "spentcredits",
+        "reengage": "reengage",
+        "start_trial": "starttrial",
+        "join_group": "invite",
+        "screen_view": "custom_event",
         "custom_event": "custom_event"
     }
 }
