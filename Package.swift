@@ -10,9 +10,8 @@ let package = Package(
         .library(name: "TealiumAppsFlyer", targets: ["TealiumAppsFlyer"])
     ],
     dependencies: [
-        .package(name: "TealiumSwift", url: "https://github.com/tealium/tealium-swift", 
-.upToNextMajor(from: "2.12.0")),
-        .package(name: "AppsFlyerLib", url: "https://github.com/AppsFlyerSDK/AppsFlyerFramework", .upToNextMajor(from: "6.9.0"))
+        .package(name: "TealiumSwift", url: "https://github.com/tealium/tealium-swift", .upToNextMajor(from: "2.18.0")),
+        .package(name: "AppsFlyerLib", url: "https://github.com/AppsFlyerSDK/AppsFlyerFramework", .upToNextMajor(from: "6.17.0"))
     ],
     targets: [
         .target(
