@@ -37,7 +37,7 @@ class GamingViewController: UIViewController {
     }
     
     @IBAction func spendCurrency(_ sender: UIButton) {
-        TealiumHelper.trackEvent(title: "spentcredits", data: [GamingViewController.productName: ["jewels"], "currency_type": GamingViewController.tokens, GamingViewController.creditPrice: [50.00]])
+        TealiumHelper.trackEvent(title: "spentcredits", data: [GamingViewController.productName: ["jewels"], GamingViewController.currencyType: "USD", GamingViewController.creditPrice: [50.00]])
     }
     
     @IBAction func achievementSwitch(_ sender: UISwitch) {
@@ -53,7 +53,7 @@ class GamingViewController: UIViewController {
     @IBAction func levelStepper(_ sender: UIStepper) {
         levelLabel.text = String(Int(sender.value))
         data[GamingViewController.level] = Int(sender.value)
-        data[GamingViewController.charachter] = "mario"
+        data[GamingViewController.character] = "mario"
         data[GamingViewController.score] = Int.random(in: 1...1000) * 1000
         TealiumHelper.trackEvent(title: "level_up", data: data)
     }
@@ -83,10 +83,9 @@ extension GamingViewController {
     static let shareId = "share_id"
     static let productName = "product_name"
     static let currencyType = "currency_type"
-    static let tokens = "tokens"
     static let achievementId = "achievement_id"
     static let level = "level"
-    static let charachter = "character"
+    static let character = "character"
     static let score = "score"
     static let creditPrice = "price"
     static let trialPrice = "price"
