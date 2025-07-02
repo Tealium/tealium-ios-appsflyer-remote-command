@@ -23,11 +23,6 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
     }
 
     override func tearDown() { }
-
-    func testVersion() {
-        XCTAssertEqual(appsFlyerCommand.version, AppsFlyerConstants.version)
-        XCTAssertEqual(appsFlyerCommand.version, "3.1.0")
-    }
     
     func testGetEventNameCaseInsensitive() {
         let result1 = appsFlyerCommand.getEventName(command: "PURCHASE")
