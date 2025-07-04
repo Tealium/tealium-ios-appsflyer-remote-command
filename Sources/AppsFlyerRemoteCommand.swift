@@ -152,11 +152,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     }
     
     func getEventName(command: String) -> String {
-        if let appsFlyerEvent = AppsFlyerConstants.EventCommandNames(rawValue: command.lowercased()) {
-            let eventName = String(standardEventName: appsFlyerEvent)
-            return eventName
-        }
-        return command
+        return AppsFlyerConstants.eventsMap[command.lowercased()] ?? command
     }
 
 }
@@ -174,62 +170,4 @@ fileprivate extension Dictionary where Key == String, Value == Any {
     }
 }
 
-fileprivate extension String {
-    init(standardEventName: AppsFlyerConstants.EventCommandNames) {
-        switch standardEventName {
-        case .achievelevel:
-            self = AppsFlyerConstants.Events.achievedLevel
-        case .adclick:
-            self = AppsFlyerConstants.Events.adClick
-        case .adview:
-            self = AppsFlyerConstants.Events.adView
-        case .addpaymentinfo:
-            self = AppsFlyerConstants.Events.addPaymentInfo
-        case .addtocart:
-            self = AppsFlyerConstants.Events.addToCart
-        case .addtowishlist:
-            self = AppsFlyerConstants.Events.addToWishlist
-        case .completeregistration:
-            self = AppsFlyerConstants.Events.completeRegistration
-        case .completetutorial:
-            self = AppsFlyerConstants.Events.completeTutorial
-        case .viewedcontent:
-            self = AppsFlyerConstants.Events.contentView
-        case .search:
-            self = AppsFlyerConstants.Events.search
-        case .rate:
-            self = AppsFlyerConstants.Events.rate
-        case .starttrial:
-            self = AppsFlyerConstants.Events.startTrial
-        case .subscribe:
-            self = AppsFlyerConstants.Events.subscribe
-        case .initiatecheckout:
-            self = AppsFlyerConstants.Events.initiateCheckout
-        case .purchase:
-            self = AppsFlyerConstants.Events.purchase
-        case .unlockachievement:
-            self = AppsFlyerConstants.Events.unlockAchievement
-        case .spentcredits:
-            self = AppsFlyerConstants.Events.spentCredits
-        case .listview:
-            self = AppsFlyerConstants.Events.listView
-        case .travelbooking:
-            self = AppsFlyerConstants.Events.travelBooking
-        case .share:
-            self = AppsFlyerConstants.Events.share
-        case .invite:
-            self = AppsFlyerConstants.Events.invite
-        case .reengage:
-            self = AppsFlyerConstants.Events.reEngage
-        case .update:
-            self = AppsFlyerConstants.Events.update
-        case .login:
-            self = AppsFlyerConstants.Events.login
-        case .customersegment:
-            self = AppsFlyerConstants.Events.customerSegment
-        case .pushnotificationopened:
-            self = AppsFlyerConstants.Events.pushNotificationOpened
-        }
-    }
 
-}
