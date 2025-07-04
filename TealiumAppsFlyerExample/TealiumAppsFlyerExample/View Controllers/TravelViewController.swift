@@ -77,7 +77,7 @@ class TravelViewController: UIViewController {
         data[TravelViewController.preferredPriceRange] = [400,500]
         data[TravelViewController.preferredNumberStops] = [0,1]
         data[TravelViewController.ticketPrice] = [1000]
-        TealiumHelper.trackEvent(title: "travel_order", data: data)
+        TealiumHelper.trackEvent(title: "travelbooking", data: data)
     }
 
 }
@@ -99,7 +99,6 @@ extension TravelViewController {
     static let contentType = "content_type"
     static let ticketPrice = "price"
     static let shareId = "share_id"
-    static let passengers = "number_of_passengers"
     static let rooms = "number_of_rooms"
     static let travelClass = "travel_class"
     static let origin = "travel_origin"
@@ -107,7 +106,7 @@ extension TravelViewController {
     static let startDate = "travel_start_date"
     static let endDate = "travel_end_date"
     static let nights = "number_of_nights"
-    static let suggestedDestinations = "suggested_desitnations"
+    static let suggestedDestinations = "suggested_destinations"
     static let numberOfChildren = "number_children"
     static let numberOfAdults = "number_adults"
     static let hotelScore = "hotel_score"

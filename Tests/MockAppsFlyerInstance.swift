@@ -11,68 +11,94 @@ import Foundation
 import AppsFlyerLib
 
 class MockAppsFlyerInstance: AppsFlyerCommand {
-    var initWithoutConfigCount = 0
-    var initWithConfigCount = 0
+    var initWithoutSettingsCount = 0
+    var initWithSettingsCount = 0
     var logEventCount = 0
     var logLocationCount = 0
-    var handlePushNotificationCount = 0
     var setHostCount = 0
     var setUserEmailsCount = 0
     var setCurrencyCodeCount = 0
     var setCustomerIdCount = 0
     var disableTrackingCount = 0
-    var registerUninstallCount = 0
     var resolveDeepLinkURLsCount = 0
+    
+    // Store last call parameters for verification
+    var lastEventName: String?
+    var lastEventValues: [String: Any]?
+    var lastEmails: [String]?
+    var lastCurrency: String?
+    var lastAppId: String?
+    var lastAppDevKey: String?
+    var lastSettings: [String: Any]?
+    var lastLongitude: Double?
+    var lastLatitude: Double?
+    var lastHost: String?
+    var lastPrefix: String?
+    var lastCryptType: Int?
+    var lastCustomerId: String?
+    var lastDisableTracking: Bool?
+    var lastUrls: [String]?
+    
     func initialize(appId: String, appDevKey: String) {
-        initWithoutConfigCount += 1
+        initWithoutSettingsCount += 1
+        lastAppId = appId
+        lastAppDevKey = appDevKey
+        lastSettings = nil
     }
     
     func initialize(appId: String, appDevKey: String, settings: [String : Any]?) {
+        lastAppId = appId
+        lastAppDevKey = appDevKey
+        lastSettings = settings
         if settings != nil {
-            initWithConfigCount += 1
+            initWithSettingsCount += 1
         } else {
-            initWithoutConfigCount += 1
+            initWithoutSettingsCount += 1
         }
     }
     
     func logEvent(_ eventName: String, values: [String : Any]) {
         logEventCount += 1
+        lastEventName = eventName
+        lastEventValues = values
     }
     
     func logLocation(longitude: Double, latitude: Double) {
         logLocationCount += 1
-    }
-    
-    func handlePushNofification(payload: [String : Any]?) {
-        handlePushNotificationCount += 1
+        lastLongitude = longitude
+        lastLatitude = latitude
     }
     
     func setHost(_ host: String, with prefix: String) {
         setHostCount += 1
+        lastHost = host
+        lastPrefix = prefix
     }
     
     func setUserEmails(emails: [String], with cryptType: Int) {
         setUserEmailsCount += 1
+        lastEmails = emails
+        lastCryptType = cryptType
     }
     
     func currencyCode(_ currency: String) {
         setCurrencyCodeCount += 1
+        lastCurrency = currency
     }
     
     func customerId(_ id: String) {
         setCustomerIdCount += 1
+        lastCustomerId = id
     }
     
     func disableTracking(_ disable: Bool) {
         disableTrackingCount += 1
-    }
-    
-    func registerUninstall(token: Data) {
-        registerUninstallCount += 1
+        lastDisableTracking = disable
     }
     
     func resolveDeepLinkURLs(_ urls: [String]) {
         resolveDeepLinkURLsCount += 1
+        lastUrls = urls
     }
     
     func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {

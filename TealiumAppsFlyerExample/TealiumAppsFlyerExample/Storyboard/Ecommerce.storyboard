@@ -13,7 +13,7 @@
         <!--Order View Controller-->
         <scene sceneID="0zA-k2-zWu">
             <objects>
-                <viewController storyboardIdentifier="OrderViewController" id="SOy-s4-qdb" customClass="OrderViewController" customModule="TealiumFirebaseExample" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="OrderViewController" id="SOy-s4-qdb" customClass="OrderViewController" customModule="TealiumAppsFlyerExample" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="COB-T4-7Za">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -57,7 +57,7 @@
         <!--Checkout View Controller-->
         <scene sceneID="gvw-Ff-XNq">
             <objects>
-                <viewController storyboardIdentifier="CheckoutViewController" id="rq0-ze-udW" customClass="CheckoutViewController" customModule="TealiumFirebaseExample" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="CheckoutViewController" id="rq0-ze-udW" customClass="CheckoutViewController" customModule="TealiumAppsFlyerExample" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="V8t-jm-Dj3">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -141,7 +141,7 @@
         <!--Product View Controller-->
         <scene sceneID="wpZ-E5-Y94">
             <objects>
-                <viewController storyboardIdentifier="ProductViewController" id="Wvx-BB-3OI" customClass="ProductViewController" customModule="TealiumFirebaseExample" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ProductViewController" id="Wvx-BB-3OI" customClass="ProductViewController" customModule="TealiumAppsFlyerExample" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="qVP-hf-gUI">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -267,7 +267,7 @@
         <!--Category View Controller-->
         <scene sceneID="K92-fl-BMm">
             <objects>
-                <viewController storyboardIdentifier="CategoryViewController" id="zWw-wp-fqp" customClass="CategoryViewController" customModule="TealiumFirebaseExample" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="CategoryViewController" id="zWw-wp-fqp" customClass="CategoryViewController" customModule="TealiumAppsFlyerExample" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="mjD-09-0Gb">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -282,7 +282,7 @@
                                     <inset key="sectionInset" minX="10" minY="10" maxX="10" maxY="10"/>
                                 </collectionViewFlowLayout>
                                 <cells>
-                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" reuseIdentifier="ProductImage" id="CBl-YA-l5y" customClass="ProductCell" customModule="TealiumFirebaseExample" customModuleProvider="target">
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" reuseIdentifier="ProductImage" id="CBl-YA-l5y" customClass="ProductCell" customModule="TealiumAppsFlyerExample" customModuleProvider="target">
                                         <rect key="frame" x="10" y="10" width="140" height="180"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO">

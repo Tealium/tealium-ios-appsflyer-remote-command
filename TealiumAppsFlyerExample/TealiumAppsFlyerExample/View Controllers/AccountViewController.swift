@@ -86,7 +86,6 @@ extension AccountViewController {
     static let contentType = "content_type"
     static let shareId = "share_id"
     static let adType = "ad_type"
-    static let adNetworkName = "ad_network_name"
     static let adPlacementId = "ad_placement_id"
     static let adSize = "ad_size"
     static let adMediatedName = "ad_mediated_name"
