@@ -160,7 +160,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
 fileprivate extension Dictionary where Key == String, Value == Any {
     func filterVariables() -> [String: Any] {
         let excludedKeys: Set<String> = ["method", AppsFlyerConstants.commandName]
-        let allExcludedKeys = excludedKeys.union(AppsFlyerConstants.Configuration.allConfigurationKeys)
+        let allExcludedKeys = excludedKeys.union(AppsFlyerConstants.Configuration.allCases.map { $0.rawValue })
         
         return self.filter { !allExcludedKeys.contains($0.key) }
     }

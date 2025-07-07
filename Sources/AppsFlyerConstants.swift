@@ -60,17 +60,17 @@ public enum AppsFlyerConstants {
         case resolveDeepLinkUrls = "resolvedeeplinkurls"
     }
     
-    public enum Configuration {
-        static let appId = "app_id"
-        static let appDevKey = "app_dev_key"
-        static let debug = "debug"
-        static let disableAdTracking = "disable_ad_tracking"
-        static let disableAppleAdTracking = "disable_apple_ad_tracking"
-        static let minTimeBetweenSessions = "time_between_sessions"
-        static let anonymizeUser = "anonymize_user"
-        static let collectDeviceName = "collect_device_name"
-        static let customData = "custom_data"
-        static let settings = "settings"
+    public enum Configuration: String, CaseIterable {
+        case appId = "app_id"
+        case appDevKey = "app_dev_key"
+        case debug = "debug"
+        case disableAdTracking = "disable_ad_tracking"
+        case disableAppleAdTracking = "disable_apple_ad_tracking"
+        case minTimeBetweenSessions = "time_between_sessions"
+        case anonymizeUser = "anonymize_user"
+        case collectDeviceName = "collect_device_name"
+        case customData = "custom_data"
+        case settings = "settings"
     }
 
     public enum Parameters {
