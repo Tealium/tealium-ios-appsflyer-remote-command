@@ -57,15 +57,15 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
             let commandName = AppsFlyerConstants.CommandNames(rawValue: $0.lowercased())
             switch commandName {
             case .initialize:
-                guard let appId = payload[AppsFlyerConstants.Configuration.appId] as? String,
-                    let appDevKey = payload[AppsFlyerConstants.Configuration.appDevKey] as? String else {
+                guard let appId = payload[AppsFlyerConstants.Configuration.appId.rawValue] as? String,
+                    let appDevKey = payload[AppsFlyerConstants.Configuration.appDevKey.rawValue] as? String else {
                         print("\(AppsFlyerConstants.errorPrefix) Must set an app_id and api_key in AppsFlyer Mobile Remote Command tag to initialize")
                         return
                 }
-                guard let settings = payload[AppsFlyerConstants.Configuration.settings] as? [String: Any] else {
+                guard let settings = payload[AppsFlyerConstants.Configuration.settings.rawValue] as? [String: Any] else {
                     return appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: nil)
                 }
-                if let settingsDebug = settings[AppsFlyerConstants.Configuration.debug] as? Bool {
+                if let settingsDebug = settings[AppsFlyerConstants.Configuration.debug.rawValue] as? Bool {
                     debug = settingsDebug
                 }
                 return appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: settings)
