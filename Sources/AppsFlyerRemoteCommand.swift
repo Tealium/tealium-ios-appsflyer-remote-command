@@ -65,7 +65,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 guard let settings = payload[AppsFlyerConstants.Configuration.settings.rawValue] as? [String: Any] else {
                     return appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: nil)
                 }
-                if let settingsDebug = settings[AppsFlyerConstants.Configuration.debug.rawValue] as? Bool {
+                if let settingsDebug = settings[AppsFlyerConstants.Settings.debug] as? Bool {
                     debug = settingsDebug
                 }
                 return appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: settings)
@@ -158,11 +158,15 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
 }
 
 fileprivate extension Dictionary where Key == String, Value == Any {
-    func filterVariables() -> [String: Any] {
+    
+    private static let allExcludedKeys: Set<String> = {
         let excludedKeys: Set<String> = ["method", AppsFlyerConstants.commandName]
-        let allExcludedKeys = excludedKeys.union(AppsFlyerConstants.Configuration.allCases.map { $0.rawValue })
-        
-        return self.filter { !allExcludedKeys.contains($0.key) }
+        let configurationKeys = Set(AppsFlyerConstants.Configuration.allCases.map { $0.rawValue })
+        return excludedKeys.union(configurationKeys)
+    }()
+    
+    func filterVariables() -> [String: Any] {
+        return self.filter { !Self.allExcludedKeys.contains($0.key) }
     }
 }
 

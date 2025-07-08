@@ -64,26 +64,26 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         guard let settings = settings else {
             return
         }
-        if let debug = settings[AppsFlyerConstants.Configuration.debug.rawValue] as? Bool {
+        if let debug = settings[AppsFlyerConstants.Settings.debug] as? Bool {
             appsFlyer.isDebug = debug
         }
-        if let disableAdTracking = settings[AppsFlyerConstants.Configuration.disableAdTracking.rawValue] as? Bool {
+        if let disableAdTracking = settings[AppsFlyerConstants.Settings.disableAdTracking] as? Bool {
             appsFlyer.disableAdvertisingIdentifier = disableAdTracking
             appsFlyer.disableIDFVCollection = disableAdTracking
         }
-        if let disableAppleAdTracking = settings[AppsFlyerConstants.Configuration.disableAppleAdTracking.rawValue] as? Bool {
+        if let disableAppleAdTracking = settings[AppsFlyerConstants.Settings.disableAppleAdTracking] as? Bool {
             appsFlyer.disableSKAdNetwork = disableAppleAdTracking
         }
-        if let minTimeBetweenSessions = settings[AppsFlyerConstants.Configuration.minTimeBetweenSessions.rawValue] as? Int {
+        if let minTimeBetweenSessions = settings[AppsFlyerConstants.Settings.minTimeBetweenSessions] as? Int {
             appsFlyer.minTimeBetweenSessions = UInt(minTimeBetweenSessions)
         }
-        if let anonymizeUser = settings[AppsFlyerConstants.Configuration.anonymizeUser.rawValue] as? Bool {
+        if let anonymizeUser = settings[AppsFlyerConstants.Settings.anonymizeUser] as? Bool {
             appsFlyer.anonymizeUser = anonymizeUser
         }
-        if let shouldCollectDeviceName = settings[AppsFlyerConstants.Configuration.collectDeviceName.rawValue] as? Bool {
+        if let shouldCollectDeviceName = settings[AppsFlyerConstants.Settings.collectDeviceName] as? Bool {
             appsFlyer.shouldCollectDeviceName = shouldCollectDeviceName
         }
-        if let customData = settings[AppsFlyerConstants.Configuration.customData.rawValue] as? [AnyHashable: Any] {
+        if let customData = settings[AppsFlyerConstants.Settings.customData] as? [AnyHashable: Any] {
             appsFlyer.customData = customData
         }
     }
