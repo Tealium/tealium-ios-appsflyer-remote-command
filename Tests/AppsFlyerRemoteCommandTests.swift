@@ -87,7 +87,7 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertNotNil(lastValues)
         XCTAssertEqual(lastValues?["user_id"] as? String, "123")
         XCTAssertEqual(lastValues?["product_name"] as? String, "iPhone")
-        XCTAssertNil(lastValues?["debug"])
+        XCTAssertEqual(lastValues?["debug"] as? Bool, true)
         XCTAssertNil(lastValues?["method"])
         XCTAssertNil(lastValues?["app_dev_key"])
         XCTAssertNil(lastValues?["app_id"])

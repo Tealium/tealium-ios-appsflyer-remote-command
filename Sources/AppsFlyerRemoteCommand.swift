@@ -57,15 +57,15 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
             let commandName = AppsFlyerConstants.CommandNames(rawValue: $0.lowercased())
             switch commandName {
             case .initialize:
-                guard let appId = payload[AppsFlyerConstants.Configuration.appId] as? String,
-                    let appDevKey = payload[AppsFlyerConstants.Configuration.appDevKey] as? String else {
+                guard let appId = payload[AppsFlyerConstants.Configuration.appId.rawValue] as? String,
+                    let appDevKey = payload[AppsFlyerConstants.Configuration.appDevKey.rawValue] as? String else {
                         print("\(AppsFlyerConstants.errorPrefix) Must set an app_id and api_key in AppsFlyer Mobile Remote Command tag to initialize")
                         return
                 }
-                guard let settings = payload[AppsFlyerConstants.Configuration.settings] as? [String: Any] else {
+                guard let settings = payload[AppsFlyerConstants.Configuration.settings.rawValue] as? [String: Any] else {
                     return appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: nil)
                 }
-                if let settingsDebug = settings[AppsFlyerConstants.Configuration.debug] as? Bool {
+                if let settingsDebug = settings[AppsFlyerConstants.Settings.debug] as? Bool {
                     debug = settingsDebug
                 }
                 return appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: settings)
@@ -152,84 +152,22 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     }
     
     func getEventName(command: String) -> String {
-        if let appsFlyerEvent = AppsFlyerConstants.EventCommandNames(rawValue: command.lowercased()) {
-            let eventName = String(standardEventName: appsFlyerEvent)
-            return eventName
-        }
-        return command
+        return AppsFlyerConstants.eventsMap[command.lowercased()] ?? command
     }
 
 }
 
 fileprivate extension Dictionary where Key == String, Value == Any {
+    
+    private static let allExcludedKeys: Set<String> = {
+        let excludedKeys: Set<String> = ["method", AppsFlyerConstants.commandName]
+        let configurationKeys = Set(AppsFlyerConstants.Configuration.allCases.map { $0.rawValue })
+        return excludedKeys.union(configurationKeys)
+    }()
+    
     func filterVariables() -> [String: Any] {
-        self.filter {
-            $0.key != "debug" &&
-            $0.key != "method" &&
-            $0.key != "app_dev_key" &&
-            $0.key != "app_id" &&
-            $0.key != AppsFlyerConstants.commandName &&
-            $0.key != "settings"
-        }
+        return self.filter { !Self.allExcludedKeys.contains($0.key) }
     }
 }
 
-fileprivate extension String {
-    init(standardEventName: AppsFlyerConstants.EventCommandNames) {
-        switch standardEventName {
-        case .achievelevel:
-            self = AppsFlyerConstants.Events.achievedLevel
-        case .adclick:
-            self = AppsFlyerConstants.Events.adClick
-        case .adview:
-            self = AppsFlyerConstants.Events.adView
-        case .addpaymentinfo:
-            self = AppsFlyerConstants.Events.addPaymentInfo
-        case .addtocart:
-            self = AppsFlyerConstants.Events.addToCart
-        case .addtowishlist:
-            self = AppsFlyerConstants.Events.addToWishlist
-        case .completeregistration:
-            self = AppsFlyerConstants.Events.completeRegistration
-        case .completetutorial:
-            self = AppsFlyerConstants.Events.completeTutorial
-        case .viewedcontent:
-            self = AppsFlyerConstants.Events.contentView
-        case .search:
-            self = AppsFlyerConstants.Events.search
-        case .rate:
-            self = AppsFlyerConstants.Events.rate
-        case .starttrial:
-            self = AppsFlyerConstants.Events.startTrial
-        case .subscribe:
-            self = AppsFlyerConstants.Events.subscribe
-        case .initiatecheckout:
-            self = AppsFlyerConstants.Events.initiateCheckout
-        case .purchase:
-            self = AppsFlyerConstants.Events.purchase
-        case .unlockachievement:
-            self = AppsFlyerConstants.Events.unlockAchievement
-        case .spentcredits:
-            self = AppsFlyerConstants.Events.spentCredits
-        case .listview:
-            self = AppsFlyerConstants.Events.listView
-        case .travelbooking:
-            self = AppsFlyerConstants.Events.travelBooking
-        case .share:
-            self = AppsFlyerConstants.Events.share
-        case .invite:
-            self = AppsFlyerConstants.Events.invite
-        case .reengage:
-            self = AppsFlyerConstants.Events.reEngage
-        case .update:
-            self = AppsFlyerConstants.Events.update
-        case .login:
-            self = AppsFlyerConstants.Events.login
-        case .customersegment:
-            self = AppsFlyerConstants.Events.customerSegment
-        case .pushnotificationopened:
-            self = AppsFlyerConstants.Events.pushNotificationOpened
-        }
-    }
 
-}

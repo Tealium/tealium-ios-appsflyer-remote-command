@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import AppsFlyerLib
 
 public enum AppsFlyerConstants {
     
@@ -18,35 +19,35 @@ public enum AppsFlyerConstants {
     static let attributionLog = "AppsFlyer Attribution: "
     static let version = "3.1.0"
     
-    /// Standard AppsFlyer events: https://support.appsflyer.com/hc/en-us/articles/115005544169#Event-Types
-    public enum EventCommandNames: String, CaseIterable {
-        case achievelevel
-        case adclick
-        case adview
-        case addpaymentinfo
-        case addtocart
-        case addtowishlist
-        case completeregistration
-        case completetutorial
-        case viewedcontent
-        case search
-        case rate
-        case starttrial
-        case subscribe
-        case initiatecheckout
-        case purchase
-        case unlockachievement
-        case spentcredits
-        case listview
-        case travelbooking
-        case share
-        case invite
-        case reengage
-        case update
-        case login
-        case customersegment
-        case pushnotificationopened
-    }
+    /// Standard AppsFlyer events: https://dev.appsflyer.com/hc/docs/in-app-events-ios
+    static let eventsMap: [String: String] = [
+        "achievelevel": AFEventLevelAchieved,
+        "adclick": AFEventAdClick,
+        "adview": AFEventAdView,
+        "addpaymentinfo": AFEventAddPaymentInfo,
+        "addtocart": AFEventAddToCart,
+        "addtowishlist": AFEventAddToWishlist,
+        "completeregistration": AFEventCompleteRegistration,
+        "completetutorial": AFEventTutorial_completion,
+        "viewedcontent": AFEventContentView,
+        "search": AFEventSearch,
+        "rate": AFEventRate,
+        "starttrial": AFEventStartTrial,
+        "subscribe": AFEventSubscribe,
+        "initiatecheckout": AFEventInitiatedCheckout,
+        "purchase": AFEventPurchase,
+        "unlockachievement": AFEventAchievementUnlocked,
+        "spentcredits": AFEventSpentCredits,
+        "listview": AFEventListView,
+        "travelbooking": AFEventTravelBooking,
+        "share": AFEventShare,
+        "invite": AFEventInvite,
+        "reengage": AFEventReEngage,
+        "update": AFEventUpdate,
+        "login": AFEventLogin,
+        "customersegment": AFEventCustomerSegment,
+        "pushnotificationopened": AFEventOpenedFromPushNotification
+    ]
     
     public enum CommandNames: String {
         case initialize = "initialize"
@@ -59,9 +60,13 @@ public enum AppsFlyerConstants {
         case resolveDeepLinkUrls = "resolvedeeplinkurls"
     }
     
-    public enum Configuration {
-        static let appId = "app_id"
-        static let appDevKey = "app_dev_key"
+    public enum Configuration: String, CaseIterable {
+        case appId = "app_id"
+        case appDevKey = "app_dev_key"
+        case settings = "settings"
+    }
+    
+    public enum Settings {
         static let debug = "debug"
         static let disableAdTracking = "disable_ad_tracking"
         static let disableAppleAdTracking = "disable_apple_ad_tracking"
@@ -69,7 +74,6 @@ public enum AppsFlyerConstants {
         static let anonymizeUser = "anonymize_user"
         static let collectDeviceName = "collect_device_name"
         static let customData = "custom_data"
-        static let settings = "settings"
     }
 
     public enum Parameters {
@@ -85,35 +89,6 @@ public enum AppsFlyerConstants {
         static let stopTracking = "stop_tracking"
         static let deepLinkUrls = "af_deep_link"
         static let event = "event"
-    }
-    
-    public enum Events {
-        static let achievedLevel = "af_level_achieved"
-        static let addPaymentInfo = "af_add_payment_info"
-        static let addToCart = "af_add_to_cart"
-        static let addToWishlist = "af_add_to_wishlist"
-        static let completeRegistration = "af_complete_registration"
-        static let completeTutorial = "af_tutorial_completion"
-        static let initiateCheckout = "af_initiated_checkout"
-        static let purchase = "af_purchase"
-        static let subscribe = "af_subscribe"
-        static let startTrial = "af_start_trial"
-        static let rate = "af_rate"
-        static let search = "af_search"
-        static let spentCredits = "af_spent_credits"
-        static let unlockAchievement = "af_achievement_unlocked"
-        static let contentView = "af_content_view"
-        static let listView = "af_list_view"
-        static let adClick = "af_ad_click"
-        static let adView = "af_ad_view"
-        static let travelBooking = "af_travel_booking"
-        static let share = "af_share"
-        static let invite = "af_invite"
-        static let reEngage = "af_re_engage"
-        static let update = "af_update"
-        static let login = "af_login"
-        static let customerSegment = "af_customer_segment"
-        static let pushNotificationOpened = "af_opened_from_push_notification"
     }
     
     public enum Attribution {
