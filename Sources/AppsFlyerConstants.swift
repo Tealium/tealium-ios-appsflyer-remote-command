@@ -69,12 +69,19 @@ public enum AppsFlyerConstants {
     
     public enum Settings {
         static let debug = "debug"
-        static let disableAdTracking = "disable_ad_tracking"
-        static let disableAppleAdTracking = "disable_apple_ad_tracking"
+        static let disableAdTracking = "disable_ad_tracking" // DEPRECATED: disables both IDFA and IDFV collection. Use disable_advertising_identifier_collection and disable_idfv_collection instead. Will be removed in a future release.
+        static let disableAdvertisingIdentifierCollection = "disable_advertising_identifier_collection"
+        static let disableIDFVCollection = "disable_idfv_collection"
+        static let disableAppleAdTracking = "disable_apple_ad_tracking" // DEPRECATED: disables SKAdNetwork attribution. Use disable_skadnetwork instead. Will be removed in a future release.
+        static let disableSKAdNetwork = "disable_skadnetwork"
         static let minTimeBetweenSessions = "time_between_sessions"
         static let anonymizeUser = "anonymize_user"
         static let collectDeviceName = "collect_device_name"
         static let customData = "custom_data"
+        static let enableTCFDataCollection = "enable_tcf_data_collection"
+        static let appInviteOneLinkID = "app_invite_onelink_id"
+        static let deepLinkTimeout = "deep_link_timeout"
+        static let oneLinkCustomDomains = "one_link_custom_domains"
     }
 
     public enum Parameters {
