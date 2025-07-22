@@ -46,7 +46,8 @@ public enum AppsFlyerConstants {
         "update": AFEventUpdate,
         "login": AFEventLogin,
         "customersegment": AFEventCustomerSegment,
-        "pushnotificationopened": AFEventOpenedFromPushNotification
+        "pushnotificationopened": AFEventOpenedFromPushNotification,
+        "locationcoordinates": AFEventLocation
     ]
     
     public enum CommandNames: String {
