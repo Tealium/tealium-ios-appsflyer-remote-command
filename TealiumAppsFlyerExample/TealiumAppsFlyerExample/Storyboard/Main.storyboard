@@ -88,7 +88,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="30" translatesAutoresizingMaskIntoConstraints="NO" id="z4R-35-BPL">
-                                <rect key="frame" x="50" y="94" width="275" height="372"/>
+                                <rect key="frame" x="50" y="94" width="275" height="402"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="okay" translatesAutoresizingMaskIntoConstraints="NO" id="RHc-Wk-yc8">
                                         <rect key="frame" x="77.5" y="0.0" width="120" height="120"/>
@@ -118,6 +118,13 @@
                                         <connections>
                                             <action selector="onRegister:" destination="b79-5Y-UPp" eventType="touchUpInside" id="cz2-Jv-pI1"/>
                                             <segue destination="oe3-kE-GPs" kind="show" id="d6l-5X-csi"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="phone-btn">
+                                        <rect key="frame" x="86" y="402" width="103" height="30"/>
+                                        <state key="normal" title="Set Phone Number"/>
+                                        <connections>
+                                            <action selector="setPhoneNumberTapped:" destination="b79-5Y-UPp" eventType="touchUpInside" id="phone-action"/>
                                         </connections>
                                     </button>
                                 </subviews>

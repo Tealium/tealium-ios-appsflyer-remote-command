@@ -63,7 +63,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="24" translatesAutoresizingMaskIntoConstraints="NO" id="wzC-yH-bBp">
-                                <rect key="frame" x="40" y="70" width="295" height="291.5"/>
+                                <rect key="frame" x="40" y="70" width="295" height="321.5"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Shipping" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tdH-ef-MVY">
                                         <rect key="frame" x="101.5" y="0.0" width="92" height="29"/>
@@ -103,6 +103,13 @@
                                         <state key="normal" title="Payment &gt;"/>
                                         <connections>
                                             <action selector="onCheckoutProgressTapped:" destination="rq0-ze-udW" eventType="touchUpInside" id="SHG-aC-9cf"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="currency-btn">
+                                        <rect key="frame" x="113" y="315.5" width="69" height="30"/>
+                                        <state key="normal" title="Set Currency"/>
+                                        <connections>
+                                            <action selector="setCurrencyTapped:" destination="rq0-ze-udW" eventType="touchUpInside" id="currency-action"/>
                                         </connections>
                                     </button>
                                 </subviews>
