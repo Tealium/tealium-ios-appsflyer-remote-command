@@ -330,4 +330,26 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
             waitForExpectations(timeout: 1.0)
         }
     }
+
+    func testSetPhoneNumber() {
+        let payload: [String: Any] = [
+            "command_name": "setphonenumber",
+            "phone_number": "+48123456789"
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.setPhoneNumberCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastPhoneNumber, "+48123456789")
+    }
+
+    func testDisableAppleAdsAttributionSetting() {
+        let settings: [String: Any] = ["disable_apple_ads_attribution": true]
+        let payload: [String: Any] = [
+            "command_name": "initialize",
+            "app_id": "test",
+            "app_dev_key": "test",
+            "settings": settings
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.lastSettings?["disable_apple_ads_attribution"] as? Bool, true)
+    }
 }

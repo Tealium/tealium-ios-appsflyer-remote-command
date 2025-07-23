@@ -21,6 +21,10 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var setCustomerIdCount = 0
     var disableTrackingCount = 0
     var resolveDeepLinkURLsCount = 0
+    var setPhoneNumberCount = 0
+    var lastPhoneNumber: String?
+    var disableAppleAdsAttributionCount = 0
+    var lastDisableAppleAdsAttribution: Bool?
     
     // Store last call parameters for verification
     var lastEventName: String?
@@ -99,6 +103,15 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     func resolveDeepLinkURLs(_ urls: [String]) {
         resolveDeepLinkURLsCount += 1
         lastUrls = urls
+    }
+    
+    func setPhoneNumber(_ phoneNumber: String) {
+        setPhoneNumberCount += 1
+        lastPhoneNumber = phoneNumber
+    }
+    func disableAppleAdsAttribution(_ disable: Bool) {
+        disableAppleAdsAttributionCount += 1
+        lastDisableAppleAdsAttribution = disable
     }
     
     func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {

@@ -116,8 +116,9 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         if let oneLinkCustomDomains = settings[AppsFlyerConstants.Settings.oneLinkCustomDomains] as? [String] {
             appsFlyer.oneLinkCustomDomains = oneLinkCustomDomains
         }
-        if let facebookDeferredAppLink = settings[AppsFlyerConstants.Settings.facebookDeferredAppLink] as? String {
-            appsFlyer.facebookDeferredAppLink = facebookDeferredAppLink
+        if let facebookDeferredAppLink = settings[AppsFlyerConstants.Settings.facebookDeferredAppLink] as? String,
+           let facebookDeferredAppLinkURL = URL(string: facebookDeferredAppLink) {
+            appsFlyer.facebookDeferredAppLink = facebookDeferredAppLinkURL
         }
         if let resolveDeepLinkURLs = settings[AppsFlyerConstants.Settings.resolveDeepLinkURLs] as? [String] {
             appsFlyer.resolveDeepLinkURLs = resolveDeepLinkURLs
