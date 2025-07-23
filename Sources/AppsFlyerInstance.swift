@@ -26,13 +26,17 @@ public protocol AppsFlyerCommand {
     func customerId(_ id: String)
     func disableTracking(_ disable: Bool)
     func resolveDeepLinkURLs(_ urls: [String])
+    func setPhoneNumber(_ phoneNumber: String)
 }
 
 public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
 
     weak var tealium: Tealium?
     private let _onReady = TealiumReplaySubject<AppsFlyerLib>(cacheSize: 1)
-    public override init() { }
+    public override init() {
+        super.init()
+        AppsFlyerLib.shared().delegate = self
+    }
 
     public init(tealium: Tealium) {
         super.init()
@@ -67,12 +71,12 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         if let debug = settings[AppsFlyerConstants.Settings.debug] as? Bool {
             appsFlyer.isDebug = debug
         }
-        // DEPRECATED: disables both IDFA and IDFV collection. Use disable_advertising_identifier_collection and disable_idfv_collection instead. Will be removed in a future release.
+        // DEPRECATED: disables both IDFA and IDFV collection. Use disable_advertising_identifier and disable_idfv_collection instead. Will be removed in a future release.
         if let disableAdTracking = settings[AppsFlyerConstants.Settings.disableAdTracking] as? Bool {
             appsFlyer.disableAdvertisingIdentifier = disableAdTracking
-            appsFlyer.disableIDFVCollection = disableAdTracking
+            appsFlyer.disableIDFVCollection = disableAdTracking 
         }
-        if let disableAdvertisingIdentifier = settings[AppsFlyerConstants.Settings.disableAdvertisingIdentifierCollection] as? Bool {
+        if let disableAdvertisingIdentifier = settings[AppsFlyerConstants.Settings.disableAdvertisingIdentifier] as? Bool {
             appsFlyer.disableAdvertisingIdentifier = disableAdvertisingIdentifier
         }
         if let disableIDFVCollection = settings[AppsFlyerConstants.Settings.disableIDFVCollection] as? Bool {
@@ -111,6 +115,12 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         }
         if let oneLinkCustomDomains = settings[AppsFlyerConstants.Settings.oneLinkCustomDomains] as? [String] {
             appsFlyer.oneLinkCustomDomains = oneLinkCustomDomains
+        }
+        if let facebookDeferredAppLink = settings[AppsFlyerConstants.Settings.facebookDeferredAppLink] as? String {
+            appsFlyer.facebookDeferredAppLink = facebookDeferredAppLink
+        }
+        if let resolveDeepLinkURLs = settings[AppsFlyerConstants.Settings.resolveDeepLinkURLs] as? [String] {
+            appsFlyer.resolveDeepLinkURLs = resolveDeepLinkURLs
         }
     }
 
@@ -151,6 +161,9 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         AppsFlyerLib.shared().resolveDeepLinkURLs = urls
     }
 
+    public func setPhoneNumber(_ phoneNumber: String) {
+        AppsFlyerLib.shared().phoneNumber = phoneNumber
+    }
 }
 
 extension AppsFlyerInstance: AppsFlyerLibDelegate {
@@ -158,9 +171,10 @@ extension AppsFlyerInstance: AppsFlyerLibDelegate {
     public func onConversionDataSuccess(_ conversionInfo: [AnyHashable: Any]) {
         guard let conversionInfo = conversionInfo as? [String: Any],
             let firstLaunch = conversionInfo[AppsFlyerConstants.Attribution.firstLaunch] as? Bool else {
-            tealiumTrack(title: AppsFlyerConstants.Attribution.conversionReceived)
+                tealiumTrack(title: AppsFlyerConstants.Attribution.conversionReceived)
                 return
         }
+
         guard firstLaunch else {
             print("\(AppsFlyerConstants.attributionLog)Not First Launch")
             return
@@ -182,23 +196,33 @@ extension AppsFlyerInstance: AppsFlyerLibDelegate {
     }
 
     public func onConversionDataFail(_ error: Error) {
-        tealiumTrack(title: AppsFlyerConstants.Attribution.error,
-            data: [AppsFlyerConstants.Attribution.errorName: AppsFlyerConstants.Attribution.conversionFailure,
-                AppsFlyerConstants.Attribution.errorDescription: error.localizedDescription])
+        tealiumTrack(
+            title: AppsFlyerConstants.Attribution.error,
+            data: [
+                AppsFlyerConstants.Attribution.errorName: AppsFlyerConstants.Attribution.conversionFailure,
+                AppsFlyerConstants.Attribution.errorDescription: error.localizedDescription
+            ]
+        )
     }
 
     public func onAppOpenAttribution(_ attributionData: [AnyHashable: Any]) {
         guard let attributionData = attributionData as? [String: Any] else {
             return tealiumTrack(title: AppsFlyerConstants.Attribution.appOpen)
         }
-        tealiumTrack(title: AppsFlyerConstants.Attribution.appOpen,
-            data: attributionData)
+        tealiumTrack(
+            title: AppsFlyerConstants.Attribution.appOpen,
+            data: attributionData
+        )
     }
 
     public func onAppOpenAttributionFailure(_ error: Error) {
-        tealiumTrack(title: AppsFlyerConstants.Attribution.error,
-            data: [AppsFlyerConstants.Attribution.errorName: AppsFlyerConstants.Attribution.appOpenFailure,
-                AppsFlyerConstants.Attribution.errorDescription: error.localizedDescription])
+        tealiumTrack(
+            title: AppsFlyerConstants.Attribution.error,
+            data: [
+                AppsFlyerConstants.Attribution.errorName: AppsFlyerConstants.Attribution.appOpenFailure,
+                AppsFlyerConstants.Attribution.errorDescription: error.localizedDescription
+            ]
+        )
     }
     
     private func tealiumTrack(title: String, data: [String: Any]? = nil) {

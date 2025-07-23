@@ -137,6 +137,14 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     return
                 }
                 appsFlyerInstance.resolveDeepLinkURLs(deepLinkUrls)
+            case .setPhoneNumber:
+                guard let phoneNumber = payload[AppsFlyerConstants.Parameters.phoneNumber] as? String else {
+                    if debug {
+                        print("\(AppsFlyerConstants.errorPrefix)Must map phone_number in the AppsFlyer Mobile Remote Command tag to set phone number")
+                    }
+                    return
+                }
+                appsFlyerInstance.setPhoneNumber(phoneNumber)
             default:
                 appsFlyerInstance.logEvent(getEventName(command: $0), values: getEventParameters(payload: payload))
                 break
