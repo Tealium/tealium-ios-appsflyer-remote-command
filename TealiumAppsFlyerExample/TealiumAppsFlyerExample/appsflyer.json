@@ -6,10 +6,7 @@
             "custom_data": {"custom_key": "custom_value"},
             "debug": true,
             "disable_ad_tracking": false,
-            "disable_advertising_identifier": false,
-            "disable_idfv_collection": false,
             "disable_apple_ad_tracking": false,
-            "disable_skadnetwork": false,
             "disable_apple_ads_attribution": false,
             "time_between_sessions": 30,
             "anonymize_user": false,
@@ -18,8 +15,7 @@
             "app_invite_onelink_id": "",
             "deep_link_timeout": 2000,
             "one_link_custom_domains": [],
-            "facebook_deferred_app_link": "",
-            "resolve_deep_link_urls": []
+            "facebook_deferred_app_link": ""
         }
     },
     "mappings": {

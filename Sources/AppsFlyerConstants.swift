@@ -59,7 +59,7 @@ public enum AppsFlyerConstants {
         case setCurrencyCode = "setcurrencycode"
         case setCustomerId = "setcustomerid" // customerUserID
         case disableTracking = "disabletracking"
-        case resolveDeepLinkUrls = "resolvedeeplinkurls" // DEPRECATED: use resolve_deep_link_urls in settings instead. Will be removed in a future release.
+        case resolveDeepLinkUrls = "resolvedeeplinkurls"
         case setPhoneNumber = "setphonenumber"
     }
     
@@ -72,12 +72,9 @@ public enum AppsFlyerConstants {
     // Settings names come from the AppsFlyer SDK https://dev.appsflyer.com/hc/docs/ios-sdk-reference-appsflyerlib
     public enum Settings {
         static let debug = "debug"
-        static let disableAdTracking = "disable_ad_tracking" // DEPRECATED: disables both IDFA and IDFV collection. Use disable_advertising_identifier and disable_idfv_collection instead. Will be removed in a future release.
-        static let disableAdvertisingIdentifier = "disable_advertising_identifier"
-        static let disableIDFVCollection = "disable_idfv_collection"
+        static let disableAdTracking = "disable_ad_tracking"
         static let disableAppleAdsAttribution = "disable_apple_ads_attribution"
-        static let disableAppleAdTracking = "disable_apple_ad_tracking" // DEPRECATED: disables SKAdNetwork attribution. Use disable_skadnetwork instead. Will be removed in a future release.
-        static let disableSKAdNetwork = "disable_skadnetwork"
+        static let disableAppleAdTracking = "disable_apple_ad_tracking"
         static let minTimeBetweenSessions = "time_between_sessions"
         static let anonymizeUser = "anonymize_user"
         static let collectDeviceName = "collect_device_name"
@@ -87,7 +84,6 @@ public enum AppsFlyerConstants {
         static let deepLinkTimeout = "deep_link_timeout"
         static let oneLinkCustomDomains = "one_link_custom_domains"
         static let facebookDeferredAppLink = "facebook_deferred_app_link"
-        static let resolveDeepLinkURLs = "resolve_deep_link_urls"
     }
 
     public enum Parameters {

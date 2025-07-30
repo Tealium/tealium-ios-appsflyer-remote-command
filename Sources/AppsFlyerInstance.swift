@@ -33,10 +33,7 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
 
     weak var tealium: Tealium?
     private let _onReady = TealiumReplaySubject<AppsFlyerLib>(cacheSize: 1)
-    public override init() {
-        super.init()
-        AppsFlyerLib.shared().delegate = self
-    }
+    public override init() {}
 
     public init(tealium: Tealium) {
         super.init()
@@ -71,23 +68,12 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         if let debug = settings[AppsFlyerConstants.Settings.debug] as? Bool {
             appsFlyer.isDebug = debug
         }
-        // DEPRECATED: disables both IDFA and IDFV collection. Use disable_advertising_identifier and disable_idfv_collection instead. Will be removed in a future release.
         if let disableAdTracking = settings[AppsFlyerConstants.Settings.disableAdTracking] as? Bool {
             appsFlyer.disableAdvertisingIdentifier = disableAdTracking
             appsFlyer.disableIDFVCollection = disableAdTracking 
         }
-        if let disableAdvertisingIdentifier = settings[AppsFlyerConstants.Settings.disableAdvertisingIdentifier] as? Bool {
-            appsFlyer.disableAdvertisingIdentifier = disableAdvertisingIdentifier
-        }
-        if let disableIDFVCollection = settings[AppsFlyerConstants.Settings.disableIDFVCollection] as? Bool {
-            appsFlyer.disableIDFVCollection = disableIDFVCollection
-        }
-        // DEPRECATED: disables SKAdNetwork attribution. Use disable_skadnetwork instead. Will be removed in a future release.
         if let disableAppleAdTracking = settings[AppsFlyerConstants.Settings.disableAppleAdTracking] as? Bool {
             appsFlyer.disableSKAdNetwork = disableAppleAdTracking
-        }
-        if let disableSKAdNetwork = settings[AppsFlyerConstants.Settings.disableSKAdNetwork] as? Bool {
-            appsFlyer.disableSKAdNetwork = disableSKAdNetwork
         }
         if let minTimeBetweenSessions = settings[AppsFlyerConstants.Settings.minTimeBetweenSessions] as? Int {
             appsFlyer.minTimeBetweenSessions = UInt(minTimeBetweenSessions)
@@ -120,9 +106,7 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
            let facebookDeferredAppLinkURL = URL(string: facebookDeferredAppLink) {
             appsFlyer.facebookDeferredAppLink = facebookDeferredAppLinkURL
         }
-        if let resolveDeepLinkURLs = settings[AppsFlyerConstants.Settings.resolveDeepLinkURLs] as? [String] {
-            appsFlyer.resolveDeepLinkURLs = resolveDeepLinkURLs
-        }
+
     }
 
     public func logEvent(_ eventName: String, values: [String: Any]) {

@@ -62,9 +62,19 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                         print("\(AppsFlyerConstants.errorPrefix) Must set an app_id and api_key in AppsFlyer Mobile Remote Command tag to initialize")
                         return
                 }
-                guard let settings = payload[AppsFlyerConstants.Configuration.settings.rawValue] as? [String: Any] else {
+                guard var settings = payload[AppsFlyerConstants.Configuration.settings.rawValue] as? [String: Any] else {
                     return appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: nil)
                 }
+                
+                if let deepLinkTimeout = settings[AppsFlyerConstants.Settings.deepLinkTimeout] as? Int {
+                    if deepLinkTimeout < 0 {
+                        if debug {
+                            print("\(AppsFlyerConstants.errorPrefix)deepLinkTimeout must be >= 0, got: \(deepLinkTimeout). Ignoring setting.")
+                        }
+                        settings.removeValue(forKey: AppsFlyerConstants.Settings.deepLinkTimeout)
+                    }
+                }
+                
                 if let settingsDebug = settings[AppsFlyerConstants.Settings.debug] as? Bool {
                     debug = settingsDebug
                 }
