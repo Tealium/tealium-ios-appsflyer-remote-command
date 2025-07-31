@@ -9,10 +9,10 @@
 import UIKit
 import AppsFlyerLib
 #if COCOAPODS
-    import TealiumSwift
+import TealiumSwift
 #else
-    import TealiumCore
-    import TealiumRemoteCommands
+import TealiumCore
+import TealiumRemoteCommands
 #endif
 
 public protocol AppsFlyerCommand {
@@ -33,14 +33,14 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
 
     weak var tealium: Tealium?
     private let _onReady = TealiumReplaySubject<AppsFlyerLib>(cacheSize: 1)
-    public override init() {}
+    public override init() { }
 
     public init(tealium: Tealium) {
         super.init()
         self.tealium = tealium
         AppsFlyerLib.shared().delegate = self
     }
-    
+
     public func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {
         defer { _onReady.subscribeOnce(onReady) }
         let appsFlyerAlreadyPublished = _onReady.last() != nil
@@ -70,7 +70,7 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         }
         if let disableAdTracking = settings[AppsFlyerConstants.Settings.disableAdTracking] as? Bool {
             appsFlyer.disableAdvertisingIdentifier = disableAdTracking
-            appsFlyer.disableIDFVCollection = disableAdTracking 
+            appsFlyer.disableIDFVCollection = disableAdTracking
         }
         if let disableAppleAdTracking = settings[AppsFlyerConstants.Settings.disableAppleAdTracking] as? Bool {
             appsFlyer.disableSKAdNetwork = disableAppleAdTracking
@@ -119,7 +119,6 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         onReady { appsFlyer in
             appsFlyer.logLocation(longitude: longitude, latitude: latitude)
         }
-        
     }
 
     public func setHost(_ host: String, with prefix: String) {
@@ -155,9 +154,9 @@ extension AppsFlyerInstance: AppsFlyerLibDelegate {
 
     public func onConversionDataSuccess(_ conversionInfo: [AnyHashable: Any]) {
         guard let conversionInfo = conversionInfo as? [String: Any],
-            let firstLaunch = conversionInfo[AppsFlyerConstants.Attribution.firstLaunch] as? Bool else {
-                tealiumTrack(title: AppsFlyerConstants.Attribution.conversionReceived)
-                return
+              let firstLaunch = conversionInfo[AppsFlyerConstants.Attribution.firstLaunch] as? Bool else {
+            tealiumTrack(title: AppsFlyerConstants.Attribution.conversionReceived)
+            return
         }
 
         guard firstLaunch else {
@@ -172,7 +171,7 @@ extension AppsFlyerInstance: AppsFlyerLibDelegate {
 
         if (status == "Non-organic") {
             if let mediaSource = conversionInfo[AppsFlyerConstants.Attribution.source],
-                let campaign = conversionInfo[AppsFlyerConstants.Attribution.campaign] {
+               let campaign = conversionInfo[AppsFlyerConstants.Attribution.campaign] {
                 print("\(AppsFlyerConstants.attributionLog)This is a Non-Organic install. Media source: \(mediaSource) Campaign: \(campaign)")
             }
         } else {
@@ -209,7 +208,7 @@ extension AppsFlyerInstance: AppsFlyerLibDelegate {
             ]
         )
     }
-    
+
     private func tealiumTrack(title: String, data: [String: Any]? = nil) {
         let event = TealiumEvent(title, dataLayer: data)
         tealium?.track(event)

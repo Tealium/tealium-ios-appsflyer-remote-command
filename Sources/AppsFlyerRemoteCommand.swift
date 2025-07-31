@@ -9,20 +9,20 @@
 import Foundation
 import AppsFlyerLib
 #if COCOAPODS
-    import TealiumSwift
+import TealiumSwift
 #else
-    import TealiumCore
-    import TealiumRemoteCommands
+import TealiumCore
+import TealiumRemoteCommands
 #endif
 
 public class AppsFlyerRemoteCommand: RemoteCommand {
 
     let appsFlyerInstance: AppsFlyerCommand
-    
+
     public override var version: String? {
         return AppsFlyerConstants.version
     }
-    
+
     public func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {
         TealiumQueues.backgroundSerialQueue.async {
             self.appsFlyerInstance.onReady(onReady)
@@ -34,19 +34,19 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
         weak var selfWorkaround: AppsFlyerRemoteCommand?
         super.init(commandId: AppsFlyerConstants.commandId,
                    description: AppsFlyerConstants.description,
-            type: type,
-            completion: { response in
-                guard let payload = response.payload else {
-                    return
-                }
-                selfWorkaround?.processRemoteCommand(with: payload)
-            })
+                   type: type,
+                   completion: { response in
+            guard let payload = response.payload else {
+                return
+            }
+            selfWorkaround?.processRemoteCommand(with: payload)
+        })
         selfWorkaround = self
     }
 
     func processRemoteCommand(with payload: [String: Any]) {
         guard let command = payload[AppsFlyerConstants.commandName] as? String else {
-                return
+            return
         }
         let commands = command.split(separator: AppsFlyerConstants.separator)
         let appsflyerCommands = commands.map { command in
@@ -58,14 +58,14 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
             switch commandName {
             case .initialize:
                 guard let appId = payload[AppsFlyerConstants.Configuration.appId.rawValue] as? String,
-                    let appDevKey = payload[AppsFlyerConstants.Configuration.appDevKey.rawValue] as? String else {
-                        print("\(AppsFlyerConstants.errorPrefix) Must set an app_id and api_key in AppsFlyer Mobile Remote Command tag to initialize")
-                        return
+                      let appDevKey = payload[AppsFlyerConstants.Configuration.appDevKey.rawValue] as? String else {
+                    print("\(AppsFlyerConstants.errorPrefix) Must set an app_id and api_key in AppsFlyer Mobile Remote Command tag to initialize")
+                    return
                 }
                 guard var settings = payload[AppsFlyerConstants.Configuration.settings.rawValue] as? [String: Any] else {
                     return appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: nil)
                 }
-                
+
                 if let deepLinkTimeout = settings[AppsFlyerConstants.Settings.deepLinkTimeout] as? Int {
                     if deepLinkTimeout < 0 {
                         if debug {
@@ -74,14 +74,14 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                         settings.removeValue(forKey: AppsFlyerConstants.Settings.deepLinkTimeout)
                     }
                 }
-                
+
                 if let settingsDebug = settings[AppsFlyerConstants.Settings.debug] as? Bool {
                     debug = settingsDebug
                 }
                 return appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: settings)
             case .trackLocation:
                 guard let latitude = payload[AppsFlyerConstants.Parameters.latitude] as? Double,
-                    let longitude = payload[AppsFlyerConstants.Parameters.longitude] as? Double else {
+                      let longitude = payload[AppsFlyerConstants.Parameters.longitude] as? Double else {
                     guard let latitude = payload[AppsFlyerConstants.Parameters.latitude] as? Int,
                           let longitude = payload[AppsFlyerConstants.Parameters.longitude] as? Int else {
                         if debug {
@@ -94,7 +94,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 appsFlyerInstance.logLocation(longitude: longitude, latitude: latitude)
             case .setHost:
                 guard let host = payload[AppsFlyerConstants.Parameters.host] as? String,
-                    let hostPrefix = payload[AppsFlyerConstants.Parameters.hostPrefix] as? String else {
+                      let hostPrefix = payload[AppsFlyerConstants.Parameters.hostPrefix] as? String else {
                     if debug {
                         print("\(AppsFlyerConstants.errorPrefix)Must map host and host_prefix in the AppsFlyer Mobile Remote Command tag to set host")
 
@@ -108,11 +108,11 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     payload[AppsFlyerConstants.Parameters.emails] = [email]
                 }
                 guard let emails = payload[AppsFlyerConstants.Parameters.emails] as? [String],
-                    let cryptType = payload[AppsFlyerConstants.Parameters.cryptType] as? Int else {
+                      let cryptType = payload[AppsFlyerConstants.Parameters.cryptType] as? Int else {
                     if debug {
                         print("\(AppsFlyerConstants.errorPrefix)Must map customer_emails and cryptType in the AppsFlyer Mobile Remote Command tag to set user emails")
                     }
-                        return
+                    return
                 }
                 appsFlyerInstance.setUserEmails(emails: emails, with: cryptType)
             case .setCurrencyCode:
@@ -161,14 +161,14 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
             }
         }
     }
-    
+
     func getEventParameters(payload: [String: Any]) -> [String: Any] {
         guard let eventParameters = payload[AppsFlyerConstants.Parameters.event] as? [String: Any] else {
             return payload.filterVariables()
         }
         return eventParameters
     }
-    
+
     func getEventName(command: String) -> String {
         return AppsFlyerConstants.eventsMap[command.lowercased()] ?? command
     }
@@ -176,13 +176,13 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
 }
 
 fileprivate extension Dictionary where Key == String, Value == Any {
-    
+
     private static let allExcludedKeys: Set<String> = {
         let excludedKeys: Set<String> = ["method", AppsFlyerConstants.commandName]
         let configurationKeys = Set(AppsFlyerConstants.Configuration.allCases.map { $0.rawValue })
         return excludedKeys.union(configurationKeys)
     }()
-    
+
     func filterVariables() -> [String: Any] {
         return self.filter { !Self.allExcludedKeys.contains($0.key) }
     }

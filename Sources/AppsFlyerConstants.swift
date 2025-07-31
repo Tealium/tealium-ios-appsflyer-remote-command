@@ -10,7 +10,7 @@ import Foundation
 import AppsFlyerLib
 
 public enum AppsFlyerConstants {
-    
+
     static let commandName = "command_name"
     static let separator: Character = ","
     static let commandId = "appsflyer"
@@ -18,7 +18,7 @@ public enum AppsFlyerConstants {
     static let errorPrefix = "AppsFlyer Error: "
     static let attributionLog = "AppsFlyer Attribution: "
     static let version = "3.1.0"
-    
+
     /// Standard AppsFlyer events: https://dev.appsflyer.com/hc/docs/in-app-events-ios
     static let eventsMap: [String: String] = [
         "achievelevel": AFEventLevelAchieved,
@@ -49,7 +49,7 @@ public enum AppsFlyerConstants {
         "pushnotificationopened": AFEventOpenedFromPushNotification,
         "locationcoordinates": AFEventLocation
     ]
-    
+
     // Command names come from the AppsFlyer SDK https://dev.appsflyer.com/hc/docs/ios-sdk-reference-appsflyerlib
     public enum CommandNames: String {
         case initialize = "initialize"
@@ -62,13 +62,13 @@ public enum AppsFlyerConstants {
         case resolveDeepLinkUrls = "resolvedeeplinkurls"
         case setPhoneNumber = "setphonenumber"
     }
-    
+
     public enum Configuration: String, CaseIterable {
         case appId = "app_id" // appleAppID
         case appDevKey = "app_dev_key" // appsFlyerDevKey
         case settings = "settings"
     }
-    
+
     // Settings names come from the AppsFlyer SDK https://dev.appsflyer.com/hc/docs/ios-sdk-reference-appsflyerlib
     public enum Settings {
         static let debug = "debug"
@@ -101,7 +101,7 @@ public enum AppsFlyerConstants {
         static let event = "event"
         static let phoneNumber = "phone_number"
     }
-    
+
     public enum Attribution {
         static let appOpen = "app_open_attribution"
         static let appOpenFailure = "app_open_attribution_failure"
@@ -115,5 +115,5 @@ public enum AppsFlyerConstants {
         static let campaign = "campaign"
         static let error = "appsflyer_error"
     }
-    
+
 }
