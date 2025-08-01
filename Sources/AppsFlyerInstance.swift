@@ -27,6 +27,8 @@ public protocol AppsFlyerCommand {
     func disableTracking(_ disable: Bool)
     func resolveDeepLinkURLs(_ urls: [String])
     func setPhoneNumber(_ phoneNumber: String)
+    func setPartnerData(partnerId: String, partnerInfo: [String: Any]?)
+    func setSharingFilterForPartners(_ sharingFilter: [String]?)
 }
 
 public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
@@ -106,6 +108,31 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
            let facebookDeferredAppLinkURL = URL(string: facebookDeferredAppLink) {
             appsFlyer.facebookDeferredAppLink = facebookDeferredAppLinkURL
         }
+        if let pushNotificationDeepLinkPath = settings[AppsFlyerConstants.Settings.pushNotificationDeepLinkPath] as? [String] {
+            appsFlyer.addPushNotificationDeepLinkPath(pushNotificationDeepLinkPath)
+        }
+        if let deepLinkParameters = settings[AppsFlyerConstants.Settings.deepLinkParameters] as? [[String: Any]] {
+            for parameter in deepLinkParameters {
+                if let contains = parameter[AppsFlyerConstants.Parameters.deepLinkContains] as? String,
+                   let parameters = parameter[AppsFlyerConstants.Parameters.deepLinkParameters] as? [String: String] {
+                    appsFlyer.appendParametersToDeeplinkURL(contains: contains, parameters: parameters)
+                }
+            }
+        }
+        if let enableFacebookDeferredApplinks = settings[AppsFlyerConstants.Settings.enableFacebookDeferredApplinks] as? Bool,
+           enableFacebookDeferredApplinks {
+            // Check if Facebook SDK is available at runtime to prevent crashes
+            if let facebookAppLinkUtilityClass = NSClassFromString("FBSDKAppLinkUtility") {
+                appsFlyer.enableFacebookDeferredApplinks(with: facebookAppLinkUtilityClass)
+            } else {
+                print("\(AppsFlyerConstants.errorPrefix)Facebook Deferred AppLinks requested but Facebook SDK not found. Please ensure Facebook SDK is integrated in your app.")
+            }
+        }
+        if let waitForATTTimeoutInterval = settings[AppsFlyerConstants.Settings.waitForATTUserAuthorizationTimeoutInterval] as? Int {
+            if #available(iOS 14, *) {
+                appsFlyer.waitForATTUserAuthorization(withTimeoutInterval: waitForATTTimeoutInterval)
+            }
+        }
 
     }
 
@@ -147,6 +174,41 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
 
     public func setPhoneNumber(_ phoneNumber: String) {
         AppsFlyerLib.shared().phoneNumber = phoneNumber
+    }
+    
+    public func logAdRevenue(monetizationNetwork: String, mediationNetworkType: AppsFlyerAdRevenueMediationNetworkType, currency: String, revenue: Double, additionalParams: [String: Any]?) {
+        onReady { appsFlyer in
+            let adRevenueData = AFAdRevenueData(
+                monetizationNetwork: monetizationNetwork,
+                mediationNetwork: mediationNetworkType,
+                currencyIso4217Code: currency,
+                eventRevenue: NSNumber(value: revenue)
+            )
+            
+            appsFlyer.logAdRevenue(adRevenueData, additionalParameters: additionalParams)
+        }
+    }
+    
+    public func setConsentData(isUserSubjectToGDPR: Bool, hasConsentForDataUsage: Bool, hasConsentForAdsPersonalization: Bool, hasConsentForAdStorage: Bool) {
+        let consent = AppsFlyerConsent(
+            isUserSubjectToGDPR: isUserSubjectToGDPR,
+            hasConsentForDataUsage: hasConsentForDataUsage,
+            hasConsentForAdsPersonalization: hasConsentForAdsPersonalization,
+            hasConsentForAdStorage: hasConsentForAdStorage
+        )
+        AppsFlyerLib.shared().setConsentData(consent)
+    }
+    
+    public func setCurrentDeviceLanguage(_ language: String) {
+        AppsFlyerLib.shared().setCurrentDeviceLanguage(language)
+    }
+    
+    public func setPartnerData(partnerId: String, partnerInfo: [String: Any]?) {
+        AppsFlyerLib.shared().setPartnerData(withPartnerId: partnerId, partnerInfo: partnerInfo)
+    }
+    
+    public func setSharingFilterForPartners(_ sharingFilter: [String]?) {
+        AppsFlyerLib.shared().setSharingFilterForPartners(sharingFilter)
     }
 }
 

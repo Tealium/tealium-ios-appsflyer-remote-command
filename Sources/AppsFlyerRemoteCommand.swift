@@ -155,6 +155,75 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     return
                 }
                 appsFlyerInstance.setPhoneNumber(phoneNumber)
+            case .logAdRevenue:
+                guard let monetizationNetwork = payload[AppsFlyerConstants.Parameters.monetizationNetwork] as? String,
+                      let mediationNetwork = payload[AppsFlyerConstants.Parameters.mediationNetwork] as? String,
+                      let currency = payload[AppsFlyerConstants.Parameters.adRevenueCurrency] as? String,
+                      let revenue = payload[AppsFlyerConstants.Parameters.adRevenueAmount] as? Double else {
+                    if debug {
+                        print("\(AppsFlyerConstants.errorPrefix)Ad revenue requires monetization_network, mediation_network, ad_revenue_currency, and ad_revenue_amount")
+                    }
+                    return
+                }
+                
+                // Validate mediation network
+                guard let mediationNetworkType = AppsFlyerConstants.mediationNetworksMap[mediationNetwork.lowercased()] else {
+                    if debug {
+                        print("\(AppsFlyerConstants.errorPrefix)Invalid mediation_network '\(mediationNetwork)'. Supported networks: \(AppsFlyerConstants.mediationNetworksMap.keys.joined(separator: ", "))")
+                    }
+                    return
+                }
+                
+                let additionalParams = payload[AppsFlyerConstants.Parameters.adRevenueAdditionalParams] as? [String: Any]
+                
+                appsFlyerInstance.logAdRevenue(
+                    monetizationNetwork: monetizationNetwork,
+                    mediationNetworkType: mediationNetworkType,
+                    currency: currency,
+                    revenue: revenue,
+                    additionalParams: additionalParams
+                )
+            case .setConsentData:
+                guard let isUserSubjectToGDPR = payload[AppsFlyerConstants.Parameters.isUserSubjectToGDPR] as? Bool,
+                      let hasConsentForDataUsage = payload[AppsFlyerConstants.Parameters.hasConsentForDataUsage] as? Bool,
+                      let hasConsentForAdsPersonalization = payload[AppsFlyerConstants.Parameters.hasConsentForAdsPersonalization] as? Bool,
+                      let hasConsentForAdStorage = payload[AppsFlyerConstants.Parameters.hasConsentForAdStorage] as? Bool else {
+                    if debug {
+                        print("\(AppsFlyerConstants.errorPrefix)Consent data requires is_user_subject_to_gdpr, has_consent_for_data_usage, has_consent_for_ads_personalization, and has_consent_for_ad_storage")
+                    }
+                    return
+                }
+                
+                appsFlyerInstance.setConsentData(
+                    isUserSubjectToGDPR: isUserSubjectToGDPR,
+                    hasConsentForDataUsage: hasConsentForDataUsage,
+                    hasConsentForAdsPersonalization: hasConsentForAdsPersonalization,
+                    hasConsentForAdStorage: hasConsentForAdStorage
+                )
+            case .setCurrentDeviceLanguage:
+                guard let deviceLanguage = payload[AppsFlyerConstants.Parameters.deviceLanguage] as? String, !deviceLanguage.isEmpty else {
+                    if debug {
+                        print("\(AppsFlyerConstants.errorPrefix)Must provide device_language parameter to set current device language")
+                    }
+                    return
+                }
+                
+                appsFlyerInstance.setCurrentDeviceLanguage(deviceLanguage)
+            case .setPartnerData:
+                guard let partnerId = payload[AppsFlyerConstants.Parameters.partnerId] as? String else {
+                    if debug {
+                        print("\(AppsFlyerConstants.errorPrefix)Must provide partner_id to set partner data")
+                    }
+                    return
+                }
+                
+                let partnerInfo = payload[AppsFlyerConstants.Parameters.partnerInfo] as? [String: Any]
+                
+                appsFlyerInstance.setPartnerData(partnerId: partnerId, partnerInfo: partnerInfo)
+            case .setSharingFilterForPartners:
+                let sharingFilter = payload[AppsFlyerConstants.Parameters.sharingFilter] as? [String]
+                
+                appsFlyerInstance.setSharingFilterForPartners(sharingFilter)
             default:
                 appsFlyerInstance.logEvent(getEventName(command: $0), values: getEventParameters(payload: payload))
                 break

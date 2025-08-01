@@ -61,6 +61,11 @@ public enum AppsFlyerConstants {
         case disableTracking = "disabletracking"
         case resolveDeepLinkUrls = "resolvedeeplinkurls"
         case setPhoneNumber = "setphonenumber"
+        case logAdRevenue = "logadrevenue"
+        case setConsentData = "setconsentdata"
+        case setCurrentDeviceLanguage = "setcurrentdevicelanguage"
+        case setPartnerData = "setpartnerdata"
+        case setSharingFilterForPartners = "setsharingfilterforpartners"
     }
 
     public enum Configuration: String, CaseIterable {
@@ -84,6 +89,10 @@ public enum AppsFlyerConstants {
         static let deepLinkTimeout = "deep_link_timeout"
         static let oneLinkCustomDomains = "one_link_custom_domains"
         static let facebookDeferredAppLink = "facebook_deferred_app_link"
+        static let pushNotificationDeepLinkPath = "push_notification_deep_link_path"
+        static let deepLinkParameters = "deep_link_parameters"
+        static let enableFacebookDeferredApplinks = "enable_facebook_deferred_applinks"
+        static let waitForATTUserAuthorizationTimeoutInterval = "wait_for_att_user_authorization_timeout_interval"
     }
 
     public enum Parameters {
@@ -100,6 +109,33 @@ public enum AppsFlyerConstants {
         static let deepLinkUrls = "af_deep_link"
         static let event = "event"
         static let phoneNumber = "phone_number"
+        
+        // Deep link parameters configuration (for appendParametersToDeepLinkingURL)
+        static let deepLinkContains = "contains"
+        static let deepLinkParameters = "parameters"
+        
+        // Ad revenue parameters (for logAdRevenue)
+        static let monetizationNetwork = "monetization_network"
+        static let mediationNetwork = "mediation_network"
+        static let adRevenueCurrency = "ad_revenue_currency"
+        static let adRevenueAmount = "ad_revenue_amount"
+        static let adRevenueAdditionalParams = "ad_revenue_additional_params"
+        
+        // Consent data parameters (for setConsentData)
+        static let isUserSubjectToGDPR = "is_user_subject_to_gdpr"
+        static let hasConsentForDataUsage = "has_consent_for_data_usage"
+        static let hasConsentForAdsPersonalization = "has_consent_for_ads_personalization"
+        static let hasConsentForAdStorage = "has_consent_for_ad_storage"
+        
+        // Device language parameter (for setCurrentDeviceLanguage)
+        static let deviceLanguage = "device_language"
+        
+        // Partner data parameters (for setPartnerData)
+        static let partnerId = "partner_id"
+        static let partnerInfo = "partner_info"
+        
+        // Sharing filter parameters (for setSharingFilterForPartners)
+        static let sharingFilter = "sharing_filter"
     }
 
     public enum Attribution {
@@ -116,4 +152,20 @@ public enum AppsFlyerConstants {
         static let error = "appsflyer_error"
     }
 
+        /// Mediation networks mapping for logAdRevenue: https://dev.appsflyer.com/hc/docs/ios-sdk-reference-appsflyerlib#logadrevenue
+    static let mediationNetworksMap: [String: AppsFlyerAdRevenueMediationNetworkType] = [
+        "ironsource": .ironSource,
+        "applovinmax": .appLovinMax,
+        "googleadmob": .googleAdMob,
+        "fyber": .fyber,
+        "appodeal": .appodeal,
+        "admost": .adMost,
+        "topon": .topOn,
+        "tradplus": .tradPlus,
+        "yandex": .yandex,
+        "chartboost": .chartboost,
+        "unity": .unity,
+        "custom": .customMediation,
+        "direct": .directMonetizationNetwork
+    ]
 }

@@ -15,7 +15,19 @@
             "app_invite_onelink_id": "",
             "deep_link_timeout": 2000,
             "one_link_custom_domains": [],
-            "facebook_deferred_app_link": ""
+            "facebook_deferred_app_link": "",
+            "push_notification_deep_link_path": ["af_push_link"],
+            "deep_link_parameters": [
+                {
+                    "contains": "onelink.me",
+                    "parameters": {
+                        "utm_source": "appsflyer",
+                        "utm_medium": "deep_link"
+                    }
+                }
+            ],
+            "enable_facebook_deferred_applinks": false,
+            "wait_for_att_user_authorization_timeout_interval": 60
         }
     },
     "mappings": {
@@ -30,6 +42,22 @@
         "stop_tracking": "stop_tracking",
         "af_deep_link": "af_deep_link",
         "phone_number": "phone_number",
+        "monetization_network": "monetization_network",
+        "mediation_network": "mediation_network",
+        "ad_revenue_currency": "ad_revenue_currency",
+        "ad_revenue_amount": "ad_revenue_amount",
+        "ad_revenue_additional_params": "ad_revenue_additional_params",
+        "is_user_subject_to_gdpr": "is_user_subject_to_gdpr",
+        "has_consent_for_data_usage": "has_consent_for_data_usage",
+        "has_consent_for_ads_personalization": "has_consent_for_ads_personalization",
+        "has_consent_for_ad_storage": "has_consent_for_ad_storage",
+        "device_language": "device_language",
+        "partner_id": "partner_id",
+        "partner_puid": "partner_info.puid",
+        "partner_user_segment": "partner_info.user_segment",
+        "partner_ltv": "partner_info.ltv",
+        "partner_engagement_score": "partner_info.engagement_score",
+        "sharing_filter": "sharing_filter",
         "signup_method": "event.signup_method",
         "achievement_id": "event.achievement_id",
         "checkout_option": "event.checkout_option",
@@ -92,6 +120,11 @@
         "disable_tracking": "disabletracking",
         "resolve_deep_links": "resolvedeeplinkurls",
         "set_phone_number": "setphonenumber",
+        "ad_revenue": "logadrevenue",
+        "set_consent": "setconsentdata",
+        "set_device_language": "setcurrentdevicelanguage",
+        "set_partner_data": "setpartnerdata",
+        "set_sharing_filter": "setsharingfilterforpartners",
         "user_login": "login",
         "user_register": "setuseremails,setcustomerid,completeregistration",
         "show_offers": "adclick",
