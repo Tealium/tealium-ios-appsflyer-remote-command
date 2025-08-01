@@ -70,6 +70,52 @@ class AccountViewController: UIViewController {
         TealiumHelper.trackEvent(title: "rate", data: [AccountViewController.rating: rating])
     }
     
+    @IBAction func setAppsFlyerHostTapped(_ sender: UIButton) {
+        let ac = UIAlertController(title: "Set AppsFlyer Host", message: "Enter custom host and prefix for AppsFlyer tracking", preferredStyle: .alert)
+        
+        ac.addTextField { textField in
+            textField.placeholder = "Host (e.g., custom.appsflyer.com)"
+            textField.text = "custom.appsflyer.com"
+        }
+        
+        ac.addTextField { textField in
+            textField.placeholder = "Host Prefix (e.g., custom-prefix)"
+            textField.text = "custom-prefix"
+        }
+        
+        ac.addAction(UIAlertAction(title: "Set Host", style: .default) { _ in
+            guard let host = ac.textFields?[0].text, !host.isEmpty,
+                  let hostPrefix = ac.textFields?[1].text, !hostPrefix.isEmpty else {
+                return
+            }
+            
+            TealiumHelper.trackEvent(title: "set_host", data: [
+                AccountViewController.host: host,
+                AccountViewController.hostPrefix: hostPrefix
+            ])
+            
+            let successAlert = UIAlertController(title: "Success", message: "AppsFlyer host set to: \(host) with prefix: \(hostPrefix)", preferredStyle: .alert)
+            successAlert.addAction(UIAlertAction(title: "OK", style: .default))
+            self.present(successAlert, animated: true)
+        })
+        
+        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(ac, animated: true)
+    }
+    
+    @IBAction func trackingToggleTapped(_ sender: UISwitch) {
+        let isTrackingDisabled = !sender.isOn
+        
+        TealiumHelper.trackEvent(title: "disable_tracking", data: [
+            AccountViewController.stopTracking: isTrackingDisabled
+        ])
+        
+        let message = isTrackingDisabled ? "AppsFlyer tracking has been disabled (privacy mode)" : "AppsFlyer tracking has been enabled"
+        let ac = UIAlertController(title: "Tracking Status", message: message, preferredStyle: .alert)
+        ac.addAction(UIAlertAction(title: "OK", style: .default))
+        present(ac, animated: true)
+    }
+    
 }
 
 extension AccountViewController: UITextFieldDelegate {
@@ -91,4 +137,7 @@ extension AccountViewController {
     static let adMediatedName = "ad_mediated_name"
     static let groupName = "group_name"
     static let rating = "rating"
+    static let host = "host"
+    static let hostPrefix = "host_prefix"
+    static let stopTracking = "stop_tracking"
 }

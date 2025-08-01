@@ -79,6 +79,42 @@ class TravelViewController: UIViewController {
         data[TravelViewController.ticketPrice] = [1000]
         TealiumHelper.trackEvent(title: "travelbooking", data: data)
     }
+    
+    @IBAction func resolveDeepLinksTapped(_ sender: UIButton) {
+        let ac = UIAlertController(title: "Resolve Deep Links", message: "Enter deep link URLs to be resolved by AppsFlyer (separated by commas)", preferredStyle: .alert)
+        
+        ac.addTextField { textField in
+            textField.placeholder = "https://example.com/link1, https://example.com/link2"
+            textField.text = "https://travel.example.com/booking/123, https://partners.example.com/offer/456"
+        }
+        
+        ac.addAction(UIAlertAction(title: "Resolve Links", style: .default) { _ in
+            guard let linksText = ac.textFields?[0].text, !linksText.isEmpty else {
+                return
+            }
+            
+            let deepLinks = linksText.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
+            
+            guard !deepLinks.isEmpty else {
+                let errorAlert = UIAlertController(title: "Error", message: "Please enter at least one valid deep link URL", preferredStyle: .alert)
+                errorAlert.addAction(UIAlertAction(title: "OK", style: .default))
+                self.present(errorAlert, animated: true)
+                return
+            }
+
+            TealiumHelper.trackEvent(title: "resolve_deep_links", data: [
+                TravelViewController.deepLinkUrls: deepLinks
+            ])
+            
+            let successMessage = "AppsFlyer will resolve \(deepLinks.count) deep link(s):\n\(deepLinks.joined(separator: "\n"))"
+            let successAlert = UIAlertController(title: "Deep Links Submitted", message: successMessage, preferredStyle: .alert)
+            successAlert.addAction(UIAlertAction(title: "OK", style: .default))
+            self.present(successAlert, animated: true)
+        })
+        
+        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(ac, animated: true)
+    }
 
 }
 
@@ -113,4 +149,5 @@ extension TravelViewController {
     static let preferredPriceRange = "preferred_price_range"
     static let preferredNumberStops = "preferred_number_stops"
     static let destinationList = "destination_list"
+    static let deepLinkUrls = "af_deep_link"
 }

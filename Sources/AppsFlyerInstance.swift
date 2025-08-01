@@ -9,10 +9,10 @@
 import UIKit
 import AppsFlyerLib
 #if COCOAPODS
-    import TealiumSwift
+import TealiumSwift
 #else
-    import TealiumCore
-    import TealiumRemoteCommands
+import TealiumCore
+import TealiumRemoteCommands
 #endif
 
 public protocol AppsFlyerCommand {
@@ -26,6 +26,7 @@ public protocol AppsFlyerCommand {
     func customerId(_ id: String)
     func disableTracking(_ disable: Bool)
     func resolveDeepLinkURLs(_ urls: [String])
+    func setPhoneNumber(_ phoneNumber: String)
 }
 
 public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
@@ -39,7 +40,7 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         self.tealium = tealium
         AppsFlyerLib.shared().delegate = self
     }
-    
+
     public func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {
         defer { _onReady.subscribeOnce(onReady) }
         let appsFlyerAlreadyPublished = _onReady.last() != nil
@@ -86,6 +87,26 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         if let customData = settings[AppsFlyerConstants.Settings.customData] as? [AnyHashable: Any] {
             appsFlyer.customData = customData
         }
+        if let disableAppleAdsAttribution = settings[AppsFlyerConstants.Settings.disableAppleAdsAttribution] as? Bool {
+            appsFlyer.disableAppleAdsAttribution = disableAppleAdsAttribution
+        }
+        if let enableTCFDataCollection = settings[AppsFlyerConstants.Settings.enableTCFDataCollection] as? Bool {
+            appsFlyer.enableTCFDataCollection(enableTCFDataCollection)
+        }
+        if let appInviteOneLinkID = settings[AppsFlyerConstants.Settings.appInviteOneLinkID] as? String {
+            appsFlyer.appInviteOneLinkID = appInviteOneLinkID
+        }
+        if let deepLinkTimeout = settings[AppsFlyerConstants.Settings.deepLinkTimeout] as? Int {
+            appsFlyer.deepLinkTimeout = UInt(deepLinkTimeout)
+        }
+        if let oneLinkCustomDomains = settings[AppsFlyerConstants.Settings.oneLinkCustomDomains] as? [String] {
+            appsFlyer.oneLinkCustomDomains = oneLinkCustomDomains
+        }
+        if let facebookDeferredAppLink = settings[AppsFlyerConstants.Settings.facebookDeferredAppLink] as? String,
+           let facebookDeferredAppLinkURL = URL(string: facebookDeferredAppLink) {
+            appsFlyer.facebookDeferredAppLink = facebookDeferredAppLinkURL
+        }
+
     }
 
     public func logEvent(_ eventName: String, values: [String: Any]) {
@@ -98,7 +119,6 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         onReady { appsFlyer in
             appsFlyer.logLocation(longitude: longitude, latitude: latitude)
         }
-        
     }
 
     public func setHost(_ host: String, with prefix: String) {
@@ -125,16 +145,20 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         AppsFlyerLib.shared().resolveDeepLinkURLs = urls
     }
 
+    public func setPhoneNumber(_ phoneNumber: String) {
+        AppsFlyerLib.shared().phoneNumber = phoneNumber
+    }
 }
 
 extension AppsFlyerInstance: AppsFlyerLibDelegate {
 
     public func onConversionDataSuccess(_ conversionInfo: [AnyHashable: Any]) {
         guard let conversionInfo = conversionInfo as? [String: Any],
-            let firstLaunch = conversionInfo[AppsFlyerConstants.Attribution.firstLaunch] as? Bool else {
+              let firstLaunch = conversionInfo[AppsFlyerConstants.Attribution.firstLaunch] as? Bool else {
             tealiumTrack(title: AppsFlyerConstants.Attribution.conversionReceived)
-                return
+            return
         }
+
         guard firstLaunch else {
             print("\(AppsFlyerConstants.attributionLog)Not First Launch")
             return
@@ -147,7 +171,7 @@ extension AppsFlyerInstance: AppsFlyerLibDelegate {
 
         if (status == "Non-organic") {
             if let mediaSource = conversionInfo[AppsFlyerConstants.Attribution.source],
-                let campaign = conversionInfo[AppsFlyerConstants.Attribution.campaign] {
+               let campaign = conversionInfo[AppsFlyerConstants.Attribution.campaign] {
                 print("\(AppsFlyerConstants.attributionLog)This is a Non-Organic install. Media source: \(mediaSource) Campaign: \(campaign)")
             }
         } else {
@@ -156,25 +180,35 @@ extension AppsFlyerInstance: AppsFlyerLibDelegate {
     }
 
     public func onConversionDataFail(_ error: Error) {
-        tealiumTrack(title: AppsFlyerConstants.Attribution.error,
-            data: [AppsFlyerConstants.Attribution.errorName: AppsFlyerConstants.Attribution.conversionFailure,
-                AppsFlyerConstants.Attribution.errorDescription: error.localizedDescription])
+        tealiumTrack(
+            title: AppsFlyerConstants.Attribution.error,
+            data: [
+                AppsFlyerConstants.Attribution.errorName: AppsFlyerConstants.Attribution.conversionFailure,
+                AppsFlyerConstants.Attribution.errorDescription: error.localizedDescription
+            ]
+        )
     }
 
     public func onAppOpenAttribution(_ attributionData: [AnyHashable: Any]) {
         guard let attributionData = attributionData as? [String: Any] else {
             return tealiumTrack(title: AppsFlyerConstants.Attribution.appOpen)
         }
-        tealiumTrack(title: AppsFlyerConstants.Attribution.appOpen,
-            data: attributionData)
+        tealiumTrack(
+            title: AppsFlyerConstants.Attribution.appOpen,
+            data: attributionData
+        )
     }
 
     public func onAppOpenAttributionFailure(_ error: Error) {
-        tealiumTrack(title: AppsFlyerConstants.Attribution.error,
-            data: [AppsFlyerConstants.Attribution.errorName: AppsFlyerConstants.Attribution.appOpenFailure,
-                AppsFlyerConstants.Attribution.errorDescription: error.localizedDescription])
+        tealiumTrack(
+            title: AppsFlyerConstants.Attribution.error,
+            data: [
+                AppsFlyerConstants.Attribution.errorName: AppsFlyerConstants.Attribution.appOpenFailure,
+                AppsFlyerConstants.Attribution.errorDescription: error.localizedDescription
+            ]
+        )
     }
-    
+
     private func tealiumTrack(title: String, data: [String: Any]? = nil) {
         let event = TealiumEvent(title, dataLayer: data)
         tealium?.track(event)

@@ -62,6 +62,33 @@ class CheckoutViewController: UIViewController {
             TealiumHelper.trackView(title: "order", data: orderData)
         }
     }
+    
+    @IBAction func setCurrencyTapped(_ sender: UIButton) {
+        let ac = UIAlertController(title: "Set Currency", message: "Choose currency for AppsFlyer tracking", preferredStyle: .actionSheet)
+        
+        let currencies = ["USD", "EUR", "GBP", "JPY", "PLN", "CAD", "AUD"]
+        
+        for currency in currencies {
+            ac.addAction(UIAlertAction(title: currency, style: .default) { _ in
+                TealiumHelper.trackEvent(title: "set_currency", data: [
+                    CheckoutViewController.currencyCode: currency
+                ])
+                
+                let successAlert = UIAlertController(title: "Currency Set", message: "AppsFlyer currency set to: \(currency)", preferredStyle: .alert)
+                successAlert.addAction(UIAlertAction(title: "OK", style: .default))
+                self.present(successAlert, animated: true)
+            })
+        }
+        
+        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        
+        if let popover = ac.popoverPresentationController {
+            popover.sourceView = sender
+            popover.sourceRect = sender.bounds
+        }
+        
+        present(ac, animated: true)
+    }
 
 }
 
@@ -88,4 +115,5 @@ extension CheckoutViewController: UITextFieldDelegate {
 extension CheckoutViewController {
     static let placedOrderClicked = "placed_order_clicked"
     static let screenClass = "screen_class"
+    static let currencyCode = "currency_code"
 }

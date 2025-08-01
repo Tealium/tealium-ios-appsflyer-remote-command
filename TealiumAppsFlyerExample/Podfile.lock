@@ -1,7 +1,7 @@
 PODS:
-  - AppsFlyerFramework (6.17.1):
-    - AppsFlyerFramework/Main (= 6.17.1)
-  - AppsFlyerFramework/Main (6.17.1)
+  - AppsFlyerFramework (6.17.2):
+    - AppsFlyerFramework/Main (= 6.17.2)
+  - AppsFlyerFramework/Main (6.17.2)
   - tealium-swift/Core (2.18.0)
   - tealium-swift/Lifecycle (2.18.0):
     - tealium-swift/Core
@@ -31,7 +31,7 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  AppsFlyerFramework: 11ef2dea3fa755f9ed8ba53267012ee1c62d7dc0
+  AppsFlyerFramework: 3e48c87fd356e7cbf09b87e176c0b04dc42f95fe
   tealium-swift: 891b7d27a4aa3e8b3c7398ac536382526ad215fc
   TealiumAppsFlyer: 8b85a345772703d8f69aaf2fb10e52c655c571de
 

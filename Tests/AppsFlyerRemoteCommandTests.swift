@@ -116,7 +116,23 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
     }
     
     func testInitWithConfig() {
-        let settings: [String: Any] = ["debug": true, "minTimeBetweenSessions": 60]
+        let customData: [String: Any] = ["custom_key": "custom_value", "user_level": 5]
+        let oneLinkDomains = ["custom.domain.com", "another.domain.org"]
+        let settings: [String: Any] = [
+            "debug": true,
+            "disable_ad_tracking": false,
+            "disable_apple_ads_attribution": true,
+            "disable_apple_ad_tracking": false,
+            "time_between_sessions": 60,
+            "anonymize_user": true,
+            "collect_device_name": false,
+            "custom_data": customData,
+            "enable_tcf_data_collection": true,
+            "app_invite_onelink_id": "test_onelink_id",
+            "deep_link_timeout": 3000,
+            "one_link_custom_domains": oneLinkDomains,
+            "facebook_deferred_app_link": "https://facebook.com/deferred"
+        ]
         let payload: [String: Any] = ["command_name": "initialize",
                                       "app_id": "test_app",
                                       "app_dev_key": "test_key",
@@ -126,8 +142,30 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertEqual(appsFlyerInstance.lastAppId, "test_app")
         XCTAssertEqual(appsFlyerInstance.lastAppDevKey, "test_key")
         XCTAssertNotNil(appsFlyerInstance.lastSettings)
+        
+        // Test all settings are passed through correctly
         XCTAssertEqual(appsFlyerInstance.lastSettings?["debug"] as? Bool, true)
-        XCTAssertEqual(appsFlyerInstance.lastSettings?["minTimeBetweenSessions"] as? Int, 60)
+        XCTAssertEqual(appsFlyerInstance.lastSettings?["disable_ad_tracking"] as? Bool, false)
+        XCTAssertEqual(appsFlyerInstance.lastSettings?["disable_apple_ads_attribution"] as? Bool, true)
+        XCTAssertEqual(appsFlyerInstance.lastSettings?["disable_apple_ad_tracking"] as? Bool, false)
+        XCTAssertEqual(appsFlyerInstance.lastSettings?["time_between_sessions"] as? Int, 60)
+        XCTAssertEqual(appsFlyerInstance.lastSettings?["anonymize_user"] as? Bool, true)
+        XCTAssertEqual(appsFlyerInstance.lastSettings?["collect_device_name"] as? Bool, false)
+        XCTAssertEqual(appsFlyerInstance.lastSettings?["enable_tcf_data_collection"] as? Bool, true)
+        XCTAssertEqual(appsFlyerInstance.lastSettings?["app_invite_onelink_id"] as? String, "test_onelink_id")
+        XCTAssertEqual(appsFlyerInstance.lastSettings?["deep_link_timeout"] as? Int, 3000)
+        XCTAssertEqual(appsFlyerInstance.lastSettings?["facebook_deferred_app_link"] as? String, "https://facebook.com/deferred")
+        
+        // Test custom_data dictionary
+        let receivedCustomData = appsFlyerInstance.lastSettings?["custom_data"] as? [String: Any]
+        XCTAssertNotNil(receivedCustomData)
+        XCTAssertEqual(receivedCustomData?["custom_key"] as? String, "custom_value")
+        XCTAssertEqual(receivedCustomData?["user_level"] as? Int, 5)
+        
+        // Test one_link_custom_domains array
+        let receivedDomains = appsFlyerInstance.lastSettings?["one_link_custom_domains"] as? [String]
+        XCTAssertNotNil(receivedDomains)
+        XCTAssertEqual(receivedDomains, oneLinkDomains)
     }
     
     func testInitWithConfigNotRun() {
@@ -329,5 +367,35 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         TealiumQueues.backgroundSerialQueue.sync {
             waitForExpectations(timeout: 1.0)
         }
+    }
+
+    func testSetPhoneNumber() {
+        let payload: [String: Any] = [
+            "command_name": "setphonenumber",
+            "phone_number": "+48123456789"
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.setPhoneNumberCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastPhoneNumber, "+48123456789")
+    }
+
+    func testDeepLinkTimeoutValidation() {
+        // Test that negative deepLinkTimeout is filtered out
+        let settings: [String: Any] = [
+            "deep_link_timeout": -1000, 
+        ]
+        let payload: [String: Any] = [
+            "command_name": "initialize",
+            "app_id": "test",
+            "app_dev_key": "test",
+            "settings": settings
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        
+        XCTAssertEqual(1, self.appsFlyerInstance.initWithSettingsCount)
+        XCTAssertNotNil(appsFlyerInstance.lastSettings)
+        
+        // deep_link_timeout should be removed due to negative value
+        XCTAssertNil(appsFlyerInstance.lastSettings?["deep_link_timeout"])
     }
 }

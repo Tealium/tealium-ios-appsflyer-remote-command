@@ -21,6 +21,8 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var setCustomerIdCount = 0
     var disableTrackingCount = 0
     var resolveDeepLinkURLsCount = 0
+    var setPhoneNumberCount = 0
+    var lastPhoneNumber: String?
     
     // Store last call parameters for verification
     var lastEventName: String?
@@ -99,6 +101,11 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     func resolveDeepLinkURLs(_ urls: [String]) {
         resolveDeepLinkURLsCount += 1
         lastUrls = urls
+    }
+    
+    func setPhoneNumber(_ phoneNumber: String) {
+        setPhoneNumberCount += 1
+        lastPhoneNumber = phoneNumber
     }
     
     func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {
