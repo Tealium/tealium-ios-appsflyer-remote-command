@@ -200,15 +200,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     hasConsentForAdsPersonalization: hasConsentForAdsPersonalization,
                     hasConsentForAdStorage: hasConsentForAdStorage
                 )
-            case .setCurrentDeviceLanguage:
-                guard let deviceLanguage = payload[AppsFlyerConstants.Parameters.deviceLanguage] as? String, !deviceLanguage.isEmpty else {
-                    if debug {
-                        print("\(AppsFlyerConstants.errorPrefix)Must provide device_language parameter to set current device language")
-                    }
-                    return
-                }
-                
-                appsFlyerInstance.setCurrentDeviceLanguage(deviceLanguage)
+
             case .setPartnerData:
                 guard let partnerId = payload[AppsFlyerConstants.Parameters.partnerId] as? String else {
                     if debug {

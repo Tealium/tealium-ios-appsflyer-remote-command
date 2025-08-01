@@ -29,6 +29,8 @@ public protocol AppsFlyerCommand {
     func setPhoneNumber(_ phoneNumber: String)
     func setPartnerData(partnerId: String, partnerInfo: [String: Any]?)
     func setSharingFilterForPartners(_ sharingFilter: [String]?)
+    func logAdRevenue(monetizationNetwork: String, mediationNetworkType: MediationNetworkType, currency: String, revenue: Double, additionalParams: [String: Any]?)
+    func setConsentData(isUserSubjectToGDPR: Bool, hasConsentForDataUsage: Bool, hasConsentForAdsPersonalization: Bool, hasConsentForAdStorage: Bool)
 }
 
 public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
@@ -130,7 +132,7 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         }
         if let waitForATTTimeoutInterval = settings[AppsFlyerConstants.Settings.waitForATTUserAuthorizationTimeoutInterval] as? Int {
             if #available(iOS 14, *) {
-                appsFlyer.waitForATTUserAuthorization(withTimeoutInterval: waitForATTTimeoutInterval)
+                appsFlyer.waitForATTUserAuthorization(timeoutInterval: TimeInterval(waitForATTTimeoutInterval))
             }
         }
 
@@ -176,7 +178,7 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         AppsFlyerLib.shared().phoneNumber = phoneNumber
     }
     
-    public func logAdRevenue(monetizationNetwork: String, mediationNetworkType: AppsFlyerAdRevenueMediationNetworkType, currency: String, revenue: Double, additionalParams: [String: Any]?) {
+    public func logAdRevenue(monetizationNetwork: String, mediationNetworkType: MediationNetworkType, currency: String, revenue: Double, additionalParams: [String: Any]?) {
         onReady { appsFlyer in
             let adRevenueData = AFAdRevenueData(
                 monetizationNetwork: monetizationNetwork,
@@ -191,20 +193,17 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     
     public func setConsentData(isUserSubjectToGDPR: Bool, hasConsentForDataUsage: Bool, hasConsentForAdsPersonalization: Bool, hasConsentForAdStorage: Bool) {
         let consent = AppsFlyerConsent(
-            isUserSubjectToGDPR: isUserSubjectToGDPR,
-            hasConsentForDataUsage: hasConsentForDataUsage,
-            hasConsentForAdsPersonalization: hasConsentForAdsPersonalization,
-            hasConsentForAdStorage: hasConsentForAdStorage
+            isUserSubjectToGDPR: isUserSubjectToGDPR as NSNumber,
+            hasConsentForDataUsage: hasConsentForDataUsage as NSNumber,
+            hasConsentForAdsPersonalization: hasConsentForAdsPersonalization as NSNumber,
+            hasConsentForAdStorage: hasConsentForAdStorage as NSNumber
         )
         AppsFlyerLib.shared().setConsentData(consent)
     }
     
-    public func setCurrentDeviceLanguage(_ language: String) {
-        AppsFlyerLib.shared().setCurrentDeviceLanguage(language)
-    }
-    
+
     public func setPartnerData(partnerId: String, partnerInfo: [String: Any]?) {
-        AppsFlyerLib.shared().setPartnerData(withPartnerId: partnerId, partnerInfo: partnerInfo)
+        AppsFlyerLib.shared().setPartnerData(partnerId: partnerId, partnerInfo: partnerInfo)
     }
     
     public func setSharingFilterForPartners(_ sharingFilter: [String]?) {

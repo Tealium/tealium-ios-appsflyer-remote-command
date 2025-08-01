@@ -63,7 +63,6 @@ public enum AppsFlyerConstants {
         case setPhoneNumber = "setphonenumber"
         case logAdRevenue = "logadrevenue"
         case setConsentData = "setconsentdata"
-        case setCurrentDeviceLanguage = "setcurrentdevicelanguage"
         case setPartnerData = "setpartnerdata"
         case setSharingFilterForPartners = "setsharingfilterforpartners"
     }
@@ -127,9 +126,6 @@ public enum AppsFlyerConstants {
         static let hasConsentForAdsPersonalization = "has_consent_for_ads_personalization"
         static let hasConsentForAdStorage = "has_consent_for_ad_storage"
         
-        // Device language parameter (for setCurrentDeviceLanguage)
-        static let deviceLanguage = "device_language"
-        
         // Partner data parameters (for setPartnerData)
         static let partnerId = "partner_id"
         static let partnerInfo = "partner_info"
@@ -153,19 +149,20 @@ public enum AppsFlyerConstants {
     }
 
         /// Mediation networks mapping for logAdRevenue: https://dev.appsflyer.com/hc/docs/ios-sdk-reference-appsflyerlib#logadrevenue
-    static let mediationNetworksMap: [String: AppsFlyerAdRevenueMediationNetworkType] = [
-        "ironsource": .ironSource,
-        "applovinmax": .appLovinMax,
+    static let mediationNetworksMap: [String: MediationNetworkType] = [
         "googleadmob": .googleAdMob,
+        "ironsource": .ironSource,
+        "applovinmax": .applovinMax,
         "fyber": .fyber,
         "appodeal": .appodeal,
-        "admost": .adMost,
-        "topon": .topOn,
-        "tradplus": .tradPlus,
+        "admost": .admost,
+        "topon": .topon,
+        "tradplus": .tradplus,
         "yandex": .yandex,
-        "chartboost": .chartboost,
+        "chartboost": .chartBoost,
         "unity": .unity,
-        "custom": .customMediation,
-        "direct": .directMonetizationNetwork
+        "toponpte": .toponPte,
+        "custom": .custom,
+        "direct": .directMonetization
     ]
 }
