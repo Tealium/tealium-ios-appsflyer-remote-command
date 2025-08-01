@@ -23,6 +23,10 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var resolveDeepLinkURLsCount = 0
     var setPhoneNumberCount = 0
     var lastPhoneNumber: String?
+    var logAdRevenueCount = 0
+    var setConsentDataCount = 0
+    var setPartnerDataCount = 0
+    var setSharingFilterForPartnersCount = 0
     
     // Store last call parameters for verification
     var lastEventName: String?
@@ -40,6 +44,20 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var lastCustomerId: String?
     var lastDisableTracking: Bool?
     var lastUrls: [String]?
+    
+    // New function parameters
+    var lastMonetizationNetwork: String?
+    var lastMediationNetworkType: MediationNetworkType?
+    var lastAdRevenueCurrency: String?
+    var lastAdRevenueAmount: Double?
+    var lastAdRevenueAdditionalParams: [String: Any]?
+    var lastIsUserSubjectToGDPR: Bool?
+    var lastHasConsentForDataUsage: Bool?
+    var lastHasConsentForAdsPersonalization: Bool?
+    var lastHasConsentForAdStorage: Bool?
+    var lastPartnerId: String?
+    var lastPartnerInfo: [String: Any]?
+    var lastSharingFilter: [String]?
     
     func initialize(appId: String, appDevKey: String) {
         initWithoutSettingsCount += 1
@@ -110,6 +128,34 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     
     func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {
         onReady(AppsFlyerLib.shared())
+    }
+    
+    func logAdRevenue(monetizationNetwork: String, mediationNetworkType: MediationNetworkType, currency: String, revenue: Double, additionalParams: [String: Any]?) {
+        logAdRevenueCount += 1
+        lastMonetizationNetwork = monetizationNetwork
+        lastMediationNetworkType = mediationNetworkType
+        lastAdRevenueCurrency = currency
+        lastAdRevenueAmount = revenue
+        lastAdRevenueAdditionalParams = additionalParams
+    }
+    
+    func setConsentData(isUserSubjectToGDPR: Bool, hasConsentForDataUsage: Bool, hasConsentForAdsPersonalization: Bool, hasConsentForAdStorage: Bool) {
+        setConsentDataCount += 1
+        lastIsUserSubjectToGDPR = isUserSubjectToGDPR
+        lastHasConsentForDataUsage = hasConsentForDataUsage
+        lastHasConsentForAdsPersonalization = hasConsentForAdsPersonalization
+        lastHasConsentForAdStorage = hasConsentForAdStorage
+    }
+    
+    func setPartnerData(partnerId: String, partnerInfo: [String: Any]?) {
+        setPartnerDataCount += 1
+        lastPartnerId = partnerId
+        lastPartnerInfo = partnerInfo
+    }
+    
+    func setSharingFilterForPartners(_ sharingFilter: [String]?) {
+        setSharingFilterForPartnersCount += 1
+        lastSharingFilter = sharingFilter
     }
     
 }

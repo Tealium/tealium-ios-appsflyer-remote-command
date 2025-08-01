@@ -118,6 +118,16 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
     func testInitWithConfig() {
         let customData: [String: Any] = ["custom_key": "custom_value", "user_level": 5]
         let oneLinkDomains = ["custom.domain.com", "another.domain.org"]
+        let deepLinkParameters: [[String: Any]] = [
+            [
+                "contains": "onelink.me",
+                "parameters": ["utm_source": "appsflyer", "utm_medium": "deep_link"]
+            ],
+            [
+                "contains": "custom.domain.com", 
+                "parameters": ["campaign": "summer", "source": "email"]
+            ]
+        ]
         let settings: [String: Any] = [
             "debug": true,
             "disable_ad_tracking": false,
@@ -131,7 +141,11 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
             "app_invite_onelink_id": "test_onelink_id",
             "deep_link_timeout": 3000,
             "one_link_custom_domains": oneLinkDomains,
-            "facebook_deferred_app_link": "https://facebook.com/deferred"
+            "facebook_deferred_app_link": "https://facebook.com/deferred",
+            "push_notification_deep_link_path": ["af_push_link", "custom_link"],
+            "deep_link_parameters": deepLinkParameters,
+            "enable_facebook_deferred_applinks": true,
+            "wait_for_att_user_authorization_timeout_interval": 45
         ]
         let payload: [String: Any] = ["command_name": "initialize",
                                       "app_id": "test_app",
@@ -166,6 +180,32 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         let receivedDomains = appsFlyerInstance.lastSettings?["one_link_custom_domains"] as? [String]
         XCTAssertNotNil(receivedDomains)
         XCTAssertEqual(receivedDomains, oneLinkDomains)
+        
+        // Test new settings
+        let receivedPushPath = appsFlyerInstance.lastSettings?["push_notification_deep_link_path"] as? [String]
+        XCTAssertNotNil(receivedPushPath)
+        XCTAssertEqual(receivedPushPath, ["af_push_link", "custom_link"])
+        
+        let receivedDeepLinkParams = appsFlyerInstance.lastSettings?["deep_link_parameters"] as? [[String: Any]]
+        XCTAssertNotNil(receivedDeepLinkParams)
+        XCTAssertEqual(receivedDeepLinkParams?.count, 2)
+        
+        // Test first deep link parameter set
+        let firstParam = receivedDeepLinkParams?[0]
+        XCTAssertEqual(firstParam?["contains"] as? String, "onelink.me")
+        let firstParameters = firstParam?["parameters"] as? [String: String]
+        XCTAssertEqual(firstParameters?["utm_source"], "appsflyer")
+        XCTAssertEqual(firstParameters?["utm_medium"], "deep_link")
+        
+        // Test second deep link parameter set
+        let secondParam = receivedDeepLinkParams?[1]
+        XCTAssertEqual(secondParam?["contains"] as? String, "custom.domain.com")
+        let secondParameters = secondParam?["parameters"] as? [String: String]
+        XCTAssertEqual(secondParameters?["campaign"], "summer")
+        XCTAssertEqual(secondParameters?["source"], "email")
+        
+        XCTAssertEqual(appsFlyerInstance.lastSettings?["enable_facebook_deferred_applinks"] as? Bool, true)
+        XCTAssertEqual(appsFlyerInstance.lastSettings?["wait_for_att_user_authorization_timeout_interval"] as? Int, 45)
     }
     
     func testInitWithConfigNotRun() {
@@ -398,4 +438,176 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         // deep_link_timeout should be removed due to negative value
         XCTAssertNil(appsFlyerInstance.lastSettings?["deep_link_timeout"])
     }
+    
+    func testLogAdRevenue() {
+        let additionalParams: [String: Any] = ["custom_param": "value", "level": 5]
+        let payload: [String: Any] = [
+            "command_name": "logadrevenue",
+            "monetization_network": "AdMob",
+            "mediation_network": "googleadmob",
+            "ad_revenue_currency": "USD",
+            "ad_revenue_amount": 0.05,
+            "ad_revenue_additional_params": additionalParams
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        
+        XCTAssertEqual(appsFlyerInstance.logAdRevenueCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastMonetizationNetwork, "AdMob")
+        XCTAssertEqual(appsFlyerInstance.lastMediationNetworkType, .googleAdMob)
+        XCTAssertEqual(appsFlyerInstance.lastAdRevenueCurrency, "USD")
+        XCTAssertEqual(appsFlyerInstance.lastAdRevenueAmount, 0.05)
+        XCTAssertNotNil(appsFlyerInstance.lastAdRevenueAdditionalParams)
+        XCTAssertEqual(appsFlyerInstance.lastAdRevenueAdditionalParams?["custom_param"] as? String, "value")
+        XCTAssertEqual(appsFlyerInstance.lastAdRevenueAdditionalParams?["level"] as? Int, 5)
+    }
+    
+    func testLogAdRevenueWithoutAdditionalParams() {
+        let payload: [String: Any] = [
+            "command_name": "logadrevenue",
+            "monetization_network": "IronSource",
+            "mediation_network": "ironsource",
+            "ad_revenue_currency": "EUR",
+            "ad_revenue_amount": 0.12
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        
+        XCTAssertEqual(appsFlyerInstance.logAdRevenueCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastMonetizationNetwork, "IronSource")
+        XCTAssertEqual(appsFlyerInstance.lastMediationNetworkType, .ironSource)
+        XCTAssertEqual(appsFlyerInstance.lastAdRevenueCurrency, "EUR")
+        XCTAssertEqual(appsFlyerInstance.lastAdRevenueAmount, 0.12)
+        XCTAssertNil(appsFlyerInstance.lastAdRevenueAdditionalParams)
+    }
+    
+    func testLogAdRevenueNotRunWithMissingParameters() {
+        let payload: [String: Any] = [
+            "command_name": "logadrevenue",
+            "monetization_network": "AdMob",
+            "mediation_network": "googleadmob",
+            // Missing ad_revenue_currency and ad_revenue_amount
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        
+        XCTAssertEqual(appsFlyerInstance.logAdRevenueCount, 0)
+        XCTAssertNil(appsFlyerInstance.lastMonetizationNetwork)
+    }
+    
+    func testLogAdRevenueNotRunWithInvalidMediationNetwork() {
+        let payload: [String: Any] = [
+            "command_name": "logadrevenue",
+            "monetization_network": "AdMob",
+            "mediation_network": "invalid_network",
+            "ad_revenue_currency": "USD",
+            "ad_revenue_amount": 0.05
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        
+        XCTAssertEqual(appsFlyerInstance.logAdRevenueCount, 0)
+        XCTAssertNil(appsFlyerInstance.lastMonetizationNetwork)
+    }
+    
+    func testSetConsentData() {
+        let payload: [String: Any] = [
+            "command_name": "setconsentdata",
+            "is_user_subject_to_gdpr": true,
+            "has_consent_for_data_usage": true,
+            "has_consent_for_ads_personalization": false,
+            "has_consent_for_ad_storage": true
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        
+        XCTAssertEqual(appsFlyerInstance.setConsentDataCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastIsUserSubjectToGDPR, true)
+        XCTAssertEqual(appsFlyerInstance.lastHasConsentForDataUsage, true)
+        XCTAssertEqual(appsFlyerInstance.lastHasConsentForAdsPersonalization, false)
+        XCTAssertEqual(appsFlyerInstance.lastHasConsentForAdStorage, true)
+    }
+    
+    func testSetConsentDataNotRunWithMissingParameters() {
+        let payload: [String: Any] = [
+            "command_name": "setconsentdata",
+            "is_user_subject_to_gdpr": true,
+            "has_consent_for_data_usage": true
+            // Missing has_consent_for_ads_personalization and has_consent_for_ad_storage
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        
+        XCTAssertEqual(appsFlyerInstance.setConsentDataCount, 0)
+        XCTAssertNil(appsFlyerInstance.lastIsUserSubjectToGDPR)
+    }
+    
+    func testSetPartnerData() {
+        let partnerInfo: [String: Any] = ["puid": "123456789", "user_segment": "premium"]
+        let payload: [String: Any] = [
+            "command_name": "setpartnerdata",
+            "partner_id": "analytics_partner_int",
+            "partner_info": partnerInfo
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        
+        XCTAssertEqual(appsFlyerInstance.setPartnerDataCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastPartnerId, "analytics_partner_int")
+        XCTAssertNotNil(appsFlyerInstance.lastPartnerInfo)
+        XCTAssertEqual(appsFlyerInstance.lastPartnerInfo?["puid"] as? String, "123456789")
+        XCTAssertEqual(appsFlyerInstance.lastPartnerInfo?["user_segment"] as? String, "premium")
+    }
+    
+    func testSetPartnerDataWithoutPartnerInfo() {
+        let payload: [String: Any] = [
+            "command_name": "setpartnerdata",
+            "partner_id": "test_partner_int"
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        
+        XCTAssertEqual(appsFlyerInstance.setPartnerDataCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastPartnerId, "test_partner_int")
+        XCTAssertNil(appsFlyerInstance.lastPartnerInfo)
+    }
+    
+    func testSetPartnerDataNotRunWithMissingPartnerId() {
+        let payload: [String: Any] = [
+            "command_name": "setpartnerdata",
+            "partner_info": ["test": "value"]
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        
+        XCTAssertEqual(appsFlyerInstance.setPartnerDataCount, 0)
+        XCTAssertNil(appsFlyerInstance.lastPartnerId)
+    }
+    
+    func testSetSharingFilterForPartners() {
+        let sharingFilter = ["facebook_int", "google_int"]
+        let payload: [String: Any] = [
+            "command_name": "setsharingfilterforpartners",
+            "sharing_filter": sharingFilter
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        
+        XCTAssertEqual(appsFlyerInstance.setSharingFilterForPartnersCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastSharingFilter, sharingFilter)
+    }
+    
+    func testSetSharingFilterForPartnersWithAllFilter() {
+        let sharingFilter = ["all"]
+        let payload: [String: Any] = [
+            "command_name": "setsharingfilterforpartners",
+            "sharing_filter": sharingFilter
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        
+        XCTAssertEqual(appsFlyerInstance.setSharingFilterForPartnersCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastSharingFilter, sharingFilter)
+    }
+    
+    func testSetSharingFilterForPartnersReset() {
+        let payload: [String: Any] = [
+            "command_name": "setsharingfilterforpartners"
+            // No sharing_filter parameter = nil = reset
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        
+        XCTAssertEqual(appsFlyerInstance.setSharingFilterForPartnersCount, 1)
+        XCTAssertNil(appsFlyerInstance.lastSharingFilter)
+    }
+
 }
