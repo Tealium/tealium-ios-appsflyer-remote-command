@@ -16,8 +16,11 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="23" translatesAutoresizingMaskIntoConstraints="NO" id="bAc-nl-Rpy">
-                                <rect key="frame" x="50" y="50" width="275" height="567"/>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="scroll-view">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="23" translatesAutoresizingMaskIntoConstraints="NO" id="bAc-nl-Rpy">
+                                        <rect key="frame" x="50" y="20" width="275" height="720"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="group" translatesAutoresizingMaskIntoConstraints="NO" id="KvL-Lw-HzK">
                                         <rect key="frame" x="77.5" y="0.0" width="120" height="120"/>
@@ -84,6 +87,34 @@
                                             </switch>
                                         </subviews>
                                     </stackView>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="consent-btn">
+                                        <rect key="frame" x="82" y="610" width="111" height="30"/>
+                                        <state key="normal" title="Set Consent Data"/>
+                                        <connections>
+                                            <action selector="setConsentDataTapped:" destination="VTH-Z2-qN1" eventType="touchUpInside" id="consent-action"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="adrevenue-btn">
+                                        <rect key="frame" x="82" y="650" width="111" height="30"/>
+                                        <state key="normal" title="Log Ad Revenue"/>
+                                        <connections>
+                                            <action selector="logAdRevenueTapped:" destination="VTH-Z2-qN1" eventType="touchUpInside" id="adrevenue-action"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="partner-btn">
+                                        <rect key="frame" x="82" y="690" width="111" height="30"/>
+                                        <state key="normal" title="Set Partner Data"/>
+                                        <connections>
+                                            <action selector="setPartnerDataTapped:" destination="VTH-Z2-qN1" eventType="touchUpInside" id="partner-action"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sharing-btn">
+                                        <rect key="frame" x="82" y="730" width="111" height="30"/>
+                                        <state key="normal" title="Set Sharing Filter"/>
+                                        <connections>
+                                            <action selector="setSharingFilterTapped:" destination="VTH-Z2-qN1" eventType="touchUpInside" id="sharing-action"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                                 <constraints>
                                     <constraint firstItem="8tD-Pp-YHd" firstAttribute="leading" secondItem="bAc-nl-Rpy" secondAttribute="leading" constant="30" id="0dv-P1-DVY"/>
@@ -93,12 +124,22 @@
                                 </constraints>
                             </stackView>
                         </subviews>
+                        <constraints>
+                            <constraint firstItem="bAc-nl-Rpy" firstAttribute="top" secondItem="scroll-view" secondAttribute="top" constant="20" id="stack-top"/>
+                            <constraint firstItem="bAc-nl-Rpy" firstAttribute="leading" secondItem="scroll-view" secondAttribute="leading" constant="50" id="stack-leading"/>
+                            <constraint firstItem="scroll-view" firstAttribute="trailing" secondItem="bAc-nl-Rpy" secondAttribute="trailing" constant="50" id="stack-trailing"/>
+                            <constraint firstItem="scroll-view" firstAttribute="bottom" secondItem="bAc-nl-Rpy" secondAttribute="bottom" constant="20" id="stack-bottom"/>
+                            <constraint firstItem="bAc-nl-Rpy" firstAttribute="width" secondItem="scroll-view" secondAttribute="width" constant="-100" id="stack-width"/>
+                        </constraints>
+                    </scrollView>
+                </subviews>
                         <viewLayoutGuide key="safeArea" id="xty-ts-7AC"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="bAc-nl-Rpy" firstAttribute="top" secondItem="xty-ts-7AC" secondAttribute="top" constant="50" id="kvi-dE-qio"/>
-                            <constraint firstItem="xty-ts-7AC" firstAttribute="trailing" secondItem="bAc-nl-Rpy" secondAttribute="trailing" constant="50" id="v0J-tc-nUL"/>
-                            <constraint firstItem="bAc-nl-Rpy" firstAttribute="leading" secondItem="xty-ts-7AC" secondAttribute="leading" constant="50" id="w09-3h-7wb"/>
+                            <constraint firstItem="scroll-view" firstAttribute="top" secondItem="xty-ts-7AC" secondAttribute="top" id="scroll-top"/>
+                            <constraint firstItem="xty-ts-7AC" firstAttribute="trailing" secondItem="scroll-view" secondAttribute="trailing" id="scroll-trailing"/>
+                            <constraint firstItem="scroll-view" firstAttribute="leading" secondItem="xty-ts-7AC" secondAttribute="leading" id="scroll-leading"/>
+                            <constraint firstItem="xty-ts-7AC" firstAttribute="bottom" secondItem="scroll-view" secondAttribute="bottom" id="scroll-bottom"/>
                         </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" title="Account" image="user" id="fct-kz-HyN"/>
