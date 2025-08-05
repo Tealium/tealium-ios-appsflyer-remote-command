@@ -109,7 +109,7 @@ public enum AppsFlyerConstants {
         static let event = "event"
         static let phoneNumber = "phone_number"
         
-        // Deep link parameters configuration (for appendParametersToDeepLinkingURL)
+        // Deep link parameters configuration (for appendParametersToDeeplinkURL)
         static let deepLinkContains = "contains"
         static let deepLinkParameters = "parameters"
         
