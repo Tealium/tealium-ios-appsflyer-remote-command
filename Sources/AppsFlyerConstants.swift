@@ -65,6 +65,7 @@ public enum AppsFlyerConstants {
         case setConsentData = "setconsentdata"
         case setPartnerData = "setpartnerdata"
         case setSharingFilterForPartners = "setsharingfilterforpartners"
+        case handleOpen = "handleopen"
     }
 
     public enum Configuration: String, CaseIterable {
@@ -132,6 +133,12 @@ public enum AppsFlyerConstants {
         
         // Sharing filter parameters (for setSharingFilterForPartners)
         static let sharingFilter = "sharing_filter"
+        
+        // Deep link handling parameters 
+        static let url = "url"
+        static let sourceApplication = "source_application"
+        static let annotation = "annotation"
+        static let options = "options"
     }
 
     public enum Attribution {

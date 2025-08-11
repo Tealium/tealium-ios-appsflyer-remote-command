@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import UIKit
 @testable import TealiumAppsFlyer
 import TealiumRemoteCommands
 import TealiumCore
@@ -608,6 +609,136 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         
         XCTAssertEqual(appsFlyerInstance.setSharingFilterForPartnersCount, 1)
         XCTAssertNil(appsFlyerInstance.lastSharingFilter)
+    }
+    
+    func testHandleOpenWithOptions() {
+        let options: [String: Any] = [
+            "UIApplicationOpenURLOptionSourceApplicationKey": "com.example.app",
+            "UIApplicationOpenURLOptionAnnotationKey": "test_annotation"
+        ]
+        let payload: [String: Any] = [
+            "command_name": "handleopen",
+            "url": "https://example.com/deeplink",
+            "options": options
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        
+        XCTAssertEqual(appsFlyerInstance.handleOpenWithOptionsCount, 1)
+        XCTAssertEqual(appsFlyerInstance.handleOpenWithSourceAppCount, 0)
+        XCTAssertEqual(appsFlyerInstance.lastHandleOpenUrl?.absoluteString, "https://example.com/deeplink")
+        XCTAssertNotNil(appsFlyerInstance.lastHandleOpenOptions)
+        XCTAssertNil(appsFlyerInstance.lastHandleOpenSourceApplication)
+        XCTAssertNil(appsFlyerInstance.lastHandleOpenAnnotation)
+    }
+    
+    func testHandleOpenWithSourceApplicationAndAnnotation() {
+        let payload: [String: Any] = [
+            "command_name": "handleopen",
+            "url": "app://product/123",
+            "source_application": "com.example.source",
+            "annotation": "test_annotation_value"
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        
+        XCTAssertEqual(appsFlyerInstance.handleOpenWithSourceAppCount, 1)
+        XCTAssertEqual(appsFlyerInstance.handleOpenWithOptionsCount, 0)
+        XCTAssertEqual(appsFlyerInstance.lastHandleOpenUrl?.absoluteString, "app://product/123")
+        XCTAssertEqual(appsFlyerInstance.lastHandleOpenSourceApplication, "com.example.source")
+        XCTAssertNotNil(appsFlyerInstance.lastHandleOpenAnnotation)
+        XCTAssertNil(appsFlyerInstance.lastHandleOpenOptions)
+    }
+    
+    func testHandleOpenWithoutSourceApplicationAndAnnotation() {
+        let payload: [String: Any] = [
+            "command_name": "handleopen",
+            "url": "app://category/electronics"
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        
+        XCTAssertEqual(appsFlyerInstance.handleOpenWithSourceAppCount, 1)
+        XCTAssertEqual(appsFlyerInstance.handleOpenWithOptionsCount, 0)
+        XCTAssertEqual(appsFlyerInstance.lastHandleOpenUrl?.absoluteString, "app://category/electronics")
+        XCTAssertNil(appsFlyerInstance.lastHandleOpenSourceApplication)
+        XCTAssertNil(appsFlyerInstance.lastHandleOpenAnnotation)
+        XCTAssertNil(appsFlyerInstance.lastHandleOpenOptions)
+    }
+    
+    func testHandleOpenNotRunWithInvalidURL() {
+        let payload: [String: Any] = [
+            "command_name": "handleopen",
+            "url": "invalid-url-string"
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        
+        XCTAssertEqual(appsFlyerInstance.handleOpenWithOptionsCount, 0)
+        XCTAssertEqual(appsFlyerInstance.handleOpenWithSourceAppCount, 0)
+        XCTAssertNil(appsFlyerInstance.lastHandleOpenUrl)
+    }
+    
+    func testHandleOpenNotRunWithoutURL() {
+        let payload: [String: Any] = [
+            "command_name": "handleopen",
+            "source_application": "com.example.app"
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        
+        XCTAssertEqual(appsFlyerInstance.handleOpenWithOptionsCount, 0)
+        XCTAssertEqual(appsFlyerInstance.handleOpenWithSourceAppCount, 0)
+        XCTAssertNil(appsFlyerInstance.lastHandleOpenUrl)
+    }
+    
+    func testHandleOpenWithDeepLinkAndUniversalLinkURLs() {
+        // Test that both deep link URLs and universal link URLs work with handleOpen
+        
+        // Deep link URL (custom scheme)
+        let deepLinkPayload: [String: Any] = [
+            "command_name": "handleopen",
+            "url": "myapp://product/123"
+        ]
+        appsFlyerCommand.processRemoteCommand(with: deepLinkPayload)
+        
+        XCTAssertEqual(appsFlyerInstance.handleOpenWithSourceAppCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastHandleOpenUrl?.absoluteString, "myapp://product/123")
+        
+        // Reset for next test
+        appsFlyerInstance = MockAppsFlyerInstance()
+        appsFlyerCommand = AppsFlyerRemoteCommand(appsFlyerInstance: appsFlyerInstance)
+        
+        // Universal link URL (HTTPS scheme) - extracted from NSUserActivity.webpageURL
+        let universalLinkPayload: [String: Any] = [
+            "command_name": "handleopen",
+            "url": "https://example.com/product/123"
+        ]
+        appsFlyerCommand.processRemoteCommand(with: universalLinkPayload)
+        
+        XCTAssertEqual(appsFlyerInstance.handleOpenWithSourceAppCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastHandleOpenUrl?.absoluteString, "https://example.com/product/123")
+    }
+    
+    func testHandleOpenSupportsAllURLSchemes() {
+        // Test various URL schemes that could come from deep links or universal links
+        let testURLs = [
+            "myapp://category/electronics",           // Deep link (custom scheme)
+            "https://example.com/deep/link",          // Universal link (HTTPS)
+            "http://example.com/link",                // Universal link (HTTP)
+            "ftp://files.example.com/document",       // Other scheme
+            "mailto:support@example.com"               // mailto scheme
+        ]
+        
+        for (index, testURL) in testURLs.enumerated() {
+            appsFlyerInstance = MockAppsFlyerInstance()
+            appsFlyerCommand = AppsFlyerRemoteCommand(appsFlyerInstance: appsFlyerInstance)
+            
+            let payload: [String: Any] = [
+                "command_name": "handleopen",
+                "url": testURL
+            ]
+            
+            appsFlyerCommand.processRemoteCommand(with: payload)
+            
+            XCTAssertEqual(appsFlyerInstance.handleOpenWithSourceAppCount, 1, "Failed for URL \(index): \(testURL)")
+            XCTAssertEqual(appsFlyerInstance.lastHandleOpenUrl?.absoluteString, testURL, "Failed for URL \(index): \(testURL)")
+        }
     }
 
 }

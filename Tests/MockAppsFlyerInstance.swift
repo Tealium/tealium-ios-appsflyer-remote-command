@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import UIKit
 @testable import TealiumAppsFlyer
 import AppsFlyerLib
 
@@ -27,6 +28,8 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var setConsentDataCount = 0
     var setPartnerDataCount = 0
     var setSharingFilterForPartnersCount = 0
+    var handleOpenWithOptionsCount = 0
+    var handleOpenWithSourceAppCount = 0
     
     // Store last call parameters for verification
     var lastEventName: String?
@@ -58,6 +61,12 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var lastPartnerId: String?
     var lastPartnerInfo: [String: Any]?
     var lastSharingFilter: [String]?
+    
+    // Deep link handling parameters
+    var lastHandleOpenUrl: URL?
+    var lastHandleOpenOptions: [UIApplication.OpenURLOptionsKey: Any]?
+    var lastHandleOpenSourceApplication: String?
+    var lastHandleOpenAnnotation: Any?
     
     func initialize(appId: String, appDevKey: String) {
         initWithoutSettingsCount += 1
@@ -156,6 +165,22 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     func setSharingFilterForPartners(_ sharingFilter: [String]?) {
         setSharingFilterForPartnersCount += 1
         lastSharingFilter = sharingFilter
+    }
+    
+    func handleOpen(url: URL, options: [UIApplication.OpenURLOptionsKey: Any]?) {
+        handleOpenWithOptionsCount += 1
+        lastHandleOpenUrl = url
+        lastHandleOpenOptions = options
+        lastHandleOpenSourceApplication = nil
+        lastHandleOpenAnnotation = nil
+    }
+    
+    func handleOpen(url: URL, sourceApplication: String?, annotation: Any?) {
+        handleOpenWithSourceAppCount += 1
+        lastHandleOpenUrl = url
+        lastHandleOpenSourceApplication = sourceApplication
+        lastHandleOpenAnnotation = annotation
+        lastHandleOpenOptions = nil
     }
     
 }

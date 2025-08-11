@@ -216,6 +216,28 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 let sharingFilter = payload[AppsFlyerConstants.Parameters.sharingFilter] as? [String]
                 
                 appsFlyerInstance.setSharingFilterForPartners(sharingFilter)
+            case .handleOpen:
+                guard let urlString = payload[AppsFlyerConstants.Parameters.url] as? String,
+                      let url = URL(string: urlString),
+                      url.scheme != nil else {
+                    if debug {
+                        print("\(AppsFlyerConstants.errorPrefix)Must provide valid url with scheme for handleOpen")
+                    }
+                    return
+                }
+                
+                if let options = payload[AppsFlyerConstants.Parameters.options] as? [String: Any] {
+                    var urlOptions: [UIApplication.OpenURLOptionsKey: Any] = [:]
+                    for (key, value) in options {
+                        let optionKey = UIApplication.OpenURLOptionsKey(rawValue: key)
+                        urlOptions[optionKey] = value
+                    }
+                    appsFlyerInstance.handleOpen(url: url, options: urlOptions)
+                } else {
+                    let sourceApplication = payload[AppsFlyerConstants.Parameters.sourceApplication] as? String
+                    let annotation = payload[AppsFlyerConstants.Parameters.annotation]
+                    appsFlyerInstance.handleOpen(url: url, sourceApplication: sourceApplication, annotation: annotation)
+                }
             default:
                 appsFlyerInstance.logEvent(getEventName(command: $0), values: getEventParameters(payload: payload))
                 break

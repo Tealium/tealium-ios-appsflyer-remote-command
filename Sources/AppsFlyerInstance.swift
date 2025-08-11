@@ -31,6 +31,8 @@ public protocol AppsFlyerCommand {
     func setSharingFilterForPartners(_ sharingFilter: [String]?)
     func logAdRevenue(monetizationNetwork: String, mediationNetworkType: MediationNetworkType, currency: String, revenue: Double, additionalParams: [String: Any]?)
     func setConsentData(isUserSubjectToGDPR: Bool, hasConsentForDataUsage: Bool, hasConsentForAdsPersonalization: Bool, hasConsentForAdStorage: Bool)
+    func handleOpen(url: URL, options: [UIApplication.OpenURLOptionsKey: Any]?)
+    func handleOpen(url: URL, sourceApplication: String?, annotation: Any?)
 }
 
 public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
@@ -208,6 +210,14 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     
     public func setSharingFilterForPartners(_ sharingFilter: [String]?) {
         AppsFlyerLib.shared().setSharingFilterForPartners(sharingFilter)
+    }
+    
+    public func handleOpen(url: URL, options: [UIApplication.OpenURLOptionsKey: Any]?) {
+        AppsFlyerLib.shared().handleOpen(url, options: options)
+    }
+    
+    public func handleOpen(url: URL, sourceApplication: String?, annotation: Any?) {
+        AppsFlyerLib.shared().handleOpen(url, sourceApplication: sourceApplication, withAnnotation: annotation)
     }
 }
 

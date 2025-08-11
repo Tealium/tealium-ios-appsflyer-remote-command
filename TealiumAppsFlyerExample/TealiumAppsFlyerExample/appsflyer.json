@@ -63,6 +63,10 @@
         "partner_ltv": "partner_info.ltv",
         "partner_engagement_score": "partner_info.engagement_score",
         "sharing_filter": "sharing_filter",
+        "url": "url",
+        "source_application": "source_application",
+        "annotation": "annotation",
+        "options": "options",
         "signup_method": "event.signup_method",
         "achievement_id": "event.achievement_id",
         "checkout_option": "event.checkout_option",
@@ -151,6 +155,8 @@
         "start_trial": "starttrial",
         "join_group": "invite",
         "screen_view": "custom_event",
-        "custom_event": "custom_event"
+        "custom_event": "custom_event",
+        "handle_deeplink": "handleopen",
+        "handle_universal_link": "handleopen"
     }
 }
