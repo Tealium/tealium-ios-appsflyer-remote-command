@@ -139,6 +139,14 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     return appsFlyerInstance.disableTracking(false)
                 }
                 appsFlyerInstance.disableTracking(disable)
+            case .anonymizeUser:
+                guard let anonymize = payload[AppsFlyerConstants.Parameters.anonymizeUser] as? Bool else {
+                    if debug {
+                        print("\(AppsFlyerConstants.errorPrefix)Must provide anonymize_user boolean flag to anonymize user")
+                    }
+                    return
+                }
+                appsFlyerInstance.anonymizeUser(anonymize)
             case .resolveDeepLinkUrls:
                 guard let deepLinkUrls = payload[AppsFlyerConstants.Parameters.deepLinkUrls] as? [String] else {
                     if debug {

@@ -59,6 +59,7 @@ public enum AppsFlyerConstants {
         case setCurrencyCode = "setcurrencycode"
         case setCustomerId = "setcustomerid" // customerUserID
         case disableTracking = "disabletracking"
+        case anonymizeUser = "anonymizeuser"
         case resolveDeepLinkUrls = "resolvedeeplinkurls"
         case setPhoneNumber = "setphonenumber"
         case logAdRevenue = "logadrevenue"
@@ -106,6 +107,7 @@ public enum AppsFlyerConstants {
         static let currency = "af_currency"
         static let customerId = "af_customer_user_id"
         static let stopTracking = "stop_tracking"
+        static let anonymizeUser = "anonymize_user"
         static let deepLinkUrls = "af_deep_link"
         static let event = "event"
         static let phoneNumber = "phone_number"

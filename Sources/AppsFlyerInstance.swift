@@ -25,6 +25,7 @@ public protocol AppsFlyerCommand {
     func currencyCode(_ currency: String)
     func customerId(_ id: String)
     func disableTracking(_ disable: Bool)
+    func anonymizeUser(_ anonymize: Bool)
     func resolveDeepLinkURLs(_ urls: [String])
     func setPhoneNumber(_ phoneNumber: String)
     func setPartnerData(partnerId: String, partnerInfo: [String: Any]?)
@@ -170,6 +171,10 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
 
     public func disableTracking(_ disable: Bool) {
         AppsFlyerLib.shared().isStopped = disable
+    }
+
+    public func anonymizeUser(_ anonymize: Bool) {
+        AppsFlyerLib.shared().anonymizeUser = anonymize
     }
 
     public func resolveDeepLinkURLs(_ urls: [String]) {
