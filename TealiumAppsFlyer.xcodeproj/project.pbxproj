@@ -20,6 +20,10 @@
 		CF3277EE2522B69F00696BB4 /* AppsFlyerRemoteCommand.swift in Headers */ = {isa = PBXBuildFile; fileRef = CF0D0205232AB81A005BFE15 /* AppsFlyerRemoteCommand.swift */; settings = {ATTRIBUTES = (Public, ); }; };
 		CF3277EF2522B69F00696BB4 /* AppsFlyerInstance.swift in Headers */ = {isa = PBXBuildFile; fileRef = CF3F5C1123E258D10007C9B1 /* AppsFlyerInstance.swift */; settings = {ATTRIBUTES = (Public, ); }; };
 		CF3F5C1223E258D10007C9B1 /* AppsFlyerInstance.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF3F5C1123E258D10007C9B1 /* AppsFlyerInstance.swift */; };
+		CFAA000100000000000000B1 /* RemoteCommandLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFAA000100000000000000A1 /* RemoteCommandLogger.swift */; };
+		CFAA000100000000000000B2 /* AppsFlyerCommandError.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFAA000100000000000000A2 /* AppsFlyerCommandError.swift */; };
+		CFAA000100000000000000B3 /* MediationNetworkType+Mapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFAA000100000000000000A3 /* MediationNetworkType+Mapping.swift */; };
+		CFAA000100000000000000B4 /* AppsFlyerConstantsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFAA000100000000000000A4 /* AppsFlyerConstantsTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -46,6 +50,10 @@
 		CF0D0206232AB81A005BFE15 /* AppsFlyerConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppsFlyerConstants.swift; sourceTree = "<group>"; };
 		CF0D020B232AB841005BFE15 /* MockAppsFlyerInstance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockAppsFlyerInstance.swift; sourceTree = "<group>"; };
 		CF3F5C1123E258D10007C9B1 /* AppsFlyerInstance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppsFlyerInstance.swift; sourceTree = "<group>"; };
+		CFAA000100000000000000A1 /* RemoteCommandLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RemoteCommandLogger.swift; sourceTree = "<group>"; };
+		CFAA000100000000000000A2 /* AppsFlyerCommandError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppsFlyerCommandError.swift; sourceTree = "<group>"; };
+		CFAA000100000000000000A3 /* MediationNetworkType+Mapping.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "MediationNetworkType+Mapping.swift"; sourceTree = "<group>"; };
+		CFAA000100000000000000A4 /* AppsFlyerConstantsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppsFlyerConstantsTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -112,6 +120,9 @@
 				CF0D0206232AB81A005BFE15 /* AppsFlyerConstants.swift */,
 				CF0D0205232AB81A005BFE15 /* AppsFlyerRemoteCommand.swift */,
 				CF3F5C1123E258D10007C9B1 /* AppsFlyerInstance.swift */,
+				CFAA000100000000000000A1 /* RemoteCommandLogger.swift */,
+				CFAA000100000000000000A2 /* AppsFlyerCommandError.swift */,
+				CFAA000100000000000000A3 /* MediationNetworkType+Mapping.swift */,
 				CF0D01EE232AB7CB005BFE15 /* TealiumAppsFlyer.h */,
 			);
 			path = Sources;
@@ -123,6 +134,7 @@
 				15914AE0277A28250051BCB2 /* Support */,
 				9E7D21492E12BDDA00EE7E5A /* AppsFlyerRemoteCommandTests.swift */,
 				CF0D020B232AB841005BFE15 /* MockAppsFlyerInstance.swift */,
+				CFAA000100000000000000A4 /* AppsFlyerConstantsTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -244,6 +256,9 @@
 				CF0D0209232AB81A005BFE15 /* AppsFlyerConstants.swift in Sources */,
 				CF3F5C1223E258D10007C9B1 /* AppsFlyerInstance.swift in Sources */,
 				CF0D0208232AB81A005BFE15 /* AppsFlyerRemoteCommand.swift in Sources */,
+				CFAA000100000000000000B1 /* RemoteCommandLogger.swift in Sources */,
+				CFAA000100000000000000B2 /* AppsFlyerCommandError.swift in Sources */,
+				CFAA000100000000000000B3 /* MediationNetworkType+Mapping.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -253,6 +268,7 @@
 			files = (
 				9E7D214A2E12BDDA00EE7E5A /* AppsFlyerRemoteCommandTests.swift in Sources */,
 				CF0D0212232AB84B005BFE15 /* MockAppsFlyerInstance.swift in Sources */,
+				CFAA000100000000000000B4 /* AppsFlyerConstantsTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

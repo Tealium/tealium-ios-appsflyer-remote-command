@@ -51,7 +51,7 @@ public enum AppsFlyerConstants {
     ]
 
     // Command names come from the AppsFlyer SDK https://dev.appsflyer.com/hc/docs/ios-sdk-reference-appsflyerlib
-    public enum CommandNames: String {
+    public enum CommandNames: String, CaseIterable {
         case initialize = "initialize"
         case trackLocation = "tracklocation"
         case setHost = "sethost"
@@ -67,6 +67,15 @@ public enum AppsFlyerConstants {
         case setPartnerData = "setpartnerdata"
         case setSharingFilterForPartners = "setsharingfilterforpartners"
         case handleOpen = "handleopen"
+        case start = "start"
+
+        /// Resolves a command string to a CommandNames case. Case-insensitive and trims whitespace.
+        /// Returns nil when the string is not a built-in command — callers should fall back to
+        /// treating it as a custom/standard event name.
+        public static func fromString(_ command: String) -> CommandNames? {
+            let normalized = command.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+            return CommandNames(rawValue: normalized)
+        }
     }
 
     public enum Configuration: String, CaseIterable {
@@ -136,11 +145,10 @@ public enum AppsFlyerConstants {
         // Sharing filter parameters (for setSharingFilterForPartners)
         static let sharingFilter = "sharing_filter"
         
-        // Deep link handling parameters 
+        // Deep link handling parameters
         static let url = "url"
         static let sourceApplication = "source_application"
         static let annotation = "annotation"
-        static let options = "options"
     }
 
     public enum Attribution {

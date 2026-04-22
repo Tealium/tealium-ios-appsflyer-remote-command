@@ -17,6 +17,7 @@ import TealiumRemoteCommands
 
 public protocol AppsFlyerCommand {
     func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void)
+    func start()
     func initialize(appId: String, appDevKey: String, settings: [String: Any]?)
     func logEvent(_ eventName: String, values: [String: Any])
     func logLocation(longitude: Double, latitude: Double)
@@ -32,7 +33,6 @@ public protocol AppsFlyerCommand {
     func setSharingFilterForPartners(_ sharingFilter: [String]?)
     func logAdRevenue(monetizationNetwork: String, mediationNetworkType: MediationNetworkType, currency: String, revenue: Double, additionalParams: [String: Any]?)
     func setConsentData(isUserSubjectToGDPR: Bool, hasConsentForDataUsage: Bool, hasConsentForAdsPersonalization: Bool, hasConsentForAdStorage: Bool)
-    func handleOpen(url: URL, options: [UIApplication.OpenURLOptionsKey: Any]?)
     func handleOpen(url: URL, sourceApplication: String?, annotation: Any?)
 }
 
@@ -63,82 +63,81 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     }
 
     public func initialize(appId: String, appDevKey: String, settings: [String: Any]?) {
-        let appsFlyer = AppsFlyerLib.shared()
-        defer {
-            self._onReady.publish(appsFlyer)
-        }
-        appsFlyer.appsFlyerDevKey = appDevKey
-        appsFlyer.appleAppID = appId
-        guard let settings = settings else {
-            return
-        }
-        if let debug = settings[AppsFlyerConstants.Settings.debug] as? Bool {
-            appsFlyer.isDebug = debug
-        }
-        if let disableAdTracking = settings[AppsFlyerConstants.Settings.disableAdTracking] as? Bool {
-            appsFlyer.disableAdvertisingIdentifier = disableAdTracking
-            appsFlyer.disableIDFVCollection = disableAdTracking
-        }
-        if let disableAppleAdTracking = settings[AppsFlyerConstants.Settings.disableAppleAdTracking] as? Bool {
-            appsFlyer.disableSKAdNetwork = disableAppleAdTracking
-        }
-        if let minTimeBetweenSessions = settings[AppsFlyerConstants.Settings.minTimeBetweenSessions] as? Int {
-            appsFlyer.minTimeBetweenSessions = UInt(minTimeBetweenSessions)
-        }
-        if let anonymizeUser = settings[AppsFlyerConstants.Settings.anonymizeUser] as? Bool {
-            appsFlyer.anonymizeUser = anonymizeUser
-        }
-        if let shouldCollectDeviceName = settings[AppsFlyerConstants.Settings.collectDeviceName] as? Bool {
-            appsFlyer.shouldCollectDeviceName = shouldCollectDeviceName
-        }
-        if let customData = settings[AppsFlyerConstants.Settings.customData] as? [AnyHashable: Any] {
-            appsFlyer.customData = customData
-        }
-        if let disableAppleAdsAttribution = settings[AppsFlyerConstants.Settings.disableAppleAdsAttribution] as? Bool {
-            appsFlyer.disableAppleAdsAttribution = disableAppleAdsAttribution
-        }
-        if let enableTCFDataCollection = settings[AppsFlyerConstants.Settings.enableTCFDataCollection] as? Bool {
-            appsFlyer.enableTCFDataCollection(enableTCFDataCollection)
-        }
-        if let appInviteOneLinkID = settings[AppsFlyerConstants.Settings.appInviteOneLinkID] as? String {
-            appsFlyer.appInviteOneLinkID = appInviteOneLinkID
-        }
-        if let deepLinkTimeout = settings[AppsFlyerConstants.Settings.deepLinkTimeout] as? Int {
-            appsFlyer.deepLinkTimeout = UInt(deepLinkTimeout)
-        }
-        if let oneLinkCustomDomains = settings[AppsFlyerConstants.Settings.oneLinkCustomDomains] as? [String] {
-            appsFlyer.oneLinkCustomDomains = oneLinkCustomDomains
-        }
-        if let facebookDeferredAppLink = settings[AppsFlyerConstants.Settings.facebookDeferredAppLink] as? String,
-           let facebookDeferredAppLinkURL = URL(string: facebookDeferredAppLink) {
-            appsFlyer.facebookDeferredAppLink = facebookDeferredAppLinkURL
-        }
-        if let pushNotificationDeepLinkPath = settings[AppsFlyerConstants.Settings.pushNotificationDeepLinkPath] as? [String] {
-            appsFlyer.addPushNotificationDeepLinkPath(pushNotificationDeepLinkPath)
-        }
-        if let deepLinkParameters = settings[AppsFlyerConstants.Settings.deepLinkParameters] as? [[String: Any]] {
-            for parameter in deepLinkParameters {
-                if let contains = parameter[AppsFlyerConstants.Parameters.deepLinkContains] as? String,
-                   let parameters = parameter[AppsFlyerConstants.Parameters.deepLinkParameters] as? [String: String] {
-                    appsFlyer.appendParametersToDeeplinkURL(contains: contains, parameters: parameters)
+        DispatchQueue.main.async {
+            let appsFlyer = AppsFlyerLib.shared()
+            // enableFacebookDeferredApplinks must be called before credentials are set and before start().
+            if let enableFacebookDeferredApplinks = settings?[AppsFlyerConstants.Settings.enableFacebookDeferredApplinks] as? Bool,
+               enableFacebookDeferredApplinks {
+                if let facebookAppLinkUtilityClass = NSClassFromString("FBSDKAppLinkUtility") {
+                    appsFlyer.enableFacebookDeferredApplinks(with: facebookAppLinkUtilityClass)
+                } else {
+                    RemoteCommandLogger.error("Facebook Deferred AppLinks requested but Facebook SDK not found. Please ensure Facebook SDK is integrated in your app.")
                 }
             }
-        }
-        if let enableFacebookDeferredApplinks = settings[AppsFlyerConstants.Settings.enableFacebookDeferredApplinks] as? Bool,
-           enableFacebookDeferredApplinks {
-            // Check if Facebook SDK is available at runtime to prevent crashes
-            if let facebookAppLinkUtilityClass = NSClassFromString("FBSDKAppLinkUtility") {
-                appsFlyer.enableFacebookDeferredApplinks(with: facebookAppLinkUtilityClass)
-            } else {
-                print("\(AppsFlyerConstants.errorPrefix)Facebook Deferred AppLinks requested but Facebook SDK not found. Please ensure Facebook SDK is integrated in your app.")
+            appsFlyer.appsFlyerDevKey = appDevKey
+            appsFlyer.appleAppID = appId
+            if let settings = settings {
+                if let debug = settings[AppsFlyerConstants.Settings.debug] as? Bool {
+                    appsFlyer.isDebug = debug
+                }
+                if let disableAdTracking = settings[AppsFlyerConstants.Settings.disableAdTracking] as? Bool {
+                    appsFlyer.disableAdvertisingIdentifier = disableAdTracking
+                    appsFlyer.disableIDFVCollection = disableAdTracking
+                }
+                if let disableAppleAdTracking = settings[AppsFlyerConstants.Settings.disableAppleAdTracking] as? Bool {
+                    appsFlyer.disableSKAdNetwork = disableAppleAdTracking
+                }
+                if let minTimeBetweenSessions = settings[AppsFlyerConstants.Settings.minTimeBetweenSessions] as? Int {
+                    appsFlyer.minTimeBetweenSessions = UInt(minTimeBetweenSessions)
+                }
+                if let anonymizeUser = settings[AppsFlyerConstants.Settings.anonymizeUser] as? Bool {
+                    appsFlyer.anonymizeUser = anonymizeUser
+                }
+                if let shouldCollectDeviceName = settings[AppsFlyerConstants.Settings.collectDeviceName] as? Bool {
+                    appsFlyer.shouldCollectDeviceName = shouldCollectDeviceName
+                }
+                if let customData = settings[AppsFlyerConstants.Settings.customData] as? [AnyHashable: Any] {
+                    appsFlyer.customData = customData
+                }
+                if let disableAppleAdsAttribution = settings[AppsFlyerConstants.Settings.disableAppleAdsAttribution] as? Bool {
+                    appsFlyer.disableAppleAdsAttribution = disableAppleAdsAttribution
+                }
+                if let enableTCFDataCollection = settings[AppsFlyerConstants.Settings.enableTCFDataCollection] as? Bool {
+                    appsFlyer.enableTCFDataCollection(enableTCFDataCollection)
+                }
+                if let appInviteOneLinkID = settings[AppsFlyerConstants.Settings.appInviteOneLinkID] as? String {
+                    appsFlyer.appInviteOneLinkID = appInviteOneLinkID
+                }
+                if let deepLinkTimeout = settings[AppsFlyerConstants.Settings.deepLinkTimeout] as? Int {
+                    appsFlyer.deepLinkTimeout = UInt(deepLinkTimeout)
+                }
+                if let oneLinkCustomDomains = settings[AppsFlyerConstants.Settings.oneLinkCustomDomains] as? [String] {
+                    appsFlyer.oneLinkCustomDomains = oneLinkCustomDomains
+                }
+                if let facebookDeferredAppLink = settings[AppsFlyerConstants.Settings.facebookDeferredAppLink] as? String,
+                   let facebookDeferredAppLinkURL = URL(string: facebookDeferredAppLink) {
+                    appsFlyer.facebookDeferredAppLink = facebookDeferredAppLinkURL
+                }
+                if let pushNotificationDeepLinkPath = settings[AppsFlyerConstants.Settings.pushNotificationDeepLinkPath] as? [String] {
+                    appsFlyer.addPushNotificationDeepLinkPath(pushNotificationDeepLinkPath)
+                }
+                if let deepLinkParameters = settings[AppsFlyerConstants.Settings.deepLinkParameters] as? [[String: Any]] {
+                    for parameter in deepLinkParameters {
+                        if let contains = parameter[AppsFlyerConstants.Parameters.deepLinkContains] as? String,
+                           let parameters = parameter[AppsFlyerConstants.Parameters.deepLinkParameters] as? [String: String] {
+                            appsFlyer.appendParametersToDeeplinkURL(contains: contains, parameters: parameters)
+                        }
+                    }
+                }
+                if let waitForATTTimeoutInterval = settings[AppsFlyerConstants.Settings.waitForATTUserAuthorizationTimeoutInterval] as? Double {
+                    if #available(iOS 14, *) {
+                        appsFlyer.waitForATTUserAuthorization(timeoutInterval: waitForATTTimeoutInterval)
+                    }
+                }
             }
+            self._onReady.publish(appsFlyer)
+            appsFlyer.start()
         }
-        if let waitForATTTimeoutInterval = settings[AppsFlyerConstants.Settings.waitForATTUserAuthorizationTimeoutInterval] as? Int {
-            if #available(iOS 14, *) {
-                appsFlyer.waitForATTUserAuthorization(timeoutInterval: TimeInterval(waitForATTTimeoutInterval))
-            }
-        }
-
     }
 
     public func logEvent(_ eventName: String, values: [String: Any]) {
@@ -216,11 +215,11 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     public func setSharingFilterForPartners(_ sharingFilter: [String]?) {
         AppsFlyerLib.shared().setSharingFilterForPartners(sharingFilter)
     }
-    
-    public func handleOpen(url: URL, options: [UIApplication.OpenURLOptionsKey: Any]?) {
-        AppsFlyerLib.shared().handleOpen(url, options: options)
+
+    public func start() {
+        AppsFlyerLib.shared().start()
     }
-    
+
     public func handleOpen(url: URL, sourceApplication: String?, annotation: Any?) {
         AppsFlyerLib.shared().handleOpen(url, sourceApplication: sourceApplication, withAnnotation: annotation)
     }
@@ -236,7 +235,7 @@ extension AppsFlyerInstance: AppsFlyerLibDelegate {
         }
 
         guard firstLaunch else {
-            print("\(AppsFlyerConstants.attributionLog)Not First Launch")
+            RemoteCommandLogger.debug("\(AppsFlyerConstants.attributionLog)Not First Launch")
             return
         }
         tealiumTrack(title: AppsFlyerConstants.Attribution.conversionReceived)
@@ -248,10 +247,10 @@ extension AppsFlyerInstance: AppsFlyerLibDelegate {
         if (status == "Non-organic") {
             if let mediaSource = conversionInfo[AppsFlyerConstants.Attribution.source],
                let campaign = conversionInfo[AppsFlyerConstants.Attribution.campaign] {
-                print("\(AppsFlyerConstants.attributionLog)This is a Non-Organic install. Media source: \(mediaSource) Campaign: \(campaign)")
+                RemoteCommandLogger.info("\(AppsFlyerConstants.attributionLog)This is a Non-Organic install. Media source: \(mediaSource) Campaign: \(campaign)")
             }
         } else {
-            print("\(AppsFlyerConstants.attributionLog)This is an organic install.")
+            RemoteCommandLogger.info("\(AppsFlyerConstants.attributionLog)This is an organic install.")
         }
     }
 
