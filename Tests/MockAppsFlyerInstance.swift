@@ -21,6 +21,7 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var setCurrencyCodeCount = 0
     var setCustomerIdCount = 0
     var disableTrackingCount = 0
+    var anonymizeUserCount = 0
     var resolveDeepLinkURLsCount = 0
     var setPhoneNumberCount = 0
     var lastPhoneNumber: String?
@@ -28,7 +29,7 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var setConsentDataCount = 0
     var setPartnerDataCount = 0
     var setSharingFilterForPartnersCount = 0
-    var handleOpenWithOptionsCount = 0
+    var startCount = 0
     var handleOpenWithSourceAppCount = 0
     
     // Store last call parameters for verification
@@ -46,6 +47,7 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var lastCryptType: Int?
     var lastCustomerId: String?
     var lastDisableTracking: Bool?
+    var lastAnonymizeUser: Bool?
     var lastUrls: [String]?
     
     // New function parameters
@@ -64,7 +66,6 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     
     // Deep link handling parameters
     var lastHandleOpenUrl: URL?
-    var lastHandleOpenOptions: [UIApplication.OpenURLOptionsKey: Any]?
     var lastHandleOpenSourceApplication: String?
     var lastHandleOpenAnnotation: Any?
     
@@ -84,6 +85,7 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         } else {
             initWithoutSettingsCount += 1
         }
+        start()
     }
     
     func logEvent(_ eventName: String, values: [String : Any]) {
@@ -124,7 +126,12 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         disableTrackingCount += 1
         lastDisableTracking = disable
     }
-    
+
+    func anonymizeUser(_ anonymize: Bool) {
+        anonymizeUserCount += 1
+        lastAnonymizeUser = anonymize
+    }
+
     func resolveDeepLinkURLs(_ urls: [String]) {
         resolveDeepLinkURLsCount += 1
         lastUrls = urls
@@ -135,6 +142,10 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         lastPhoneNumber = phoneNumber
     }
     
+    func start() {
+        startCount += 1
+    }
+
     func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {
         onReady(AppsFlyerLib.shared())
     }
@@ -167,20 +178,11 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         lastSharingFilter = sharingFilter
     }
     
-    func handleOpen(url: URL, options: [UIApplication.OpenURLOptionsKey: Any]?) {
-        handleOpenWithOptionsCount += 1
-        lastHandleOpenUrl = url
-        lastHandleOpenOptions = options
-        lastHandleOpenSourceApplication = nil
-        lastHandleOpenAnnotation = nil
-    }
-    
     func handleOpen(url: URL, sourceApplication: String?, annotation: Any?) {
         handleOpenWithSourceAppCount += 1
         lastHandleOpenUrl = url
         lastHandleOpenSourceApplication = sourceApplication
         lastHandleOpenAnnotation = annotation
-        lastHandleOpenOptions = nil
     }
     
 }
