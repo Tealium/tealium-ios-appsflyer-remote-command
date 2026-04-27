@@ -122,10 +122,12 @@
         "preferred_price_range": "event.preferred_price_range",
         "preferred_number_stops": "event.preferred_number_stops",
         "destination_list": "event.destination_list",
-        "category_name": "event.af_content_type"
+        "category_name": "event.af_content_type",
+        "device_language": "device_language"
     },
     "commands": {
-        "launch": "initialize",
+        "launch": "initialize,start",
+        "wake": "start",
         "track_location": "tracklocation",
         "set_host": "sethost",
         "set_currency": "setcurrencycode",
@@ -133,6 +135,7 @@
         "anonymize_user": "anonymizeuser",
         "resolve_deep_links": "resolvedeeplinkurls",
         "set_phone_number": "setphonenumber",
+        "set_device_language": "setcurrentdevicelanguage",
         "ad_revenue": "logadrevenue",
         "set_consent": "setconsentdata",
         "set_partner_data": "setpartnerdata",
@@ -160,8 +163,6 @@
         "join_group": "invite",
         "screen_view": "custom_event",
         "custom_event": "custom_event",
-        "launch": "initialize,start",
-        "wake": "start",
         "deep_link": "handleopen"
     }
 }

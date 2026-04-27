@@ -294,7 +294,16 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertNil(appsFlyerInstance.lastHost)
         XCTAssertNil(appsFlyerInstance.lastPrefix)
     }
-    
+
+    func testSetHostNotRunWithoutHostPrefix() {
+        let payload: [String: Any] = ["command_name": "sethost",
+                                      "host": "test.com"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(0, self.appsFlyerInstance.setHostCount)
+        XCTAssertNil(appsFlyerInstance.lastHost)
+        XCTAssertNil(appsFlyerInstance.lastPrefix)
+    }
+
     func testSetUserEmails() {
         let emails = ["user@example.com", "admin@example.com"]
         let payload: [String: Any] = ["command_name": "setuseremails",
@@ -357,11 +366,11 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertEqual(appsFlyerInstance.lastDisableTracking, false)
     }
     
-    func testDisableTrackingDefaultValue() {
+    func testDisableTrackingNotRunWithMissingParameter() {
         let payload: [String: Any] = ["command_name": "disabletracking"]
         appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.disableTrackingCount)
-        XCTAssertEqual(appsFlyerInstance.lastDisableTracking, false)
+        XCTAssertEqual(0, self.appsFlyerInstance.disableTrackingCount)
+        XCTAssertNil(appsFlyerInstance.lastDisableTracking)
     }
 
     func testResolveDeepLinkURLs() {
@@ -697,6 +706,70 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
             XCTAssertEqual(appsFlyerInstance.handleOpenWithSourceAppCount, 1, "Failed for URL \(index): \(testURL)")
             XCTAssertEqual(appsFlyerInstance.lastHandleOpenUrl?.absoluteString, testURL, "Failed for URL \(index): \(testURL)")
         }
+    }
+
+    func testStopTrackingCommandAlias() {
+        let payload: [String: Any] = ["command_name": "stoptracking", "stop_tracking": true]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(1, self.appsFlyerInstance.disableTrackingCount)
+        XCTAssertEqual(appsFlyerInstance.lastDisableTracking, true)
+    }
+
+    func testAnonymizeUserTrue() {
+        let payload: [String: Any] = ["command_name": "anonymizeuser", "anonymize_user": true]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(1, appsFlyerInstance.anonymizeUserCount)
+        XCTAssertEqual(appsFlyerInstance.lastAnonymizeUser, true)
+    }
+
+    func testAnonymizeUserFalse() {
+        let payload: [String: Any] = ["command_name": "anonymizeuser", "anonymize_user": false]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(1, appsFlyerInstance.anonymizeUserCount)
+        XCTAssertEqual(appsFlyerInstance.lastAnonymizeUser, false)
+    }
+
+    func testAnonymizeUserNotRun() {
+        let payload: [String: Any] = ["command_name": "anonymizeuser"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(0, appsFlyerInstance.anonymizeUserCount)
+        XCTAssertNil(appsFlyerInstance.lastAnonymizeUser)
+    }
+
+    func testDisableDeviceTrackingAlias() {
+        let payload: [String: Any] = ["command_name": "disabledevicetracking", "anonymize_user": true]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(1, appsFlyerInstance.anonymizeUserCount)
+        XCTAssertEqual(appsFlyerInstance.lastAnonymizeUser, true)
+    }
+
+    func testSetPhoneNumberNotRun() {
+        let payload: [String: Any] = ["command_name": "setphonenumber"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(0, appsFlyerInstance.setPhoneNumberCount)
+        XCTAssertNil(appsFlyerInstance.lastPhoneNumber)
+    }
+
+    func testResolveDeepLinkURLsWithLegacyKey() {
+        let urls = ["click.example.com", "email.example.com"]
+        let payload: [String: Any] = ["command_name": "resolvedeeplinkurls", "resolve_deep_links": urls]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(1, self.appsFlyerInstance.resolveDeepLinkURLsCount)
+        XCTAssertEqual(appsFlyerInstance.lastUrls, urls)
+    }
+
+    func testSetCurrentDeviceLanguage() {
+        let payload: [String: Any] = ["command_name": "setcurrentdevicelanguage", "device_language": "en-US"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(1, appsFlyerInstance.setCurrentDeviceLanguageCount)
+        XCTAssertEqual(appsFlyerInstance.lastDeviceLanguage, "en-US")
+    }
+
+    func testSetCurrentDeviceLanguageNotRun() {
+        let payload: [String: Any] = ["command_name": "setcurrentdevicelanguage"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(0, appsFlyerInstance.setCurrentDeviceLanguageCount)
+        XCTAssertNil(appsFlyerInstance.lastDeviceLanguage)
     }
 
 }

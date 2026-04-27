@@ -68,7 +68,7 @@ class AppsFlyerConstantsTests: XCTestCase {
 
     func testMediationNetworkValidValuesMatchesMap() {
         XCTAssertEqual(Set(MediationNetworkType.validValues),
-                       Set(AppsFlyerConstants.mediationNetworksMap.keys))
+                       Set(MediationNetworkType.stringMap.keys))
     }
 
     // MARK: - AppsFlyerCommandError messages

@@ -25,6 +25,8 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var resolveDeepLinkURLsCount = 0
     var setPhoneNumberCount = 0
     var lastPhoneNumber: String?
+    var setCurrentDeviceLanguageCount = 0
+    var lastDeviceLanguage: String?
     var logAdRevenueCount = 0
     var setConsentDataCount = 0
     var setPartnerDataCount = 0
@@ -141,7 +143,12 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         setPhoneNumberCount += 1
         lastPhoneNumber = phoneNumber
     }
-    
+
+    func setCurrentDeviceLanguage(_ language: String) {
+        setCurrentDeviceLanguageCount += 1
+        lastDeviceLanguage = language
+    }
+
     func start() {
         startCount += 1
     }

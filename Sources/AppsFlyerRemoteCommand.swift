@@ -83,7 +83,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 case .setCustomerId:
                     try executeSetCustomerId(payload)
                 case .disableTracking, .stopTracking:
-                    executeDisableTracking(payload)
+                    try executeDisableTracking(payload)
                 case .anonymizeUser, .disableDeviceTracking:
                     try executeAnonymizeUser(payload)
                 case .resolveDeepLinkUrls:
@@ -168,7 +168,9 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
         guard let host = payload[AppsFlyerConstants.Parameters.host] as? String else {
             throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.host)
         }
-        let hostPrefix = payload[AppsFlyerConstants.Parameters.hostPrefix] as? String ?? ""
+        guard let hostPrefix = payload[AppsFlyerConstants.Parameters.hostPrefix] as? String else {
+            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.hostPrefix)
+        }
         appsFlyerInstance.setHost(host, with: hostPrefix)
     }
 
@@ -200,11 +202,9 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
         appsFlyerInstance.customerId(customerId)
     }
 
-    private func executeDisableTracking(_ payload: [String: Any]) {
-        // Missing flag preserves historical behavior: re-enable tracking by default.
-        let disable = payload[AppsFlyerConstants.Parameters.stopTracking] as? Bool ?? false
-        if payload[AppsFlyerConstants.Parameters.stopTracking] == nil {
-            RemoteCommandLogger.warning("\(AppsFlyerConstants.Parameters.stopTracking) not provided; defaulting to false.")
+    private func executeDisableTracking(_ payload: [String: Any]) throws {
+        guard let disable = payload[AppsFlyerConstants.Parameters.stopTracking] as? Bool else {
+            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.stopTracking)
         }
         appsFlyerInstance.disableTracking(disable)
     }

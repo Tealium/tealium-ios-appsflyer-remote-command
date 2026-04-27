@@ -115,6 +115,13 @@
                                             <action selector="setSharingFilterTapped:" destination="VTH-Z2-qN1" eventType="touchUpInside" id="sharing-action"/>
                                         </connections>
                                     </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="device-lang-btn">
+                                        <rect key="frame" x="82" y="770" width="111" height="30"/>
+                                        <state key="normal" title="Set Device Language"/>
+                                        <connections>
+                                            <action selector="setDeviceLanguageTapped:" destination="VTH-Z2-qN1" eventType="touchUpInside" id="device-lang-action"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                                 <constraints>
                                     <constraint firstItem="8tD-Pp-YHd" firstAttribute="leading" secondItem="bAc-nl-Rpy" secondAttribute="leading" constant="30" id="0dv-P1-DVY"/>

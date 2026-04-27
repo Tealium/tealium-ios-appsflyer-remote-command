@@ -68,7 +68,7 @@ public enum AppsFlyerConstants {
         /// Android alias for disableTracking.
         case stopTracking = "stoptracking"
         case anonymizeUser = "anonymizeuser"
-        /// Legacy alias for anonymizeUser. TODO: Remove in next major version.
+        /// Legacy alias for anonymizeUser.
         case disableDeviceTracking = "disabledevicetracking"
         case resolveDeepLinkUrls = "resolvedeeplinkurls"
         case setPhoneNumber = "setphonenumber"
@@ -181,22 +181,4 @@ public enum AppsFlyerConstants {
         static let campaign = "campaign"
         static let error = "appsflyer_error"
     }
-
-        /// Mediation networks mapping for logAdRevenue: https://dev.appsflyer.com/hc/docs/ios-sdk-reference-appsflyerlib#logadrevenue
-    static let mediationNetworksMap: [String: MediationNetworkType] = [
-        "googleadmob": .googleAdMob,
-        "ironsource": .ironSource,
-        "applovinmax": .applovinMax,
-        "fyber": .fyber,
-        "appodeal": .appodeal,
-        "admost": .admost,
-        "topon": .topon,
-        "tradplus": .tradplus,
-        "yandex": .yandex,
-        "chartboost": .chartBoost,
-        "unity": .unity,
-        "toponpte": .toponPte,
-        "custom": .custom,
-        "direct": .directMonetization
-    ]
 }

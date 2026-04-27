@@ -227,6 +227,22 @@ class AccountViewController: UIViewController {
         present(ac, animated: true)
     }
     
+    @IBAction func setDeviceLanguageTapped(_ sender: UIButton) {
+        let ac = UIAlertController(title: "Set Device Language", message: "Override the device language sent to AppsFlyer", preferredStyle: .alert)
+        ac.addTextField { textField in
+            textField.placeholder = "Language code (e.g., en, fr, de)"
+            textField.text = Locale.current.languageCode ?? "en"
+        }
+        ac.addAction(UIAlertAction(title: "Set", style: .default) { _ in
+            guard let language = ac.textFields?[0].text, !language.isEmpty else { return }
+            TealiumHelper.trackEvent(title: "set_device_language", data: [
+                AccountViewController.deviceLanguage: language
+            ])
+        })
+        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(ac, animated: true)
+    }
+
     @IBAction func setSharingFilterTapped(_ sender: UIButton) {
         let ac = UIAlertController(title: "Set Sharing Filter", message: "Control which partners receive data", preferredStyle: .alert)
         
@@ -327,4 +343,5 @@ extension AccountViewController {
     static let partnerEngagementScore = "partner_engagement_score"
     
     static let sharingFilter = "sharing_filter"
+    static let deviceLanguage = "device_language"
 }
