@@ -82,9 +82,9 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     try executeSetCurrencyCode(payload)
                 case .setCustomerId:
                     try executeSetCustomerId(payload)
-                case .disableTracking:
+                case .disableTracking, .stopTracking:
                     executeDisableTracking(payload)
-                case .anonymizeUser:
+                case .anonymizeUser, .disableDeviceTracking:
                     try executeAnonymizeUser(payload)
                 case .resolveDeepLinkUrls:
                     try executeResolveDeepLinkUrls(payload)
@@ -102,6 +102,8 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     try executeHandleOpen(payload)
                 case .start:
                     appsFlyerInstance.start()
+                case .setCurrentDeviceLanguage:
+                    try executeSetCurrentDeviceLanguage(payload)
                 case .none:
                     // Unknown command falls back to a standard or custom AppsFlyer event.
                     appsFlyerInstance.logEvent(getEventName(command: commandString),
@@ -215,10 +217,12 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     }
 
     private func executeResolveDeepLinkUrls(_ payload: [String: Any]) throws {
-        guard let deepLinkUrls = payload[AppsFlyerConstants.Parameters.deepLinkUrls] as? [String] else {
+        let deepLinkUrls = (payload[AppsFlyerConstants.Parameters.deepLinkUrls] as? [String])
+            ?? (payload[AppsFlyerConstants.Parameters.deepLinkUrlsLegacyTiQ] as? [String])
+        guard let urls = deepLinkUrls else {
             throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.deepLinkUrls)
         }
-        appsFlyerInstance.resolveDeepLinkURLs(deepLinkUrls)
+        appsFlyerInstance.resolveDeepLinkURLs(urls)
     }
 
     private func executeSetPhoneNumber(_ payload: [String: Any]) throws {
@@ -296,6 +300,13 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
         // A nil / missing sharing_filter resets the filter — this is valid behavior, not an error.
         let sharingFilter = payload[AppsFlyerConstants.Parameters.sharingFilter] as? [String]
         appsFlyerInstance.setSharingFilterForPartners(sharingFilter)
+    }
+
+    private func executeSetCurrentDeviceLanguage(_ payload: [String: Any]) throws {
+        guard let language = payload[AppsFlyerConstants.Parameters.deviceLanguage] as? String else {
+            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.deviceLanguage)
+        }
+        appsFlyerInstance.setCurrentDeviceLanguage(language)
     }
 
     private func executeHandleOpen(_ payload: [String: Any]) throws {

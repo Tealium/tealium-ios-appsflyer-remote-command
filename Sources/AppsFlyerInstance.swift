@@ -34,6 +34,7 @@ public protocol AppsFlyerCommand {
     func logAdRevenue(monetizationNetwork: String, mediationNetworkType: MediationNetworkType, currency: String, revenue: Double, additionalParams: [String: Any]?)
     func setConsentData(isUserSubjectToGDPR: Bool, hasConsentForDataUsage: Bool, hasConsentForAdsPersonalization: Bool, hasConsentForAdStorage: Bool)
     func handleOpen(url: URL, sourceApplication: String?, annotation: Any?)
+    func setCurrentDeviceLanguage(_ language: String)
 }
 
 public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
@@ -134,6 +135,10 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
                         appsFlyer.waitForATTUserAuthorization(timeoutInterval: waitForATTTimeoutInterval)
                     }
                 }
+                // Applied after disable_ad_tracking so it can override the IDFV portion independently.
+                if let disableIDFVCollection = settings[AppsFlyerConstants.Settings.disableIDFVCollection] as? Bool {
+                    appsFlyer.disableIDFVCollection = disableIDFVCollection
+                }
             }
             self._onReady.publish(appsFlyer)
             appsFlyer.start()
@@ -222,6 +227,10 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
 
     public func handleOpen(url: URL, sourceApplication: String?, annotation: Any?) {
         AppsFlyerLib.shared().handleOpen(url, sourceApplication: sourceApplication, withAnnotation: annotation)
+    }
+
+    public func setCurrentDeviceLanguage(_ language: String) {
+        AppsFlyerLib.shared().currentDeviceLanguage = language
     }
 }
 

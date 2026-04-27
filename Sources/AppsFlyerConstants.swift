@@ -47,7 +47,13 @@ public enum AppsFlyerConstants {
         "login": AFEventLogin,
         "customersegment": AFEventCustomerSegment,
         "pushnotificationopened": AFEventOpenedFromPushNotification,
-        "locationcoordinates": AFEventLocation
+        "locationcoordinates": AFEventLocation,
+        // Android naming aliases — both variants accepted on all platforms.
+        "levelachieved": AFEventLevelAchieved,
+        "contentview": AFEventContentView,
+        "tutorialcompletion": AFEventTutorial_completion,
+        "achievementunlocked": AFEventAchievementUnlocked,
+        "openfrompushnotification": AFEventOpenedFromPushNotification
     ]
 
     // Command names come from the AppsFlyer SDK https://dev.appsflyer.com/hc/docs/ios-sdk-reference-appsflyerlib
@@ -59,7 +65,11 @@ public enum AppsFlyerConstants {
         case setCurrencyCode = "setcurrencycode"
         case setCustomerId = "setcustomerid" // customerUserID
         case disableTracking = "disabletracking"
+        /// Android alias for disableTracking.
+        case stopTracking = "stoptracking"
         case anonymizeUser = "anonymizeuser"
+        /// Legacy alias for anonymizeUser. TODO: Remove in next major version.
+        case disableDeviceTracking = "disabledevicetracking"
         case resolveDeepLinkUrls = "resolvedeeplinkurls"
         case setPhoneNumber = "setphonenumber"
         case logAdRevenue = "logadrevenue"
@@ -68,6 +78,7 @@ public enum AppsFlyerConstants {
         case setSharingFilterForPartners = "setsharingfilterforpartners"
         case handleOpen = "handleopen"
         case start = "start"
+        case setCurrentDeviceLanguage = "setcurrentdevicelanguage"
 
         /// Resolves a command string to a CommandNames case. Case-insensitive and trims whitespace.
         /// Returns nil when the string is not a built-in command — callers should fall back to
@@ -103,6 +114,7 @@ public enum AppsFlyerConstants {
         static let deepLinkParameters = "deep_link_parameters"
         static let enableFacebookDeferredApplinks = "enable_facebook_deferred_applinks"
         static let waitForATTUserAuthorizationTimeoutInterval = "wait_for_att_user_authorization_timeout_interval"
+        static let disableIDFVCollection = "disable_idfv_collection"
     }
 
     public enum Parameters {
@@ -118,6 +130,8 @@ public enum AppsFlyerConstants {
         static let stopTracking = "stop_tracking"
         static let anonymizeUser = "anonymize_user"
         static let deepLinkUrls = "af_deep_link"
+        // TiQ UI labels this key as "resolve_deep_links" — accepted as a fallback to avoid silent failures.
+        static let deepLinkUrlsLegacyTiQ = "resolve_deep_links"
         static let event = "event"
         static let phoneNumber = "phone_number"
         
@@ -149,6 +163,9 @@ public enum AppsFlyerConstants {
         static let url = "url"
         static let sourceApplication = "source_application"
         static let annotation = "annotation"
+
+        // Device language (for setCurrentDeviceLanguage)
+        static let deviceLanguage = "device_language"
     }
 
     public enum Attribution {
