@@ -65,10 +65,13 @@ public enum AppsFlyerConstants {
         case setCurrencyCode = "setcurrencycode"
         case setCustomerId = "setcustomerid" // customerUserID
         case disableTracking = "disabletracking"
-        /// Android alias for disableTracking.
+        /// Android command name for the same stop-tracking intent — accepted here so that
+        /// cross-platform payloads work on both platforms without separate TiQ tags.
         case stopTracking = "stoptracking"
         case anonymizeUser = "anonymizeuser"
-        /// Legacy alias for anonymizeUser.
+        /// Alias for anonymizeUser — accepted for backwards compatibility.
+        /// The original Android command name mapped to anonymizeUser() internally;
+        /// the name "disabledevicetracking" was misleading so it was standardised to "anonymizeuser".
         case disableDeviceTracking = "disabledevicetracking"
         case resolveDeepLinkUrls = "resolvedeeplinkurls"
         case setPhoneNumber = "setphonenumber"

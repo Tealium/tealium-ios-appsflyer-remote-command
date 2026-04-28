@@ -82,9 +82,9 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     try executeSetCurrencyCode(payload)
                 case .setCustomerId:
                     try executeSetCustomerId(payload)
-                case .disableTracking, .stopTracking:
+                case .disableTracking, .stopTracking: // stopTracking is the Android command name accepted here for cross-platform payloads
                     try executeDisableTracking(payload)
-                case .anonymizeUser, .disableDeviceTracking:
+                case .anonymizeUser, .disableDeviceTracking: // disableDeviceTracking is a backwards-compatible alias
                     try executeAnonymizeUser(payload)
                 case .resolveDeepLinkUrls:
                     try executeResolveDeepLinkUrls(payload)
