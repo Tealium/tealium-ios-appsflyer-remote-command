@@ -24,6 +24,8 @@
 		CFAA000100000000000000B2 /* AppsFlyerCommandError.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFAA000100000000000000A2 /* AppsFlyerCommandError.swift */; };
 		CFAA000100000000000000B3 /* MediationNetworkType+Mapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFAA000100000000000000A3 /* MediationNetworkType+Mapping.swift */; };
 		CFAA000100000000000000B4 /* AppsFlyerConstantsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFAA000100000000000000A4 /* AppsFlyerConstantsTests.swift */; };
+		CFAA000100000000000000B5 /* EmailCryptType+Mapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFAA000100000000000000A5 /* EmailCryptType+Mapping.swift */; };
+		CFAA000100000000000000B6 /* RemoteCommandLogLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFAA000100000000000000A6 /* RemoteCommandLogLevel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +56,8 @@
 		CFAA000100000000000000A2 /* AppsFlyerCommandError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppsFlyerCommandError.swift; sourceTree = "<group>"; };
 		CFAA000100000000000000A3 /* MediationNetworkType+Mapping.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "MediationNetworkType+Mapping.swift"; sourceTree = "<group>"; };
 		CFAA000100000000000000A4 /* AppsFlyerConstantsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppsFlyerConstantsTests.swift; sourceTree = "<group>"; };
+		CFAA000100000000000000A5 /* EmailCryptType+Mapping.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "EmailCryptType+Mapping.swift"; sourceTree = "<group>"; };
+		CFAA000100000000000000A6 /* RemoteCommandLogLevel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RemoteCommandLogLevel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -121,8 +125,10 @@
 				CF0D0205232AB81A005BFE15 /* AppsFlyerRemoteCommand.swift */,
 				CF3F5C1123E258D10007C9B1 /* AppsFlyerInstance.swift */,
 				CFAA000100000000000000A1 /* RemoteCommandLogger.swift */,
+				CFAA000100000000000000A6 /* RemoteCommandLogLevel.swift */,
 				CFAA000100000000000000A2 /* AppsFlyerCommandError.swift */,
 				CFAA000100000000000000A3 /* MediationNetworkType+Mapping.swift */,
+				CFAA000100000000000000A5 /* EmailCryptType+Mapping.swift */,
 				CF0D01EE232AB7CB005BFE15 /* TealiumAppsFlyer.h */,
 			);
 			path = Sources;
@@ -257,8 +263,10 @@
 				CF3F5C1223E258D10007C9B1 /* AppsFlyerInstance.swift in Sources */,
 				CF0D0208232AB81A005BFE15 /* AppsFlyerRemoteCommand.swift in Sources */,
 				CFAA000100000000000000B1 /* RemoteCommandLogger.swift in Sources */,
+				CFAA000100000000000000B6 /* RemoteCommandLogLevel.swift in Sources */,
 				CFAA000100000000000000B2 /* AppsFlyerCommandError.swift in Sources */,
 				CFAA000100000000000000B3 /* MediationNetworkType+Mapping.swift in Sources */,
+				CFAA000100000000000000B5 /* EmailCryptType+Mapping.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -31,9 +31,10 @@ public protocol AppsFlyerCommand {
     func setPhoneNumber(_ phoneNumber: String)
     func setPartnerData(partnerId: String, partnerInfo: [String: Any]?)
     func setSharingFilterForPartners(_ sharingFilter: [String]?)
-    func logAdRevenue(monetizationNetwork: String, mediationNetworkType: MediationNetworkType, currency: String, revenue: Double, additionalParams: [String: Any]?)
-    func setConsentData(isUserSubjectToGDPR: Bool, hasConsentForDataUsage: Bool, hasConsentForAdsPersonalization: Bool, hasConsentForAdStorage: Bool)
+    func logAdRevenue(_ adRevenueData: AFAdRevenueData, additionalParams: [String: Any]?)
+    func setConsentData(_ consent: AppsFlyerConsent)
     func handleOpen(url: URL, sourceApplication: String?, annotation: Any?)
+    func handleOpen(url: URL, options: [UIApplication.OpenURLOptionsKey: Any])
     func setCurrentDeviceLanguage(_ language: String)
 }
 
@@ -67,12 +68,16 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         DispatchQueue.main.async {
             let appsFlyer = AppsFlyerLib.shared()
             // enableFacebookDeferredApplinks must be called before credentials are set and before start().
-            if let enableFacebookDeferredApplinks = settings?[AppsFlyerConstants.Settings.enableFacebookDeferredApplinks] as? Bool,
-               enableFacebookDeferredApplinks {
-                if let facebookAppLinkUtilityClass = NSClassFromString("FBSDKAppLinkUtility") {
-                    appsFlyer.enableFacebookDeferredApplinks(with: facebookAppLinkUtilityClass)
+            if let enableFacebookDeferredApplinks = settings?[AppsFlyerConstants.Settings.enableFacebookDeferredApplinks] as? Bool {
+                if enableFacebookDeferredApplinks {
+                    if let facebookAppLinkUtilityClass = NSClassFromString("FBSDKAppLinkUtility") {
+                        appsFlyer.enableFacebookDeferredApplinks(with: facebookAppLinkUtilityClass)
+                    } else {
+                        RemoteCommandLogger.error("Facebook Deferred AppLinks requested but Facebook SDK not found. Please ensure Facebook SDK is integrated in your app.")
+                    }
                 } else {
-                    RemoteCommandLogger.error("Facebook Deferred AppLinks requested but Facebook SDK not found. Please ensure Facebook SDK is integrated in your app.")
+                    // Pass nil to disable — mirrors Android's enableFacebookDeferredApplinks(false).
+                    appsFlyer.enableFacebookDeferredApplinks(with: nil)
                 }
             }
             appsFlyer.appsFlyerDevKey = appDevKey
@@ -81,7 +86,9 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
                 if let debug = settings[AppsFlyerConstants.Settings.debug] as? Bool {
                     appsFlyer.isDebug = debug
                 }
-                if let disableAdTracking = settings[AppsFlyerConstants.Settings.disableAdTracking] as? Bool {
+                let disableAdTracking = (settings[AppsFlyerConstants.Settings.disableAdTracking]
+                    ?? settings[AppsFlyerConstants.Settings.disableAdvertisingIdentifiersAlias]) as? Bool
+                if let disableAdTracking = disableAdTracking {
                     appsFlyer.disableAdvertisingIdentifier = disableAdTracking
                     appsFlyer.disableIDFVCollection = disableAdTracking
                 }
@@ -162,7 +169,8 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     }
 
     public func setUserEmails(emails: [String], with cryptType: Int) {
-        AppsFlyerLib.shared().setUserEmails(emails, with: EmailCryptType(rawValue: EmailCryptType.RawValue(cryptType)))
+        let resolvedType = EmailCryptType(rawInt: cryptType) ?? EmailCryptTypeNone
+        AppsFlyerLib.shared().setUserEmails(emails, with: resolvedType)
     }
 
     public func currencyCode(_ currency: String) {
@@ -189,26 +197,13 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         AppsFlyerLib.shared().phoneNumber = phoneNumber
     }
     
-    public func logAdRevenue(monetizationNetwork: String, mediationNetworkType: MediationNetworkType, currency: String, revenue: Double, additionalParams: [String: Any]?) {
+    public func logAdRevenue(_ adRevenueData: AFAdRevenueData, additionalParams: [String: Any]?) {
         onReady { appsFlyer in
-            let adRevenueData = AFAdRevenueData(
-                monetizationNetwork: monetizationNetwork,
-                mediationNetwork: mediationNetworkType,
-                currencyIso4217Code: currency,
-                eventRevenue: NSNumber(value: revenue)
-            )
-            
             appsFlyer.logAdRevenue(adRevenueData, additionalParameters: additionalParams)
         }
     }
     
-    public func setConsentData(isUserSubjectToGDPR: Bool, hasConsentForDataUsage: Bool, hasConsentForAdsPersonalization: Bool, hasConsentForAdStorage: Bool) {
-        let consent = AppsFlyerConsent(
-            isUserSubjectToGDPR: isUserSubjectToGDPR as NSNumber,
-            hasConsentForDataUsage: hasConsentForDataUsage as NSNumber,
-            hasConsentForAdsPersonalization: hasConsentForAdsPersonalization as NSNumber,
-            hasConsentForAdStorage: hasConsentForAdStorage as NSNumber
-        )
+    public func setConsentData(_ consent: AppsFlyerConsent) {
         AppsFlyerLib.shared().setConsentData(consent)
     }
     
@@ -229,6 +224,10 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         AppsFlyerLib.shared().handleOpen(url, sourceApplication: sourceApplication, withAnnotation: annotation)
     }
 
+    public func handleOpen(url: URL, options: [UIApplication.OpenURLOptionsKey: Any]) {
+        AppsFlyerLib.shared().handleOpen(url, options: options)
+    }
+
     public func setCurrentDeviceLanguage(_ language: String) {
         AppsFlyerLib.shared().currentDeviceLanguage = language
     }
@@ -239,7 +238,6 @@ extension AppsFlyerInstance: AppsFlyerLibDelegate {
     public func onConversionDataSuccess(_ conversionInfo: [AnyHashable: Any]) {
         guard let conversionInfo = conversionInfo as? [String: Any],
               let firstLaunch = conversionInfo[AppsFlyerConstants.Attribution.firstLaunch] as? Bool else {
-            tealiumTrack(title: AppsFlyerConstants.Attribution.conversionReceived)
             return
         }
 
@@ -247,7 +245,7 @@ extension AppsFlyerInstance: AppsFlyerLibDelegate {
             RemoteCommandLogger.debug("\(AppsFlyerConstants.attributionLog)Not First Launch")
             return
         }
-        tealiumTrack(title: AppsFlyerConstants.Attribution.conversionReceived)
+        tealiumTrack(title: AppsFlyerConstants.Attribution.conversionReceived, data: conversionInfo)
 
         guard let status = conversionInfo[AppsFlyerConstants.Attribution.status] as? String else {
             return
@@ -293,7 +291,7 @@ extension AppsFlyerInstance: AppsFlyerLibDelegate {
         )
     }
 
-    private func tealiumTrack(title: String, data: [String: Any]? = nil) {
+    func tealiumTrack(title: String, data: [String: Any]? = nil) {
         let event = TealiumEvent(title, dataLayer: data)
         tealium?.track(event)
     }

@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [3.1.0] - 2026-04-29
 
 ### Added
 - User anonymization support (`anonymize_user` command)
@@ -32,9 +32,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improve `filterVariables` to use a `Set` for excluded keys
 - Replace event enum with an `eventsMap` dictionary for better maintainability
 - Update advertising identifier and IDFV collection settings with deprecation handling
-
-### Removed
-- Deprecated `setCurrentDeviceLanguage` command and related parameters
 
 ## [3.0.0] - 2024-03-15
 

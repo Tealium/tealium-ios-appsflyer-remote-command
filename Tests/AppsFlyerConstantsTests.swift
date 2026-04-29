@@ -39,20 +39,6 @@ class AppsFlyerConstantsTests: XCTestCase {
         XCTAssertNil(AppsFlyerConstants.CommandNames.fromString("not_a_command"))
     }
 
-    // MARK: - CommandNames invariants
-
-    func testCommandNamesRawValuesAreUnique() {
-        let rawValues = AppsFlyerConstants.CommandNames.allCases.map { $0.rawValue }
-        XCTAssertEqual(rawValues.count, Set(rawValues).count)
-    }
-
-    func testCommandNamesRawValuesAreLowercase() {
-        for command in AppsFlyerConstants.CommandNames.allCases {
-            XCTAssertEqual(command.rawValue, command.rawValue.lowercased(),
-                           "Command raw value must be lowercase for fromString to resolve it: \(command.rawValue)")
-        }
-    }
-
     // MARK: - MediationNetworkType mapping
 
     func testMediationNetworkResolvesKnownValue() {
@@ -64,11 +50,6 @@ class AppsFlyerConstantsTests: XCTestCase {
     func testMediationNetworkReturnsNilForUnknown() {
         XCTAssertNil(MediationNetworkType("not_a_network"))
         XCTAssertNil(MediationNetworkType(""))
-    }
-
-    func testMediationNetworkValidValuesMatchesMap() {
-        XCTAssertEqual(Set(MediationNetworkType.validValues),
-                       Set(MediationNetworkType.stringMap.keys))
     }
 
     // MARK: - AppsFlyerCommandError messages

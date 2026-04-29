@@ -102,6 +102,8 @@ public enum AppsFlyerConstants {
     public enum Settings {
         static let debug = "debug"
         static let disableAdTracking = "disable_ad_tracking"
+        // Android cross-platform alias — accepted alongside the canonical iOS key.
+        static let disableAdvertisingIdentifiersAlias = "disable_advertising_identifiers"
         static let disableAppleAdsAttribution = "disable_apple_ads_attribution"
         static let disableAppleAdTracking = "disable_apple_ad_tracking"
         static let minTimeBetweenSessions = "time_between_sessions"
@@ -166,6 +168,7 @@ public enum AppsFlyerConstants {
         static let url = "url"
         static let sourceApplication = "source_application"
         static let annotation = "annotation"
+        static let options = "options"
 
         // Device language (for setCurrentDeviceLanguage)
         static let deviceLanguage = "device_language"

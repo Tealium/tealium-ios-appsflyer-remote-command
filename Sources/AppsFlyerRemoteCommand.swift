@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import UIKit
 import AppsFlyerLib
 #if COCOAPODS
 import TealiumSwift
@@ -142,26 +143,23 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     }
 
     private func executeTrackLocation(_ payload: [String: Any]) throws {
-        if let latitude = payload[AppsFlyerConstants.Parameters.latitude] as? Double,
-           let longitude = payload[AppsFlyerConstants.Parameters.longitude] as? Double {
-            appsFlyerInstance.logLocation(longitude: longitude, latitude: latitude)
-            return
-        }
-        if let latitude = payload[AppsFlyerConstants.Parameters.latitude] as? Int,
-           let longitude = payload[AppsFlyerConstants.Parameters.longitude] as? Int {
-            appsFlyerInstance.logLocation(longitude: Double(longitude), latitude: Double(latitude))
-            return
-        }
-        if payload[AppsFlyerConstants.Parameters.latitude] == nil {
+        guard payload[AppsFlyerConstants.Parameters.latitude] != nil else {
             throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.latitude)
         }
-        if payload[AppsFlyerConstants.Parameters.longitude] == nil {
+        guard payload[AppsFlyerConstants.Parameters.longitude] != nil else {
             throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.longitude)
         }
-        throw AppsFlyerCommandError.invalidParameterType(
-            parameter: "\(AppsFlyerConstants.Parameters.latitude)/\(AppsFlyerConstants.Parameters.longitude)",
-            expectedTypes: "Double or Int"
-        )
+        let latValue = payload[AppsFlyerConstants.Parameters.latitude]
+        let lonValue = payload[AppsFlyerConstants.Parameters.longitude]
+        let latitude = (latValue as? Double) ?? (latValue as? Int).map(Double.init)
+        let longitude = (lonValue as? Double) ?? (lonValue as? Int).map(Double.init)
+        guard let latitude, let longitude else {
+            throw AppsFlyerCommandError.invalidParameterType(
+                parameter: "\(AppsFlyerConstants.Parameters.latitude)/\(AppsFlyerConstants.Parameters.longitude)",
+                expectedTypes: "Double or Int"
+            )
+        }
+        appsFlyerInstance.logLocation(longitude: longitude, latitude: latitude)
     }
 
     private func executeSetHost(_ payload: [String: Any]) throws {
@@ -175,17 +173,20 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     }
 
     private func executeSetUserEmails(_ payload: [String: Any]) throws {
-        var payload = payload
-        if let email = payload[AppsFlyerConstants.Parameters.emails] as? String {
-            payload[AppsFlyerConstants.Parameters.emails] = [email]
-        }
         guard let emails = payload[AppsFlyerConstants.Parameters.emails] as? [String] else {
             throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.emails)
         }
-        guard let cryptType = payload[AppsFlyerConstants.Parameters.cryptType] as? Int else {
+        guard let cryptTypeInt = payload[AppsFlyerConstants.Parameters.cryptType] as? Int else {
             throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.cryptType)
         }
-        appsFlyerInstance.setUserEmails(emails: emails, with: cryptType)
+        guard EmailCryptType(rawInt: cryptTypeInt) != nil else {
+            throw AppsFlyerCommandError.invalidParameterValue(
+                parameter: AppsFlyerConstants.Parameters.cryptType,
+                value: "\(cryptTypeInt)",
+                allowedValues: EmailCryptType.validValues.map { "\($0)" }
+            )
+        }
+        appsFlyerInstance.setUserEmails(emails: emails, with: cryptTypeInt)
     }
 
     private func executeSetCurrencyCode(_ payload: [String: Any]) throws {
@@ -255,13 +256,13 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
 
         let additionalParams = payload[AppsFlyerConstants.Parameters.adRevenueAdditionalParams] as? [String: Any]
 
-        appsFlyerInstance.logAdRevenue(
+        let adRevenueData = AFAdRevenueData(
             monetizationNetwork: monetizationNetwork,
-            mediationNetworkType: mediationNetworkType,
-            currency: currency,
-            revenue: revenue,
-            additionalParams: additionalParams
+            mediationNetwork: mediationNetworkType,
+            currencyIso4217Code: currency,
+            eventRevenue: NSNumber(value: revenue)
         )
+        appsFlyerInstance.logAdRevenue(adRevenueData, additionalParams: additionalParams)
     }
 
     private func executeSetConsentData(_ payload: [String: Any]) throws {
@@ -278,12 +279,13 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
             throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.hasConsentForAdStorage)
         }
 
-        appsFlyerInstance.setConsentData(
-            isUserSubjectToGDPR: isUserSubjectToGDPR,
-            hasConsentForDataUsage: hasConsentForDataUsage,
-            hasConsentForAdsPersonalization: hasConsentForAdsPersonalization,
-            hasConsentForAdStorage: hasConsentForAdStorage
+        let consent = AppsFlyerConsent(
+            isUserSubjectToGDPR: isUserSubjectToGDPR as NSNumber,
+            hasConsentForDataUsage: hasConsentForDataUsage as NSNumber,
+            hasConsentForAdsPersonalization: hasConsentForAdsPersonalization as NSNumber,
+            hasConsentForAdStorage: hasConsentForAdStorage as NSNumber
         )
+        appsFlyerInstance.setConsentData(consent)
     }
 
     private func executeSetPartnerData(_ payload: [String: Any]) throws {
@@ -320,9 +322,21 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 allowedValues: ["a valid URL with scheme"]
             )
         }
+        let optionsDict = payload[AppsFlyerConstants.Parameters.options] as? [String: Any]
         let sourceApplication = payload[AppsFlyerConstants.Parameters.sourceApplication] as? String
         let annotation = payload[AppsFlyerConstants.Parameters.annotation]
-        appsFlyerInstance.handleOpen(url: url, sourceApplication: sourceApplication, annotation: annotation)
+
+        // Prefer the iOS 9+ options-based overload when `options` is present.
+        // Fall back to the legacy overload for pre-iOS-9 flows or cross-platform payloads
+        // that supply sourceApplication/annotation instead.
+        if let optionsDict = optionsDict {
+            let openURLOptions = Dictionary(uniqueKeysWithValues: optionsDict.compactMap { key, value -> (UIApplication.OpenURLOptionsKey, Any)? in
+                (UIApplication.OpenURLOptionsKey(rawValue: key), value)
+            })
+            appsFlyerInstance.handleOpen(url: url, options: openURLOptions)
+        } else {
+            appsFlyerInstance.handleOpen(url: url, sourceApplication: sourceApplication, annotation: annotation)
+        }
     }
 
     func getEventParameters(payload: [String: Any]) -> [String: Any] {
@@ -341,7 +355,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
 fileprivate extension Dictionary where Key == String, Value == Any {
 
     private static let allExcludedKeys: Set<String> = {
-        let excludedKeys: Set<String> = ["method", AppsFlyerConstants.commandName]
+        let excludedKeys: Set<String> = ["method", AppsFlyerConstants.commandName, AppsFlyerConstants.Settings.debug]
         let configurationKeys = Set(AppsFlyerConstants.Configuration.allCases.map { $0.rawValue })
         return excludedKeys.union(configurationKeys)
     }()

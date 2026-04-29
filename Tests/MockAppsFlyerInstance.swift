@@ -33,6 +33,7 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var setSharingFilterForPartnersCount = 0
     var startCount = 0
     var handleOpenWithSourceAppCount = 0
+    var handleOpenWithOptionsCount = 0
     
     // Store last call parameters for verification
     var lastEventName: String?
@@ -70,14 +71,8 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var lastHandleOpenUrl: URL?
     var lastHandleOpenSourceApplication: String?
     var lastHandleOpenAnnotation: Any?
-    
-    func initialize(appId: String, appDevKey: String) {
-        initWithoutSettingsCount += 1
-        lastAppId = appId
-        lastAppDevKey = appDevKey
-        lastSettings = nil
-    }
-    
+    var lastHandleOpenOptions: [UIApplication.OpenURLOptionsKey: Any]?
+
     func initialize(appId: String, appDevKey: String, settings: [String : Any]?) {
         lastAppId = appId
         lastAppDevKey = appDevKey
@@ -157,21 +152,22 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         onReady(AppsFlyerLib.shared())
     }
     
-    func logAdRevenue(monetizationNetwork: String, mediationNetworkType: MediationNetworkType, currency: String, revenue: Double, additionalParams: [String: Any]?) {
+    func logAdRevenue(_ adRevenueData: AFAdRevenueData, additionalParams: [String: Any]?) {
         logAdRevenueCount += 1
-        lastMonetizationNetwork = monetizationNetwork
-        lastMediationNetworkType = mediationNetworkType
-        lastAdRevenueCurrency = currency
-        lastAdRevenueAmount = revenue
+        lastMonetizationNetwork = adRevenueData.monetizationNetwork
+        lastMediationNetworkType = adRevenueData.mediationNetwork
+        lastAdRevenueCurrency = adRevenueData.currencyIso4217Code
+        lastAdRevenueAmount = adRevenueData.eventRevenue.doubleValue
         lastAdRevenueAdditionalParams = additionalParams
     }
-    
-    func setConsentData(isUserSubjectToGDPR: Bool, hasConsentForDataUsage: Bool, hasConsentForAdsPersonalization: Bool, hasConsentForAdStorage: Bool) {
+
+    func setConsentData(_ consent: AppsFlyerConsent) {
         setConsentDataCount += 1
-        lastIsUserSubjectToGDPR = isUserSubjectToGDPR
-        lastHasConsentForDataUsage = hasConsentForDataUsage
-        lastHasConsentForAdsPersonalization = hasConsentForAdsPersonalization
-        lastHasConsentForAdStorage = hasConsentForAdStorage
+        lastIsUserSubjectToGDPR = consent.isUserSubjectToGDPR
+        lastHasConsentForDataUsage = consent.hasConsentForDataUsage
+        lastHasConsentForAdsPersonalization = consent.hasConsentForAdsPersonalization
+        // `hasConsentForAdStorage` is exposed as `NSNumber?` on the SDK class — unwrap to Bool for verification.
+        lastHasConsentForAdStorage = consent.hasConsentForAdStorage?.boolValue
     }
     
     func setPartnerData(partnerId: String, partnerInfo: [String: Any]?) {
@@ -191,5 +187,11 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         lastHandleOpenSourceApplication = sourceApplication
         lastHandleOpenAnnotation = annotation
     }
-    
+
+    func handleOpen(url: URL, options: [UIApplication.OpenURLOptionsKey: Any]) {
+        handleOpenWithOptionsCount += 1
+        lastHandleOpenUrl = url
+        lastHandleOpenOptions = options
+    }
+
 }

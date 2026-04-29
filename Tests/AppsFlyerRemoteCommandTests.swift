@@ -42,17 +42,40 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertEqual(appsFlyerInstance.logEventCount, 0)
     }
     
-    func testSetUserEmailsWithSingleEmailString() {
+    func testSetUserEmailsWithSingleEmailArray() {
         let payload: [String: Any] = [
             "command_name": "setuseremails",
-            "customer_emails": "test@example.com",
-            "email_hash_type": 1
+            "customer_emails": ["test@example.com"],
+            "email_hash_type": 0
         ]
         appsFlyerCommand.processRemoteCommand(with: payload)
         XCTAssertEqual(appsFlyerInstance.setUserEmailsCount, 1)
         XCTAssertEqual(appsFlyerInstance.lastEmails?.count, 1)
         XCTAssertEqual(appsFlyerInstance.lastEmails?.first, "test@example.com")
-        XCTAssertEqual(appsFlyerInstance.lastCryptType, 1)
+        XCTAssertEqual(appsFlyerInstance.lastCryptType, 0)
+    }
+
+    func testSetUserEmailsNotRunWithStringInsteadOfArray() {
+        let payload: [String: Any] = [
+            "command_name": "setuseremails",
+            "customer_emails": "test@example.com",
+            "email_hash_type": 0
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.setUserEmailsCount, 0)
+        XCTAssertNil(appsFlyerInstance.lastEmails)
+    }
+
+    func testSetUserEmailsNotRunWithInvalidCryptType() {
+        let payload: [String: Any] = [
+            "command_name": "setuseremails",
+            "customer_emails": ["test@example.com"],
+            "email_hash_type": 2
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.setUserEmailsCount, 0)
+        XCTAssertNil(appsFlyerInstance.lastEmails)
+        XCTAssertNil(appsFlyerInstance.lastCryptType)
     }
     
     func testMultipleCommands() {
@@ -82,13 +105,13 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
             "settings": ["key": "value"]
         ]
         appsFlyerCommand.processRemoteCommand(with: payload)
-        
-        // Verify that system variables are filtered out
+
+        // Verify that system variables (method, command_name, debug, and all Configuration keys) are filtered out.
         let lastValues = appsFlyerInstance.lastEventValues
         XCTAssertNotNil(lastValues)
         XCTAssertEqual(lastValues?["user_id"] as? String, "123")
         XCTAssertEqual(lastValues?["product_name"] as? String, "iPhone")
-        XCTAssertEqual(lastValues?["debug"] as? Bool, true)
+        XCTAssertNil(lastValues?["debug"])
         XCTAssertNil(lastValues?["method"])
         XCTAssertNil(lastValues?["app_dev_key"])
         XCTAssertNil(lastValues?["app_id"])
@@ -223,6 +246,33 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertEqual(appsFlyerInstance.lastSettings?["wait_for_att_user_authorization_timeout_interval"] as? Int, 45)
     }
     
+    func testInitWithDisableIDFVCollection() {
+        let settings: [String: Any] = [
+            "disable_idfv_collection": true
+        ]
+        let payload: [String: Any] = ["command_name": "initialize",
+                                      "app_id": "test",
+                                      "app_dev_key": "test",
+                                      "settings": settings]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(1, self.appsFlyerInstance.initWithSettingsCount)
+        XCTAssertEqual(appsFlyerInstance.lastSettings?["disable_idfv_collection"] as? Bool, true)
+    }
+
+    func testInitWithDisableAdvertisingIdentifiersAlias() {
+        // Android cross-platform alias: `disable_advertising_identifiers` must be accepted alongside the iOS key.
+        let settings: [String: Any] = [
+            "disable_advertising_identifiers": true
+        ]
+        let payload: [String: Any] = ["command_name": "initialize",
+                                      "app_id": "test",
+                                      "app_dev_key": "test",
+                                      "settings": settings]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(1, self.appsFlyerInstance.initWithSettingsCount)
+        XCTAssertEqual(appsFlyerInstance.lastSettings?["disable_advertising_identifiers"] as? Bool, true)
+    }
+
     func testInitWithConfigNotRun() {
         let payload: [String: Any] = ["command_name": "initialize",
                                       "settings": ["test": "test"]]
@@ -268,8 +318,28 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertEqual(appsFlyerInstance.lastLongitude, -122.0)
     }
     
-    func testTrackLocationNotRun() {
-        let payload: [String: Any] = ["command_name": "tracklocation"]
+    func testTrackLocationNotRunWithMissingLongitude() {
+        let payload: [String: Any] = ["command_name": "tracklocation",
+                                      "af_lat": 33.0]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(0, self.appsFlyerInstance.logLocationCount)
+        XCTAssertNil(appsFlyerInstance.lastLatitude)
+        XCTAssertNil(appsFlyerInstance.lastLongitude)
+    }
+
+    func testTrackLocationNotRunWithMissingLatitude() {
+        let payload: [String: Any] = ["command_name": "tracklocation",
+                                      "af_long": 122.0]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(0, self.appsFlyerInstance.logLocationCount)
+        XCTAssertNil(appsFlyerInstance.lastLatitude)
+        XCTAssertNil(appsFlyerInstance.lastLongitude)
+    }
+
+    func testTrackLocationNotRunWithInvalidType() {
+        let payload: [String: Any] = ["command_name": "tracklocation",
+                                      "af_lat": "not-a-number",
+                                      "af_long": "also-invalid"]
         appsFlyerCommand.processRemoteCommand(with: payload)
         XCTAssertEqual(0, self.appsFlyerInstance.logLocationCount)
         XCTAssertNil(appsFlyerInstance.lastLatitude)
@@ -308,16 +378,16 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         let emails = ["user@example.com", "admin@example.com"]
         let payload: [String: Any] = ["command_name": "setuseremails",
                                       "customer_emails": emails,
-                                      "email_hash_type": 2]
+                                      "email_hash_type": 3]
         appsFlyerCommand.processRemoteCommand(with: payload)
         XCTAssertEqual(1, self.appsFlyerInstance.setUserEmailsCount)
         XCTAssertEqual(appsFlyerInstance.lastEmails, emails)
-        XCTAssertEqual(appsFlyerInstance.lastCryptType, 2)
+        XCTAssertEqual(appsFlyerInstance.lastCryptType, 3)
     }
-    
-    func testSetUserEmailsWNotRun() {
+
+    func testSetUserEmailsNotRunWithoutEmails() {
         let payload: [String: Any] = ["command_name": "setuseremails",
-                                      "email_hash_type": 1]
+                                      "email_hash_type": 0]
         appsFlyerCommand.processRemoteCommand(with: payload)
         XCTAssertEqual(0, self.appsFlyerInstance.setUserEmailsCount)
         XCTAssertNil(appsFlyerInstance.lastEmails)
@@ -684,6 +754,26 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertNil(appsFlyerInstance.lastHandleOpenUrl)
     }
 
+    func testHandleOpenWithOptions() {
+        let options: [String: Any] = [
+            UIApplication.OpenURLOptionsKey.sourceApplication.rawValue: "com.example.source",
+            UIApplication.OpenURLOptionsKey.annotation.rawValue: "annotation_value"
+        ]
+        let payload: [String: Any] = [
+            "command_name": "handleopen",
+            "url": "app://product/123",
+            "options": options
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+
+        // Presence of `options` must select the iOS 9+ overload, not the legacy source/annotation one.
+        XCTAssertEqual(appsFlyerInstance.handleOpenWithOptionsCount, 1)
+        XCTAssertEqual(appsFlyerInstance.handleOpenWithSourceAppCount, 0)
+        XCTAssertEqual(appsFlyerInstance.lastHandleOpenUrl?.absoluteString, "app://product/123")
+        XCTAssertEqual(appsFlyerInstance.lastHandleOpenOptions?[.sourceApplication] as? String, "com.example.source")
+        XCTAssertEqual(appsFlyerInstance.lastHandleOpenOptions?[.annotation] as? String, "annotation_value")
+    }
+
     func testHandleOpenSupportsAllURLSchemes() {
         let testURLs = [
             "myapp://category/electronics",
@@ -770,6 +860,10 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         appsFlyerCommand.processRemoteCommand(with: payload)
         XCTAssertEqual(0, appsFlyerInstance.setCurrentDeviceLanguageCount)
         XCTAssertNil(appsFlyerInstance.lastDeviceLanguage)
+    }
+
+    func testVersionMatchesConstant() {
+        XCTAssertEqual(appsFlyerCommand.version, AppsFlyerConstants.version)
     }
 
 }
