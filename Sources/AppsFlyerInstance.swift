@@ -231,6 +231,11 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     public func setCurrentDeviceLanguage(_ language: String) {
         AppsFlyerLib.shared().currentDeviceLanguage = language
     }
+
+    func tealiumTrack(title: String, data: [String: Any]? = nil) {
+        let event = TealiumEvent(title, dataLayer: data)
+        tealium?.track(event)
+    }
 }
 
 extension AppsFlyerInstance: AppsFlyerLibDelegate {
@@ -289,10 +294,5 @@ extension AppsFlyerInstance: AppsFlyerLibDelegate {
                 AppsFlyerConstants.Attribution.errorDescription: error.localizedDescription
             ]
         )
-    }
-
-    func tealiumTrack(title: String, data: [String: Any]? = nil) {
-        let event = TealiumEvent(title, dataLayer: data)
-        tealium?.track(event)
     }
 }
