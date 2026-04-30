@@ -126,7 +126,7 @@
         "device_language": "device_language"
     },
     "commands": {
-        "launch": "initialize,start",
+        "launch": "initialize",
         "wake": "start",
         "track_location": "tracklocation",
         "set_host": "sethost",

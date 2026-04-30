@@ -300,8 +300,8 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
     
     func testTrackLocationWithLatLongInts() {
         let payload: [String: Any] = ["command_name": "tracklocation",
-                                      "af_lat": 33,
-                                      "af_long": 122]
+                                      "af_lat": NSNumber(value: 33),
+                                      "af_long": NSNumber(value: 122)]
         appsFlyerCommand.processRemoteCommand(with: payload)
         XCTAssertEqual(1, self.appsFlyerInstance.logLocationCount)
         XCTAssertEqual(appsFlyerInstance.lastLatitude, 33.0)

@@ -8,8 +8,7 @@
 
 import Foundation
 
-/// Errors thrown by AppsFlyerRemoteCommand when processing a command fails.
-/// Caught by parseCommands and forwarded to RemoteCommandLogger.
+/// Errors thrown by `AppsFlyerRemoteCommand` when processing a command fails.
 enum AppsFlyerCommandError: Error {
     case missingParameter(String)
     case invalidParameterValue(parameter: String, value: String, allowedValues: [String])

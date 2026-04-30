@@ -217,7 +217,9 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     }
 
     public func start() {
-        AppsFlyerLib.shared().start()
+        DispatchQueue.main.async {
+            AppsFlyerLib.shared().start()
+        }
     }
 
     public func handleOpen(url: URL, sourceApplication: String?, annotation: Any?) {

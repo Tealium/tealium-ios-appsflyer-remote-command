@@ -9,8 +9,7 @@
 import Foundation
 import os.log
 
-/// Centralized logging utility for Remote Command.
-/// Log verbosity is controlled via the `logLevel` parameter passed to `AppsFlyerRemoteCommand`.
+/// Centralized logging utility; verbosity is controlled by `AppsFlyerRemoteCommand.logLevel`.
 struct RemoteCommandLogger {
     private static let tag = "TealiumAppsFlyer"
     private static let logger = OSLog(subsystem: "com.tealium.appsflyer", category: "RemoteCommand")

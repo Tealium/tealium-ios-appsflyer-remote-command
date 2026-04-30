@@ -64,8 +64,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
         parseCommands(appsflyerCommands, payload: payload)
     }
 
-    /// Calls the individual commands consecutively with optional parameters from the payload object.
-    /// Validation errors thrown by execute methods are caught here and forwarded to the logger.
+    /// Calls each command in sequence; validation errors are caught and forwarded to the logger.
     func parseCommands(_ commands: [String], payload: [String: Any]) {
         commands.forEach { commandString in
             let command = AppsFlyerConstants.CommandNames.fromString(commandString)
@@ -143,21 +142,11 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     }
 
     private func executeTrackLocation(_ payload: [String: Any]) throws {
-        guard payload[AppsFlyerConstants.Parameters.latitude] != nil else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.latitude)
+        guard let latitude = payload[AppsFlyerConstants.Parameters.latitude] as? Double else {
+            throw AppsFlyerCommandError.invalidParameterType(parameter: AppsFlyerConstants.Parameters.latitude, expectedTypes: "Double")
         }
-        guard payload[AppsFlyerConstants.Parameters.longitude] != nil else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.longitude)
-        }
-        let latValue = payload[AppsFlyerConstants.Parameters.latitude]
-        let lonValue = payload[AppsFlyerConstants.Parameters.longitude]
-        let latitude = (latValue as? Double) ?? (latValue as? Int).map(Double.init)
-        let longitude = (lonValue as? Double) ?? (lonValue as? Int).map(Double.init)
-        guard let latitude, let longitude else {
-            throw AppsFlyerCommandError.invalidParameterType(
-                parameter: "\(AppsFlyerConstants.Parameters.latitude)/\(AppsFlyerConstants.Parameters.longitude)",
-                expectedTypes: "Double or Int"
-            )
+        guard let longitude = payload[AppsFlyerConstants.Parameters.longitude] as? Double else {
+            throw AppsFlyerCommandError.invalidParameterType(parameter: AppsFlyerConstants.Parameters.longitude, expectedTypes: "Double")
         }
         appsFlyerInstance.logLocation(longitude: longitude, latitude: latitude)
     }
@@ -363,4 +352,5 @@ fileprivate extension Dictionary where Key == String, Value == Any {
     func filterVariables() -> [String: Any] {
         return self.filter { !Self.allExcludedKeys.contains($0.key) }
     }
+
 }

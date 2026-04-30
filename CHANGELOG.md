@@ -8,17 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [3.1.0] - 2026-04-29
 
 ### Added
-- User anonymization support (`anonymize_user` command)
-- Deep link handling via `handleOpen` with options, source application, and annotation parameters
-- Ad revenue logging (`log_ad_revenue` command) with support for multiple ad networks
-- GDPR/DMA consent data management (`set_consent_data` command)
-- Partner data management (`set_partner_data` command)
-- Sharing filter for partners (`set_sharing_filter` command)
-- Phone number tracking support
+- User anonymization support (`anonymizeuser` command)
+- Deep link handling via `handleopen` command with options, source application, and annotation parameters
+- Ad revenue logging (`logadrevenue` command) with support for multiple ad networks
+- GDPR/DMA consent data management (`setconsentdata` command)
+- Partner data management (`setpartnerdata` command)
+- Sharing filter for partners (`setsharingfilterforpartners` command)
+- Phone number tracking support (`setphonenumber` command)
+- Device language setting (`setcurrentdevicelanguage` command)
 - Deep link resolution and appending parameters to deep link URLs
-- Host configuration (`set_host` command)
+- Host configuration (`sethost` command)
 - Currency setting support
 - New `locationcoordinates` event
+- Cross-platform command aliases: `stoptracking` (Android name for `disabletracking`) and `disabledevicetracking` (backwards-compatible alias for `anonymizeuser`) to support shared TiQ tags on iOS without duplication
 - Validation for negative `deepLinkTimeout` values
 
 ### Changed
@@ -28,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Upgrade AppsFlyerFramework to `~> 6.17`
 - Refactor `AppsFlyerConstants` `Configuration` to `String`-based `CaseIterable` enum for improved type safety
 - Standardize parameter names and command structures across all classes
+- Add `AppsFlyerCommandError` with typed error cases (`missingParameter`, `invalidParameterValue`, `invalidParameterType`) replacing scattered `print` calls; errors now route through `RemoteCommandLogger` with configurable log level
 - Replace deprecated methods with current AppsFlyer SDK equivalents
 - Improve `filterVariables` to use a `Set` for excluded keys
 - Replace event enum with an `eventsMap` dictionary for better maintainability
