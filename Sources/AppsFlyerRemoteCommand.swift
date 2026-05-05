@@ -104,6 +104,8 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     appsFlyerInstance.start()
                 case .setCurrentDeviceLanguage:
                     try executeSetCurrentDeviceLanguage(payload)
+                case .setAppInviteOneLink:
+                    try executeSetAppInviteOneLink(payload)
                 case .none:
                     // Unknown command falls back to a standard or custom AppsFlyer event.
                     appsFlyerInstance.logEvent(getEventName(command: commandString),
@@ -298,6 +300,13 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
             throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.deviceLanguage)
         }
         appsFlyerInstance.setCurrentDeviceLanguage(language)
+    }
+
+    private func executeSetAppInviteOneLink(_ payload: [String: Any]) throws {
+        guard let oneLinkId = payload[AppsFlyerConstants.Parameters.appInviteOneLinkID] as? String else {
+            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.appInviteOneLinkID)
+        }
+        appsFlyerInstance.setAppInviteOneLink(oneLinkId)
     }
 
     private func executeHandleOpen(_ payload: [String: Any]) throws {

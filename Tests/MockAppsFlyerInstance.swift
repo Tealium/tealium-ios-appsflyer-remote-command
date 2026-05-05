@@ -34,6 +34,8 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var startCount = 0
     var handleOpenWithSourceAppCount = 0
     var handleOpenWithOptionsCount = 0
+    var setAppInviteOneLinkCount = 0
+    var lastOneLinkId: String?
     
     // Store last call parameters for verification
     var lastEventName: String?
@@ -181,6 +183,11 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         lastSharingFilter = sharingFilter
     }
     
+    func setAppInviteOneLink(_ oneLinkId: String) {
+        setAppInviteOneLinkCount += 1
+        lastOneLinkId = oneLinkId
+    }
+
     func handleOpen(url: URL, sourceApplication: String?, annotation: Any?) {
         handleOpenWithSourceAppCount += 1
         lastHandleOpenUrl = url

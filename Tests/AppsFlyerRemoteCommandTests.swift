@@ -176,7 +176,6 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
             "collect_device_name": false,
             "custom_data": customData,
             "enable_tcf_data_collection": true,
-            "app_invite_onelink_id": "test_onelink_id",
             "deep_link_timeout": 3000,
             "one_link_custom_domains": oneLinkDomains,
             "facebook_deferred_app_link": "https://facebook.com/deferred",
@@ -204,7 +203,6 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertEqual(appsFlyerInstance.lastSettings?["anonymize_user"] as? Bool, true)
         XCTAssertEqual(appsFlyerInstance.lastSettings?["collect_device_name"] as? Bool, false)
         XCTAssertEqual(appsFlyerInstance.lastSettings?["enable_tcf_data_collection"] as? Bool, true)
-        XCTAssertEqual(appsFlyerInstance.lastSettings?["app_invite_onelink_id"] as? String, "test_onelink_id")
         XCTAssertEqual(appsFlyerInstance.lastSettings?["deep_link_timeout"] as? Int, 3000)
         XCTAssertEqual(appsFlyerInstance.lastSettings?["facebook_deferred_app_link"] as? String, "https://facebook.com/deferred")
         
@@ -860,6 +858,20 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         appsFlyerCommand.processRemoteCommand(with: payload)
         XCTAssertEqual(0, appsFlyerInstance.setCurrentDeviceLanguageCount)
         XCTAssertNil(appsFlyerInstance.lastDeviceLanguage)
+    }
+
+    func testSetAppInviteOneLink() {
+        let payload: [String: Any] = ["command_name": "setappinviteonelink", "app_invite_onelink_id": "XY1A"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(1, appsFlyerInstance.setAppInviteOneLinkCount)
+        XCTAssertEqual(appsFlyerInstance.lastOneLinkId, "XY1A")
+    }
+
+    func testSetAppInviteOneLinkNotRun() {
+        let payload: [String: Any] = ["command_name": "setappinviteonelink"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(0, appsFlyerInstance.setAppInviteOneLinkCount)
+        XCTAssertNil(appsFlyerInstance.lastOneLinkId)
     }
 
     func testVersionMatchesConstant() {

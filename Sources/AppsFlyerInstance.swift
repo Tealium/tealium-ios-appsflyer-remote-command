@@ -36,6 +36,7 @@ public protocol AppsFlyerCommand {
     func handleOpen(url: URL, sourceApplication: String?, annotation: Any?)
     func handleOpen(url: URL, options: [UIApplication.OpenURLOptionsKey: Any])
     func setCurrentDeviceLanguage(_ language: String)
+    func setAppInviteOneLink(_ oneLinkId: String)
 }
 
 public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
@@ -112,9 +113,6 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
                 }
                 if let enableTCFDataCollection = settings[AppsFlyerConstants.Settings.enableTCFDataCollection] as? Bool {
                     appsFlyer.enableTCFDataCollection(enableTCFDataCollection)
-                }
-                if let appInviteOneLinkID = settings[AppsFlyerConstants.Settings.appInviteOneLinkID] as? String {
-                    appsFlyer.appInviteOneLinkID = appInviteOneLinkID
                 }
                 if let deepLinkTimeout = settings[AppsFlyerConstants.Settings.deepLinkTimeout] as? Int {
                     appsFlyer.deepLinkTimeout = UInt(deepLinkTimeout)
@@ -232,6 +230,10 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
 
     public func setCurrentDeviceLanguage(_ language: String) {
         AppsFlyerLib.shared().currentDeviceLanguage = language
+    }
+
+    public func setAppInviteOneLink(_ oneLinkId: String) {
+        AppsFlyerLib.shared().appInviteOneLinkID = oneLinkId
     }
 
     func tealiumTrack(title: String, data: [String: Any]? = nil) {

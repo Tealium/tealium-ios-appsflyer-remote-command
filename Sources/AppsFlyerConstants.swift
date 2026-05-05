@@ -79,6 +79,7 @@ public enum AppsFlyerConstants {
         case handleOpen = "handleopen"
         case start = "start"
         case setCurrentDeviceLanguage = "setcurrentdevicelanguage"
+        case setAppInviteOneLink = "setappinviteonelink"
 
         /// Resolves a command string to a CommandNames case. Case-insensitive and trims whitespace.
         /// Returns nil when the string is not a built-in command — callers should fall back to
@@ -108,7 +109,6 @@ public enum AppsFlyerConstants {
         static let collectDeviceName = "collect_device_name"
         static let customData = "custom_data"
         static let enableTCFDataCollection = "enable_tcf_data_collection"
-        static let appInviteOneLinkID = "app_invite_onelink_id"
         static let deepLinkTimeout = "deep_link_timeout"
         static let oneLinkCustomDomains = "one_link_custom_domains"
         static let facebookDeferredAppLink = "facebook_deferred_app_link"
@@ -169,6 +169,9 @@ public enum AppsFlyerConstants {
 
         // Device language (for setCurrentDeviceLanguage)
         static let deviceLanguage = "device_language"
+
+        // App invite OneLink (for setAppInviteOneLink)
+        static let appInviteOneLinkID = "app_invite_onelink_id"
     }
 
     public enum Attribution {
