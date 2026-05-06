@@ -43,12 +43,23 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
 
     weak var tealium: Tealium?
     private let _onReady = TealiumReplaySubject<AppsFlyerLib>(cacheSize: 1)
-    public override init() { }
+    private let logger: RemoteCommandLogger
+
+    public override init() {
+        self.logger = RemoteCommandLogger()
+        super.init()
+    }
 
     public init(tealium: Tealium) {
+        self.logger = RemoteCommandLogger()
         super.init()
         self.tealium = tealium
         AppsFlyerLib.shared().delegate = self
+    }
+
+    init(logger: RemoteCommandLogger) {
+        self.logger = logger
+        super.init()
     }
 
     public func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {
@@ -74,7 +85,7 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
                     if let facebookAppLinkUtilityClass = NSClassFromString("FBSDKAppLinkUtility") {
                         appsFlyer.enableFacebookDeferredApplinks(with: facebookAppLinkUtilityClass)
                     } else {
-                        RemoteCommandLogger.error("Facebook Deferred AppLinks requested but Facebook SDK not found. Please ensure Facebook SDK is integrated in your app.")
+                        self.logger.error("Facebook Deferred AppLinks requested but Facebook SDK not found. Please ensure Facebook SDK is integrated in your app.")
                     }
                 } else {
                     // Pass nil to disable — mirrors Android's enableFacebookDeferredApplinks(false).
@@ -251,7 +262,7 @@ extension AppsFlyerInstance: AppsFlyerLibDelegate {
         }
 
         guard firstLaunch else {
-            RemoteCommandLogger.debug("\(AppsFlyerConstants.attributionLog)Not First Launch")
+            logger.debug("\(AppsFlyerConstants.attributionLog)Not First Launch")
             return
         }
         tealiumTrack(title: AppsFlyerConstants.Attribution.conversionReceived, data: conversionInfo)
@@ -263,10 +274,10 @@ extension AppsFlyerInstance: AppsFlyerLibDelegate {
         if (status == "Non-organic") {
             if let mediaSource = conversionInfo[AppsFlyerConstants.Attribution.source],
                let campaign = conversionInfo[AppsFlyerConstants.Attribution.campaign] {
-                RemoteCommandLogger.info("\(AppsFlyerConstants.attributionLog)This is a Non-Organic install. Media source: \(mediaSource) Campaign: \(campaign)")
+                logger.info("\(AppsFlyerConstants.attributionLog)This is a Non-Organic install. Media source: \(mediaSource) Campaign: \(campaign)")
             }
         } else {
-            RemoteCommandLogger.info("\(AppsFlyerConstants.attributionLog)This is an organic install.")
+            logger.info("\(AppsFlyerConstants.attributionLog)This is an organic install.")
         }
     }
 

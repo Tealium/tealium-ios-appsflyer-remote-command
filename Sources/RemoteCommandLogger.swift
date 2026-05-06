@@ -11,27 +11,31 @@ import os.log
 
 /// Centralized logging utility; verbosity is controlled by `AppsFlyerRemoteCommand.logLevel`.
 struct RemoteCommandLogger {
-    private static let tag = "TealiumAppsFlyer"
-    private static let logger = OSLog(subsystem: "com.tealium.appsflyer", category: "RemoteCommand")
-    static var logLevel: RemoteCommandLogLevel = .silent
+    private let tag = "TealiumAppsFlyer"
+    private let osLog = OSLog(subsystem: "com.tealium.appsflyer", category: "RemoteCommand")
+    let logLevel: RemoteCommandLogLevel
 
-    static func debug(_ message: String) {
+    init(logLevel: RemoteCommandLogLevel = .silent) {
+        self.logLevel = logLevel
+    }
+
+    func debug(_ message: String) {
         guard logLevel <= .debug else { return }
-        os_log(.debug, log: logger, "[%{public}@] %{public}@", tag, message)
+        os_log(.debug, log: osLog, "[%{public}@] %{public}@", tag, message)
     }
 
-    static func info(_ message: String) {
+    func info(_ message: String) {
         guard logLevel <= .info else { return }
-        os_log(.info, log: logger, "[%{public}@] %{public}@", tag, message)
+        os_log(.info, log: osLog, "[%{public}@] %{public}@", tag, message)
     }
 
-    static func warning(_ message: String) {
+    func warning(_ message: String) {
         guard logLevel <= .warning else { return }
-        os_log(.default, log: logger, "[%{public}@] WARNING: %{public}@", tag, message)
+        os_log(.default, log: osLog, "[%{public}@] WARNING: %{public}@", tag, message)
     }
 
-    static func error(_ message: String) {
+    func error(_ message: String) {
         guard logLevel <= .error else { return }
-        os_log(.error, log: logger, "[%{public}@] ERROR: %{public}@", tag, message)
+        os_log(.error, log: osLog, "[%{public}@] ERROR: %{public}@", tag, message)
     }
 }

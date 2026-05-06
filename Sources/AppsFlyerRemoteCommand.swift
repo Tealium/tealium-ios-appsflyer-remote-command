@@ -19,6 +19,7 @@ import TealiumRemoteCommands
 public class AppsFlyerRemoteCommand: RemoteCommand {
 
     let appsFlyerInstance: AppsFlyerCommand
+    private let logger: RemoteCommandLogger
 
     public override var version: String? {
         return AppsFlyerConstants.version
@@ -35,11 +36,12 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     ///   - appsFlyerInstance: Optional implementation of `AppsFlyerCommand` (for testing).
     ///   - type: The RemoteCommand type (webview or JSON).
     ///   - logLevel: Controls RC log verbosity. Defaults to `.silent` (no output).
-    public init(appsFlyerInstance: AppsFlyerCommand = AppsFlyerInstance(),
+    public init(appsFlyerInstance: AppsFlyerCommand? = nil,
                 type: RemoteCommandType = .webview,
                 logLevel: RemoteCommandLogLevel = .silent) {
-        RemoteCommandLogger.logLevel = logLevel
-        self.appsFlyerInstance = appsFlyerInstance
+        let logger = RemoteCommandLogger(logLevel: logLevel)
+        self.logger = logger
+        self.appsFlyerInstance = appsFlyerInstance ?? AppsFlyerInstance(logger: logger)
         weak var selfWorkaround: AppsFlyerRemoteCommand?
         super.init(commandId: AppsFlyerConstants.commandId,
                    description: AppsFlyerConstants.description,
@@ -112,9 +114,9 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                                                values: getEventParameters(payload: payload))
                 }
             } catch let error as AppsFlyerCommandError {
-                RemoteCommandLogger.error("Command '\(commandString)' failed: \(error.message)")
+                logger.error("Command '\(commandString)' failed: \(error.message)")
             } catch {
-                RemoteCommandLogger.error("Command '\(commandString)' failed: \(error.localizedDescription)")
+                logger.error("Command '\(commandString)' failed: \(error.localizedDescription)")
             }
         }
     }
@@ -129,17 +131,17 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
             throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Configuration.appDevKey.rawValue)
         }
         guard var settings = payload[AppsFlyerConstants.Configuration.settings.rawValue] as? [String: Any] else {
-            RemoteCommandLogger.debug("Initializing AppsFlyer without settings")
+            logger.debug("Initializing AppsFlyer without settings")
             return appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: nil)
         }
 
         if let deepLinkTimeout = settings[AppsFlyerConstants.Settings.deepLinkTimeout] as? Int,
            deepLinkTimeout < 0 {
-            RemoteCommandLogger.warning("deepLinkTimeout must be >= 0, got: \(deepLinkTimeout). Ignoring setting.")
+            logger.warning("deepLinkTimeout must be >= 0, got: \(deepLinkTimeout). Ignoring setting.")
             settings.removeValue(forKey: AppsFlyerConstants.Settings.deepLinkTimeout)
         }
 
-        RemoteCommandLogger.debug("Initializing AppsFlyer with settings")
+        logger.debug("Initializing AppsFlyer with settings")
         appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: settings)
     }
 
