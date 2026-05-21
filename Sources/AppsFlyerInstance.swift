@@ -22,7 +22,7 @@ public protocol AppsFlyerCommand {
     func logEvent(_ eventName: String, values: [String: Any])
     func logLocation(longitude: Double, latitude: Double)
     func setHost(_ host: String, with prefix: String)
-    func setUserEmails(emails: [String], with cryptType: Int)
+    func setUserEmails(emails: [String], with cryptType: EmailCryptType)
     func currencyCode(_ currency: String)
     func customerId(_ id: String)
     func disableTracking(_ disable: Bool)
@@ -45,11 +45,6 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     private let _onReady = TealiumReplaySubject<AppsFlyerLib>(cacheSize: 1)
     private let logger: RemoteCommandLogger
 
-    public override init() {
-        self.logger = RemoteCommandLogger()
-        super.init()
-    }
-
     public init(tealium: Tealium) {
         self.logger = RemoteCommandLogger()
         super.init()
@@ -57,6 +52,10 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         AppsFlyerLib.shared().delegate = self
     }
 
+    // Used by AppsFlyerRemoteCommand. Delegate is not set here, so attribution
+    // callbacks (onConversionDataSuccess etc.) will not fire on this path.
+    // To enable attribution tracking via RemoteCommand, inject a pre-configured
+    // AppsFlyerInstance(tealium:) via AppsFlyerRemoteCommand.init(appsFlyerInstance:).
     init(logger: RemoteCommandLogger) {
         self.logger = logger
         super.init()
@@ -156,6 +155,8 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
                     appsFlyer.disableIDFVCollection = disableIDFVCollection
                 }
             }
+            // Start the first session. Subsequent sessions require calling start()
+            // on each applicationDidBecomeActive — see public func start() below.
             self._onReady.publish(appsFlyer)
             appsFlyer.start()
         }
@@ -177,9 +178,8 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         AppsFlyerLib.shared().setHost(host, withHostPrefix: prefix)
     }
 
-    public func setUserEmails(emails: [String], with cryptType: Int) {
-        let resolvedType = EmailCryptType(rawInt: cryptType) ?? EmailCryptTypeNone
-        AppsFlyerLib.shared().setUserEmails(emails, with: resolvedType)
+    public func setUserEmails(emails: [String], with cryptType: EmailCryptType) {
+        AppsFlyerLib.shared().setUserEmails(emails, with: cryptType)
     }
 
     public func currencyCode(_ currency: String) {
@@ -225,6 +225,10 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         AppsFlyerLib.shared().setSharingFilterForPartners(sharingFilter)
     }
 
+    /// Starts (or re-starts) an AppsFlyer session. Call this on every
+    /// `applicationDidBecomeActive` to ensure each foreground visit logs
+    /// an `af_app_opened` event. In a JSON Remote Command setup, send a
+    /// Tealium event mapped to the `"start"` command (e.g. `"wake"`).
     public func start() {
         DispatchQueue.main.async {
             AppsFlyerLib.shared().start()

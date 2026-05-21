@@ -34,7 +34,7 @@ extension MediationNetworkType {
 
     /// Valid string values accepted by the remote command payload for `mediation_network`.
     static var validValues: [String] {
-        Array(stringMap.keys)
+        Array(stringMap.keys).sorted()
     }
 
     /// Initializes from a payload string value. Case-insensitive and trims whitespace.

@@ -2,7 +2,7 @@
 //  AppsFlyerConstantsTests.swift
 //  TealiumAppsFlyerTests
 //
-//  Created by Tealium Inc. on 2026.
+//  Created by Sebastian Krajna on 5/21/26.
 //  Copyright © 2026 Tealium. All rights reserved.
 //
 
@@ -42,9 +42,9 @@ class AppsFlyerConstantsTests: XCTestCase {
     // MARK: - MediationNetworkType mapping
 
     func testMediationNetworkResolvesKnownValue() {
-        XCTAssertNotNil(MediationNetworkType("googleadmob"))
-        XCTAssertNotNil(MediationNetworkType("GoogleAdMob"))
-        XCTAssertNotNil(MediationNetworkType("  ironsource  "))
+        XCTAssertEqual(MediationNetworkType("googleadmob"), .googleAdMob)
+        XCTAssertEqual(MediationNetworkType("GoogleAdMob"), .googleAdMob)
+        XCTAssertEqual(MediationNetworkType("  ironsource  "), .ironSource)
     }
 
     func testMediationNetworkReturnsNilForUnknown() {
@@ -56,8 +56,7 @@ class AppsFlyerConstantsTests: XCTestCase {
 
     func testMissingParameterMessage() {
         let error = AppsFlyerCommandError.missingParameter("foo")
-        XCTAssertTrue(error.message.contains("foo"))
-        XCTAssertTrue(error.message.contains("required"))
+        XCTAssertEqual(error.message, "foo is required but missing from payload.")
     }
 
     func testInvalidParameterValueMessage() {
@@ -66,9 +65,10 @@ class AppsFlyerConstantsTests: XCTestCase {
             value: "unknown",
             allowedValues: ["googleadmob", "ironsource"]
         )
-        XCTAssertTrue(error.message.contains("mediation_network"))
-        XCTAssertTrue(error.message.contains("unknown"))
-        XCTAssertTrue(error.message.contains("googleadmob"))
+        XCTAssertEqual(
+            error.message,
+            "Invalid value 'unknown' for 'mediation_network'. Supported values: googleadmob, ironsource."
+        )
     }
 
     func testInvalidParameterTypeMessage() {
@@ -76,7 +76,6 @@ class AppsFlyerConstantsTests: XCTestCase {
             parameter: "af_lat",
             expectedTypes: "Double or Int"
         )
-        XCTAssertTrue(error.message.contains("af_lat"))
-        XCTAssertTrue(error.message.contains("Double or Int"))
+        XCTAssertEqual(error.message, "Unsupported type for 'af_lat'. Supported types: Double or Int.")
     }
 }

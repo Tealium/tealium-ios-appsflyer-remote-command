@@ -12,9 +12,7 @@ extension EmailCryptType {
     ]
 
     /// Valid integer values accepted by the remote command payload for `email_hash_type`.
-    static var validValues: [Int] {
-        Array(intMap.keys)
-    }
+    static let validValues: [Int] = Array(intMap.keys).sorted()
 
     /// Initializes from a payload integer value. Returns nil if unrecognized.
     init?(rawInt: Int) {

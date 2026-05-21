@@ -49,7 +49,7 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var lastLatitude: Double?
     var lastHost: String?
     var lastPrefix: String?
-    var lastCryptType: Int?
+    var lastCryptType: EmailCryptType?
     var lastCustomerId: String?
     var lastDisableTracking: Bool?
     var lastAnonymizeUser: Bool?
@@ -105,7 +105,7 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         lastPrefix = prefix
     }
     
-    func setUserEmails(emails: [String], with cryptType: Int) {
+    func setUserEmails(emails: [String], with cryptType: EmailCryptType) {
         setUserEmailsCount += 1
         lastEmails = emails
         lastCryptType = cryptType

@@ -52,7 +52,7 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertEqual(appsFlyerInstance.setUserEmailsCount, 1)
         XCTAssertEqual(appsFlyerInstance.lastEmails?.count, 1)
         XCTAssertEqual(appsFlyerInstance.lastEmails?.first, "test@example.com")
-        XCTAssertEqual(appsFlyerInstance.lastCryptType, 0)
+        XCTAssertEqual(appsFlyerInstance.lastCryptType, EmailCryptTypeNone)
     }
 
     func testSetUserEmailsNotRunWithStringInsteadOfArray() {
@@ -71,6 +71,17 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
             "command_name": "setuseremails",
             "customer_emails": ["test@example.com"],
             "email_hash_type": 2
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.setUserEmailsCount, 0)
+        XCTAssertNil(appsFlyerInstance.lastEmails)
+        XCTAssertNil(appsFlyerInstance.lastCryptType)
+    }
+
+    func testSetUserEmailsNotRunWithMissingCryptType() {
+        let payload: [String: Any] = [
+            "command_name": "setuseremails",
+            "customer_emails": ["test@example.com"]
         ]
         appsFlyerCommand.processRemoteCommand(with: payload)
         XCTAssertEqual(appsFlyerInstance.setUserEmailsCount, 0)
@@ -135,6 +146,8 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
                                       "app_id": "test_id",
                                       "app_dev_key": "test_key"]
         appsFlyerCommand.processRemoteCommand(with: payload)
+        // Mock's initialize() calls start() internally to mirror the real SDK.
+        // Asserting startCount == 1 verifies RemoteCommand does not double-start after init.
         XCTAssertEqual(appsFlyerInstance.startCount, 1)
     }
 
@@ -182,7 +195,7 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
             "push_notification_deep_link_path": ["af_push_link", "custom_link"],
             "deep_link_parameters": deepLinkParameters,
             "enable_facebook_deferred_applinks": true,
-            "wait_for_att_user_authorization_timeout_interval": 45
+            "wait_for_att_user_authorization_timeout_interval": NSNumber(value: 45)
         ]
         let payload: [String: Any] = ["command_name": "initialize",
                                       "app_id": "test_app",
@@ -241,7 +254,7 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertEqual(secondParameters?["source"], "email")
         
         XCTAssertEqual(appsFlyerInstance.lastSettings?["enable_facebook_deferred_applinks"] as? Bool, true)
-        XCTAssertEqual(appsFlyerInstance.lastSettings?["wait_for_att_user_authorization_timeout_interval"] as? Int, 45)
+        XCTAssertEqual(appsFlyerInstance.lastSettings?["wait_for_att_user_authorization_timeout_interval"] as? Double, 45.0)
     }
     
     func testInitWithDisableIDFVCollection() {
@@ -380,7 +393,7 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         appsFlyerCommand.processRemoteCommand(with: payload)
         XCTAssertEqual(1, self.appsFlyerInstance.setUserEmailsCount)
         XCTAssertEqual(appsFlyerInstance.lastEmails, emails)
-        XCTAssertEqual(appsFlyerInstance.lastCryptType, 3)
+        XCTAssertEqual(appsFlyerInstance.lastCryptType, EmailCryptTypeSHA256)
     }
 
     func testSetUserEmailsNotRunWithoutEmails() {
@@ -615,15 +628,31 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertEqual(appsFlyerInstance.lastHasConsentForAdStorage, true)
     }
     
-    func testSetConsentDataNotRunWithMissingParameters() {
+    func testSetConsentDataRunsWithOnlyGDPRFlag() {
         let payload: [String: Any] = [
             "command_name": "setconsentdata",
-            "is_user_subject_to_gdpr": true,
-            "has_consent_for_data_usage": true
-            // Missing has_consent_for_ads_personalization and has_consent_for_ad_storage
+            "is_user_subject_to_gdpr": false
         ]
         appsFlyerCommand.processRemoteCommand(with: payload)
-        
+
+        XCTAssertEqual(appsFlyerInstance.setConsentDataCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastIsUserSubjectToGDPR, false)
+        // AppsFlyerConsent exposes these two as non-optional BOOL, so a nil
+        // NSNumber? passed at init surfaces as `false` when read back.
+        XCTAssertEqual(appsFlyerInstance.lastHasConsentForDataUsage, false)
+        XCTAssertEqual(appsFlyerInstance.lastHasConsentForAdsPersonalization, false)
+        XCTAssertNil(appsFlyerInstance.lastHasConsentForAdStorage)
+    }
+
+    func testSetConsentDataNotRunWithMissingGDPRFlag() {
+        let payload: [String: Any] = [
+            "command_name": "setconsentdata",
+            "has_consent_for_data_usage": true,
+            "has_consent_for_ads_personalization": true,
+            "has_consent_for_ad_storage": true
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+
         XCTAssertEqual(appsFlyerInstance.setConsentDataCount, 0)
         XCTAssertNil(appsFlyerInstance.lastIsUserSubjectToGDPR)
     }
@@ -714,7 +743,7 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertEqual(appsFlyerInstance.handleOpenWithSourceAppCount, 1)
         XCTAssertEqual(appsFlyerInstance.lastHandleOpenUrl?.absoluteString, "app://product/123")
         XCTAssertEqual(appsFlyerInstance.lastHandleOpenSourceApplication, "com.example.source")
-        XCTAssertNotNil(appsFlyerInstance.lastHandleOpenAnnotation)
+        XCTAssertEqual(appsFlyerInstance.lastHandleOpenAnnotation as? String, "test_annotation_value")
     }
 
     func testHandleOpenWithoutSourceApplicationAndAnnotation() {
@@ -738,6 +767,20 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         appsFlyerCommand.processRemoteCommand(with: payload)
 
         XCTAssertEqual(appsFlyerInstance.handleOpenWithSourceAppCount, 0)
+        XCTAssertNil(appsFlyerInstance.lastHandleOpenUrl)
+    }
+
+    func testHandleOpenNotRunWhenURLInitReturnsNil() {
+        // Unencoded spaces cause `URL(string:)` to return nil, exercising the nil-URL branch
+        // (distinct from the missing-scheme branch covered by `testHandleOpenNotRunWithInvalidURL`).
+        let payload: [String: Any] = [
+            "command_name": "handleopen",
+            "url": "not a url"
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+
+        XCTAssertEqual(appsFlyerInstance.handleOpenWithSourceAppCount, 0)
+        XCTAssertEqual(appsFlyerInstance.handleOpenWithOptionsCount, 0)
         XCTAssertNil(appsFlyerInstance.lastHandleOpenUrl)
     }
 
@@ -876,6 +919,100 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
 
     func testVersionMatchesConstant() {
         XCTAssertEqual(appsFlyerCommand.version, AppsFlyerConstants.version)
+    }
+
+    func testGetEventParametersUsesNestedEventKey() {
+        // When `event` dict is present, payload-level keys must be ignored in favor of nested values.
+        let payload: [String: Any] = [
+            "command_name": "customevent",
+            "event": ["nested_key": "nested_value"],
+            "outer_key": "outer_value"
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        let lastValues = appsFlyerInstance.lastEventValues
+        XCTAssertEqual(lastValues?["nested_key"] as? String, "nested_value")
+        XCTAssertNil(lastValues?["outer_key"])
+    }
+
+    func testInitWithSettingsWrongTypeFallsBackToNoSettings() {
+        // Non-dictionary `settings` value should not crash; falls back to no-settings init.
+        let payload: [String: Any] = [
+            "command_name": "initialize",
+            "app_id": "test",
+            "app_dev_key": "test",
+            "settings": "not_a_dict"
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.initWithoutSettingsCount, 1)
+        XCTAssertEqual(appsFlyerInstance.initWithSettingsCount, 0)
+        XCTAssertNil(appsFlyerInstance.lastSettings)
+    }
+
+    func testLogAdRevenueNotRunWithMissingMonetizationNetwork() {
+        let payload: [String: Any] = [
+            "command_name": "logadrevenue",
+            "mediation_network": "googleadmob",
+            "ad_revenue_currency": "USD",
+            "ad_revenue_amount": 0.05
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.logAdRevenueCount, 0)
+    }
+
+    func testLogAdRevenueNotRunWithMissingCurrency() {
+        let payload: [String: Any] = [
+            "command_name": "logadrevenue",
+            "monetization_network": "AdMob",
+            "mediation_network": "googleadmob",
+            "ad_revenue_amount": 0.05
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.logAdRevenueCount, 0)
+    }
+
+    func testLogAdRevenueNotRunWithMissingAmount() {
+        let payload: [String: Any] = [
+            "command_name": "logadrevenue",
+            "monetization_network": "AdMob",
+            "mediation_network": "googleadmob",
+            "ad_revenue_currency": "USD"
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.logAdRevenueCount, 0)
+    }
+
+    func testParseCommandsContinuesAfterThrowingCommand() {
+        // First command throws (missing currency); subsequent commands must still execute.
+        let payload: [String: Any] = [
+            "command_name": "setcurrencycode,setcustomerid",
+            "af_customer_user_id": "user_after_throw"
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.setCurrencyCodeCount, 0)
+        XCTAssertEqual(appsFlyerInstance.setCustomerIdCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastCustomerId, "user_after_throw")
+    }
+
+    func testInitDeepLinkTimeoutZeroIsKept() {
+        // 0 is a valid boundary value (>= 0); only negative values are filtered.
+        let settings: [String: Any] = ["deep_link_timeout": 0]
+        let payload: [String: Any] = [
+            "command_name": "initialize",
+            "app_id": "test",
+            "app_dev_key": "test",
+            "settings": settings
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.initWithSettingsCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastSettings?["deep_link_timeout"] as? Int, 0)
+    }
+
+    func testProcessRemoteCommandWithNonStringCommandName() {
+        let payload: [String: Any] = ["command_name": 123]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.logEventCount, 0)
+        XCTAssertEqual(appsFlyerInstance.initWithoutSettingsCount, 0)
+        XCTAssertEqual(appsFlyerInstance.initWithSettingsCount, 0)
     }
 
 }

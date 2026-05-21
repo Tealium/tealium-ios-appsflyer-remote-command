@@ -33,7 +33,10 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
 
     /// Constructs a RemoteCommand that integrates with the AppsFlyer SDK.
     /// - Parameters:
-    ///   - appsFlyerInstance: Optional implementation of `AppsFlyerCommand` (for testing).
+    ///   - appsFlyerInstance: Optional `AppsFlyerCommand` implementation. Pass an
+    ///     `AppsFlyerInstance(tealium:)` here to enable attribution callback tracking
+    ///     (onConversionDataSuccess etc.). Defaults to a logger-only instance with
+    ///     no attribution tracking.
     ///   - type: The RemoteCommand type (webview or JSON).
     ///   - logLevel: Controls RC log verbosity. Defaults to `.silent` (no output).
     public init(appsFlyerInstance: AppsFlyerCommand? = nil,
@@ -42,7 +45,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
         let logger = RemoteCommandLogger(logLevel: logLevel)
         self.logger = logger
         self.appsFlyerInstance = appsFlyerInstance ?? AppsFlyerInstance(logger: logger)
-        weak var selfWorkaround: AppsFlyerRemoteCommand?
+        weak var weakSelf: AppsFlyerRemoteCommand?
         super.init(commandId: AppsFlyerConstants.commandId,
                    description: AppsFlyerConstants.description,
                    type: type,
@@ -50,9 +53,9 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
             guard let payload = response.payload else {
                 return
             }
-            selfWorkaround?.processRemoteCommand(with: payload)
+            weakSelf?.processRemoteCommand(with: payload)
         })
-        selfWorkaround = self
+        weakSelf = self
     }
 
     func processRemoteCommand(with payload: [String: Any]) {
@@ -108,7 +111,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     try executeSetCurrentDeviceLanguage(payload)
                 case .setAppInviteOneLink:
                     try executeSetAppInviteOneLink(payload)
-                case .none:
+                case nil:
                     // Unknown command falls back to a standard or custom AppsFlyer event.
                     appsFlyerInstance.logEvent(getEventName(command: commandString),
                                                values: getEventParameters(payload: payload))
@@ -172,14 +175,14 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
         guard let cryptTypeInt = payload[AppsFlyerConstants.Parameters.cryptType] as? Int else {
             throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.cryptType)
         }
-        guard EmailCryptType(rawInt: cryptTypeInt) != nil else {
+        guard let cryptType = EmailCryptType(rawInt: cryptTypeInt) else {
             throw AppsFlyerCommandError.invalidParameterValue(
                 parameter: AppsFlyerConstants.Parameters.cryptType,
                 value: "\(cryptTypeInt)",
                 allowedValues: EmailCryptType.validValues.map { "\($0)" }
             )
         }
-        appsFlyerInstance.setUserEmails(emails: emails, with: cryptTypeInt)
+        appsFlyerInstance.setUserEmails(emails: emails, with: cryptType)
     }
 
     private func executeSetCurrencyCode(_ payload: [String: Any]) throws {
@@ -262,21 +265,15 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
         guard let isUserSubjectToGDPR = payload[AppsFlyerConstants.Parameters.isUserSubjectToGDPR] as? Bool else {
             throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.isUserSubjectToGDPR)
         }
-        guard let hasConsentForDataUsage = payload[AppsFlyerConstants.Parameters.hasConsentForDataUsage] as? Bool else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.hasConsentForDataUsage)
-        }
-        guard let hasConsentForAdsPersonalization = payload[AppsFlyerConstants.Parameters.hasConsentForAdsPersonalization] as? Bool else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.hasConsentForAdsPersonalization)
-        }
-        guard let hasConsentForAdStorage = payload[AppsFlyerConstants.Parameters.hasConsentForAdStorage] as? Bool else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.hasConsentForAdStorage)
-        }
+        let hasConsentForDataUsage = payload[AppsFlyerConstants.Parameters.hasConsentForDataUsage] as? Bool
+        let hasConsentForAdsPersonalization = payload[AppsFlyerConstants.Parameters.hasConsentForAdsPersonalization] as? Bool
+        let hasConsentForAdStorage = payload[AppsFlyerConstants.Parameters.hasConsentForAdStorage] as? Bool
 
         let consent = AppsFlyerConsent(
             isUserSubjectToGDPR: isUserSubjectToGDPR as NSNumber,
-            hasConsentForDataUsage: hasConsentForDataUsage as NSNumber,
-            hasConsentForAdsPersonalization: hasConsentForAdsPersonalization as NSNumber,
-            hasConsentForAdStorage: hasConsentForAdStorage as NSNumber
+            hasConsentForDataUsage: hasConsentForDataUsage as NSNumber?,
+            hasConsentForAdsPersonalization: hasConsentForAdsPersonalization as NSNumber?,
+            hasConsentForAdStorage: hasConsentForAdStorage as NSNumber?
         )
         appsFlyerInstance.setConsentData(consent)
     }
@@ -326,11 +323,10 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
         let sourceApplication = payload[AppsFlyerConstants.Parameters.sourceApplication] as? String
         let annotation = payload[AppsFlyerConstants.Parameters.annotation]
 
-        // Prefer the iOS 9+ options-based overload when `options` is present.
-        // Fall back to the legacy overload for pre-iOS-9 flows or cross-platform payloads
-        // that supply sourceApplication/annotation instead.
+        // Prefer the options-based overload when `options` is present.
+        // Fall back to the legacy overload for cross-platform payloads that supply sourceApplication/annotation instead.
         if let optionsDict = optionsDict {
-            let openURLOptions = Dictionary(uniqueKeysWithValues: optionsDict.compactMap { key, value -> (UIApplication.OpenURLOptionsKey, Any)? in
+            let openURLOptions = Dictionary(uniqueKeysWithValues: optionsDict.map { key, value in
                 (UIApplication.OpenURLOptionsKey(rawValue: key), value)
             })
             appsFlyerInstance.handleOpen(url: url, options: openURLOptions)

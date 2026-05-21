@@ -2,7 +2,7 @@
 //  AppsFlyerInstanceDelegateTests.swift
 //  TealiumAppsFlyerTests
 //
-//  Created by Tealium Inc. on 2026.
+//  Created by Sebastian Krajna on 5/21/26.
 //  Copyright © 2026 Tealium. All rights reserved.
 //
 
@@ -17,7 +17,7 @@ class AppsFlyerInstanceDelegateTests: XCTestCase {
     var instance: SpyAppsFlyerInstance!
 
     override func setUp() {
-        instance = SpyAppsFlyerInstance()
+        instance = SpyAppsFlyerInstance(logger: RemoteCommandLogger())
     }
 
     // MARK: - onConversionDataSuccess
@@ -31,7 +31,10 @@ class AppsFlyerInstanceDelegateTests: XCTestCase {
         ]
         instance.onConversionDataSuccess(data)
         XCTAssertEqual(instance.trackedTitle, "conversion_data_received")
-        XCTAssertNotNil(instance.trackedData)
+        XCTAssertEqual(instance.trackedData?["is_first_launch"] as? Bool, true)
+        XCTAssertEqual(instance.trackedData?["af_status"] as? String, "Non-organic")
+        XCTAssertEqual(instance.trackedData?["source"] as? String, "facebook")
+        XCTAssertEqual(instance.trackedData?["campaign"] as? String, "summer_sale")
     }
 
     func testConversionDataSuccessTracksOnFirstLaunchWithOrganicStatus() {
@@ -65,6 +68,38 @@ class AppsFlyerInstanceDelegateTests: XCTestCase {
         let data: [AnyHashable: Any] = [NSNumber(value: 1): true]
         instance.onConversionDataSuccess(data)
         XCTAssertNil(instance.trackedTitle)
+    }
+
+    func testConversionDataSuccessDoesNotTrackWhenFirstLaunchIsNotBool() {
+        // Key present but wrong type — `as? Bool` cast fails, second guard returns early.
+        let data: [AnyHashable: Any] = [
+            "is_first_launch": "true",
+            "af_status": "Non-organic"
+        ]
+        instance.onConversionDataSuccess(data)
+        XCTAssertNil(instance.trackedTitle)
+    }
+
+    func testConversionDataSuccessWithMissingStatus() {
+        // af_status absent — track still fires before the status guard returns.
+        let data: [AnyHashable: Any] = [
+            "is_first_launch": true
+        ]
+        instance.onConversionDataSuccess(data)
+        XCTAssertEqual(instance.trackedTitle, "conversion_data_received")
+        XCTAssertEqual(instance.trackedData?["is_first_launch"] as? Bool, true)
+        XCTAssertNil(instance.trackedData?["af_status"])
+    }
+
+    func testConversionDataSuccessWithNonOrganicButMissingSourceOrCampaign() {
+        // Non-organic with neither source nor campaign — track still fires, only logger call is skipped.
+        let data: [AnyHashable: Any] = [
+            "is_first_launch": true,
+            "af_status": "Non-organic"
+        ]
+        instance.onConversionDataSuccess(data)
+        XCTAssertEqual(instance.trackedTitle, "conversion_data_received")
+        XCTAssertEqual(instance.trackedData?["af_status"] as? String, "Non-organic")
     }
 
     // MARK: - onConversionDataFail

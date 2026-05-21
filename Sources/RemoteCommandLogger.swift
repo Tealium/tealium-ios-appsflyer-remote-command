@@ -7,35 +7,35 @@
 //
 
 import Foundation
-import os.log
 
-/// Centralized logging utility; verbosity is controlled by `AppsFlyerRemoteCommand.logLevel`.
+/// Centralized logging utility for Remote Command.
+/// Log verbosity is controlled via the `logLevel` parameter passed to `AppsFlyerRemoteCommand`.
 struct RemoteCommandLogger {
-    private let tag = "TealiumAppsFlyer"
-    private let osLog = OSLog(subsystem: "com.tealium.appsflyer", category: "RemoteCommand")
     let logLevel: RemoteCommandLogLevel
+    private let handler: LogHandler
 
-    init(logLevel: RemoteCommandLogLevel = .silent) {
+    init(logLevel: RemoteCommandLogLevel = .silent, handler: LogHandler = OSLogHandler()) {
         self.logLevel = logLevel
+        self.handler = handler
     }
 
     func debug(_ message: String) {
         guard logLevel <= .debug else { return }
-        os_log(.debug, log: osLog, "[%{public}@] %{public}@", tag, message)
+        handler.log(level: .debug, message: message)
     }
 
     func info(_ message: String) {
         guard logLevel <= .info else { return }
-        os_log(.info, log: osLog, "[%{public}@] %{public}@", tag, message)
+        handler.log(level: .info, message: message)
     }
 
     func warning(_ message: String) {
         guard logLevel <= .warning else { return }
-        os_log(.default, log: osLog, "[%{public}@] WARNING: %{public}@", tag, message)
+        handler.log(level: .warning, message: message)
     }
 
     func error(_ message: String) {
         guard logLevel <= .error else { return }
-        os_log(.error, log: osLog, "[%{public}@] ERROR: %{public}@", tag, message)
+        handler.log(level: .error, message: message)
     }
 }
