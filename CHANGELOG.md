@@ -9,9 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - User anonymization support (`anonymizeuser` command)
-- Deep link handling via `handleopen` command with options, source application, and annotation parameters
+- Deep link handling via `handleopen` command, driven by Tealium's automatic deep link tracking (`url`, `source_application`, `annotation` parameters). Requires `config.sendDeepLinkEvent = true`, as the `deep_link` event is opt-in
 - Ad revenue logging (`logadrevenue` command) with support for multiple ad networks
-- GDPR/DMA consent data management (`setconsentdata` command)
+- GDPR/DMA consent data management (`setconsentdata` command). `is_user_subject_to_gdpr` is required; the three consent details are optional and, per AppsFlyer, must be left unmapped when GDPR does not apply. To include consent in the first session, map it ahead of initialize in the same command list: `"launch": "setconsentdata,initialize"`
 - Partner data management (`setpartnerdata` command)
 - Sharing filter for partners (`setsharingfilterforpartners` command)
 - Phone number tracking support (`setphonenumber` command)
@@ -23,11 +23,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cross-platform command aliases: `stoptracking` (Android name for `disabletracking`) and `disabledevicetracking` (backwards-compatible alias for `anonymizeuser`) to support shared TiQ tags on iOS without duplication
 - Validation for negative `deepLinkTimeout` values
 
+### Fixed
+- Deep links arriving on a cold start are no longer lost. `handleOpen` is now gated on `onReady`, and `onReady` publishes after `start()`, so the SDK never receives a deep link before the session has started
+
 ### Changed
 - Update AppsFlyer iOS SDK to 6.17.9
 - Update tealium-swift to 2.18.3
 - Upgrade TealiumSwift dependency to `~> 2.18`
 - Upgrade AppsFlyerFramework to `~> 6.17`
+- **Breaking:** `disabletracking` now requires `stop_tracking` instead of defaulting to `false`. The old default resumed tracking whenever the parameter was unmapped, which could re-enable it for a user who had opted out
+- **Breaking:** `AppsFlyerCommand` gained requirements for the new commands, so existing conformances outside this library no longer compile
+- **Breaking:** `setUserEmails(emails:with:)` now takes an `EmailCryptType` instead of an `Int`, and `email_hash_type` accepts only `0` (none) and `3` (SHA256) — the values AppsFlyer kept in SDK 6.x. Tags mapping the removed SHA1/MD5 types now fail validation instead of hashing with an undefined type
 - Refactor `AppsFlyerConstants` `Configuration` to `String`-based `CaseIterable` enum for improved type safety
 - Standardize parameter names and command structures across all classes
 - Add `AppsFlyerCommandError` with typed error cases (`missingParameter`, `invalidParameterValue`, `invalidParameterType`) replacing scattered `print` calls; errors now route through `RemoteCommandLogger` with configurable log level

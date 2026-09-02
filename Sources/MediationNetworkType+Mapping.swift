@@ -2,7 +2,7 @@
 //  MediationNetworkType+Mapping.swift
 //  TealiumAppsFlyer
 //
-//  Created by Tealium Inc. on 2026.
+//  Created by Sebastian Krajna on 4/22/26.
 //  Copyright © 2026 Tealium. All rights reserved.
 //
 
@@ -33,9 +33,8 @@ extension MediationNetworkType {
     ]
 
     /// Valid string values accepted by the remote command payload for `mediation_network`.
-    static var validValues: [String] {
-        Array(stringMap.keys).sorted()
-    }
+    /// Sorted, so the values quoted in validation errors stay stable across runs.
+    static let validValues: [String] = Array(stringMap.keys).sorted()
 
     /// Initializes from a payload string value. Case-insensitive and trims whitespace.
     /// Returns nil if unrecognized.

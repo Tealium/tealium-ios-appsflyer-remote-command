@@ -18,12 +18,12 @@ import AppsFlyerLib
 /// real implementation.
 class AppsFlyerInstanceInitializeTests: XCTestCase {
 
-    var spyLogHandler: SpyLogHandler!
+    var spyLogHandler: MockLogHandler!
     var instance: AppsFlyerInstance!
 
     override func setUp() {
         super.setUp()
-        spyLogHandler = SpyLogHandler()
+        spyLogHandler = MockLogHandler()
         let logger = RemoteCommandLogger(logLevel: .debug, handler: spyLogHandler)
         instance = AppsFlyerInstance(logger: logger)
         // Reset shared singleton state to keep tests isolated.
@@ -36,10 +36,16 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         lib.disableIDFVCollection = false
         lib.deepLinkTimeout = 0
         lib.oneLinkCustomDomains = []
+        lib.disableSKAdNetwork = false
+        lib.disableAppleAdsAttribution = false
+        lib.shouldCollectDeviceName = false
+        lib.minTimeBetweenSessions = 0
+        lib.customData = nil
+        lib.facebookDeferredAppLink = nil
     }
 
-    /// `initialize` body runs inside `DispatchQueue.main.async` — flush the
-    /// main queue before asserting on `AppsFlyerLib.shared()` properties.
+    /// `initialize` runs its body through `TealiumQueues.secureMainThreadExecution`, which defers
+    /// when called off the main thread — flush before asserting on `AppsFlyerLib.shared()`.
     private func waitForMainQueue() {
         let exp = expectation(description: "main queue flushed")
         DispatchQueue.main.async { exp.fulfill() }
@@ -51,6 +57,74 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         waitForMainQueue()
         XCTAssertEqual(AppsFlyerLib.shared().appsFlyerDevKey, "test_dev_key")
         XCTAssertEqual(AppsFlyerLib.shared().appleAppID, "test_app_id")
+    }
+
+    func testInitializeAppliesMinTimeBetweenSessions() {
+        instance.initialize(appId: "id", appDevKey: "key", settings: ["time_between_sessions": 60])
+        waitForMainQueue()
+        XCTAssertEqual(AppsFlyerLib.shared().minTimeBetweenSessions, 60)
+    }
+
+    /// The SDK property is `UInt`, so converting a negative value would trap.
+    func testInitializeIgnoresNegativeMinTimeBetweenSessions() {
+        instance.initialize(appId: "id", appDevKey: "key", settings: ["time_between_sessions": -1])
+        waitForMainQueue()
+        XCTAssertEqual(AppsFlyerLib.shared().minTimeBetweenSessions, 0)
+    }
+
+    func testInitializeIgnoresNegativeDeepLinkTimeout() {
+        instance.initialize(appId: "id", appDevKey: "key", settings: ["deep_link_timeout": -1])
+        waitForMainQueue()
+        XCTAssertEqual(AppsFlyerLib.shared().deepLinkTimeout, 0)
+    }
+
+    func testInitializeAppliesAppleSettings() {
+        instance.initialize(appId: "id", appDevKey: "key", settings: [
+            "disable_apple_ad_tracking": true,
+            "disable_apple_ads_attribution": true
+        ])
+        waitForMainQueue()
+        XCTAssertTrue(AppsFlyerLib.shared().disableSKAdNetwork)
+        XCTAssertTrue(AppsFlyerLib.shared().disableAppleAdsAttribution)
+    }
+
+    func testInitializeAppliesCollectDeviceName() {
+        instance.initialize(appId: "id", appDevKey: "key", settings: ["collect_device_name": true])
+        waitForMainQueue()
+        XCTAssertTrue(AppsFlyerLib.shared().shouldCollectDeviceName)
+    }
+
+    func testInitializeAppliesCustomData() {
+        instance.initialize(appId: "id", appDevKey: "key", settings: [
+            "custom_data": ["custom_key": "custom_value"]
+        ])
+        waitForMainQueue()
+        XCTAssertEqual(AppsFlyerLib.shared().customData?["custom_key"] as? String, "custom_value")
+    }
+
+    func testInitializeAppliesFacebookDeferredAppLink() {
+        instance.initialize(appId: "id", appDevKey: "key", settings: [
+            "facebook_deferred_app_link": "https://example.com/deferred"
+        ])
+        waitForMainQueue()
+        XCTAssertEqual(AppsFlyerLib.shared().facebookDeferredAppLink?.absoluteString,
+                       "https://example.com/deferred")
+    }
+
+    /// These have no readable SDK property, so the assertion is that the branches run
+    /// and apply cleanly rather than what they set.
+    func testInitializeAcceptsSettingsWithoutReadableState() {
+        instance.initialize(appId: "id", appDevKey: "key", settings: [
+            "enable_tcf_data_collection": true,
+            "push_notification_deep_link_path": ["af_push_link"],
+            "wait_for_att_user_authorization_timeout_interval": NSNumber(value: 45),
+            "deep_link_parameters": [
+                ["contains": "onelink.me", "parameters": ["utm_source": "appsflyer"]]
+            ]
+        ])
+        waitForMainQueue()
+        XCTAssertEqual(AppsFlyerLib.shared().appsFlyerDevKey, "key")
+        XCTAssertEqual(spyLogHandler.messages(for: .error), [])
     }
 
     func testInitializeAppliesDebugSetting() {
@@ -78,8 +152,8 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         XCTAssertEqual(AppsFlyerLib.shared().oneLinkCustomDomains ?? [], domains)
     }
 
-    // Facebook Deferred AppLinks fallback: when the Facebook SDK class is
-    // not linked, the code path must surface an error log instead of crashing.
+    /// Facebook Deferred AppLinks fallback: when the Facebook SDK class is not linked, the code
+    /// path must surface an error log instead of crashing.
     func testInitializeLogsErrorWhenFacebookSDKMissing() {
         instance.initialize(
             appId: "id",
@@ -87,11 +161,11 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
             settings: ["enable_facebook_deferred_applinks": true]
         )
         waitForMainQueue()
-        XCTAssertTrue(spyLogHandler.errors.contains { $0.contains("Facebook SDK not found") },
+        XCTAssertTrue(spyLogHandler.messages(for: .error).contains { $0.contains("Facebook SDK not found") },
                       "Expected error log when FBSDKAppLinkUtility class is unavailable")
     }
 
-    // Disabling the Facebook flag must take the `else` branch and not log an error.
+    /// Disabling the Facebook flag must take the `else` branch and not log an error.
     func testInitializeDoesNotLogWhenFacebookFlagDisabled() {
         instance.initialize(
             appId: "id",
@@ -99,10 +173,10 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
             settings: ["enable_facebook_deferred_applinks": false]
         )
         waitForMainQueue()
-        XCTAssertTrue(spyLogHandler.errors.isEmpty)
+        XCTAssertEqual(spyLogHandler.messages(for: .error), [])
     }
 
-    // Android cross-platform alias maps to the same two SDK properties as the iOS key.
+    /// Android cross-platform alias maps to the same two SDK properties as the iOS key.
     func testInitializeAcceptsDisableAdvertisingIdentifiersAlias() {
         instance.initialize(
             appId: "id",
@@ -114,8 +188,8 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         XCTAssertTrue(AppsFlyerLib.shared().disableIDFVCollection)
     }
 
-    // `disable_idfv_collection` is applied after `disable_ad_tracking` so it can
-    // override the IDFV portion independently.
+    /// `disable_idfv_collection` is applied after `disable_ad_tracking` so it can override the
+    /// IDFV portion independently.
     func testInitializeDisableIDFVCollectionOverridesAfterDisableAdTracking() {
         instance.initialize(
             appId: "id",
@@ -131,22 +205,3 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
     }
 }
 
-// MARK: - Spy
-
-/// Captures log messages so tests can assert against the Facebook fallback branch.
-class SpyLogHandler: LogHandler {
-    var debugs: [String] = []
-    var infos: [String] = []
-    var warnings: [String] = []
-    var errors: [String] = []
-
-    func log(level: RemoteCommandLogLevel, message: String) {
-        switch level {
-        case .debug: debugs.append(message)
-        case .info: infos.append(message)
-        case .warning: warnings.append(message)
-        case .error: errors.append(message)
-        case .silent: break
-        }
-    }
-}

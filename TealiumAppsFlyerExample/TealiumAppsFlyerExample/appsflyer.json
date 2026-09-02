@@ -69,7 +69,6 @@
         "url": "url",
         "source_application": "source_application",
         "annotation": "annotation",
-        "options": "options",
         "signup_method": "event.signup_method",
         "achievement_id": "event.achievement_id",
         "checkout_option": "event.checkout_option",

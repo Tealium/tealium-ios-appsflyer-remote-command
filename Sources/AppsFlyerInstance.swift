@@ -34,7 +34,6 @@ public protocol AppsFlyerCommand {
     func logAdRevenue(_ adRevenueData: AFAdRevenueData, additionalParams: [String: Any]?)
     func setConsentData(_ consent: AppsFlyerConsent)
     func handleOpen(url: URL, sourceApplication: String?, annotation: Any?)
-    func handleOpen(url: URL, options: [UIApplication.OpenURLOptionsKey: Any])
     func setCurrentDeviceLanguage(_ language: String)
     func setAppInviteOneLink(_ oneLinkId: String)
 }
@@ -45,6 +44,13 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     private let _onReady = TealiumReplaySubject<AppsFlyerLib>(cacheSize: 1)
     private let logger: RemoteCommandLogger
 
+    /// Sets no delegate, so attribution callbacks do not fire. Use `init(tealium:)` to track them.
+    public override convenience init() {
+        self.init(logger: RemoteCommandLogger())
+    }
+
+    /// Registers as the `AppsFlyerLibDelegate`, so attribution callbacks
+    /// (`onConversionDataSuccess` and friends) are tracked through `tealium`.
     public init(tealium: Tealium) {
         self.logger = RemoteCommandLogger()
         super.init()
@@ -52,10 +58,11 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         AppsFlyerLib.shared().delegate = self
     }
 
-    // Used by AppsFlyerRemoteCommand. Delegate is not set here, so attribution
-    // callbacks (onConversionDataSuccess etc.) will not fire on this path.
-    // To enable attribution tracking via RemoteCommand, inject a pre-configured
-    // AppsFlyerInstance(tealium:) via AppsFlyerRemoteCommand.init(appsFlyerInstance:).
+    /// Used by `AppsFlyerRemoteCommand` when no instance is supplied. Sets no delegate, so
+    /// attribution callbacks do not fire on this path — a `RemoteCommand` has no access to the
+    /// Tealium instance it belongs to, so it cannot track on its own.
+    /// Pass `AppsFlyerInstance(tealium:)` to `AppsFlyerRemoteCommand.init(appsFlyerInstance:)`
+    /// to enable attribution tracking.
     init(logger: RemoteCommandLogger) {
         self.logger = logger
         super.init()
@@ -76,7 +83,7 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     }
 
     public func initialize(appId: String, appDevKey: String, settings: [String: Any]?) {
-        DispatchQueue.main.async {
+        TealiumQueues.secureMainThreadExecution {
             let appsFlyer = AppsFlyerLib.shared()
             // enableFacebookDeferredApplinks must be called before credentials are set and before start().
             if let enableFacebookDeferredApplinks = settings?[AppsFlyerConstants.Settings.enableFacebookDeferredApplinks] as? Bool {
@@ -106,7 +113,9 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
                 if let disableAppleAdTracking = settings[AppsFlyerConstants.Settings.disableAppleAdTracking] as? Bool {
                     appsFlyer.disableSKAdNetwork = disableAppleAdTracking
                 }
-                if let minTimeBetweenSessions = settings[AppsFlyerConstants.Settings.minTimeBetweenSessions] as? Int {
+                // Guarded because `UInt(negative)` traps.
+                if let minTimeBetweenSessions = settings[AppsFlyerConstants.Settings.minTimeBetweenSessions] as? Int,
+                   minTimeBetweenSessions >= 0 {
                     appsFlyer.minTimeBetweenSessions = UInt(minTimeBetweenSessions)
                 }
                 if let anonymizeUser = settings[AppsFlyerConstants.Settings.anonymizeUser] as? Bool {
@@ -124,7 +133,8 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
                 if let enableTCFDataCollection = settings[AppsFlyerConstants.Settings.enableTCFDataCollection] as? Bool {
                     appsFlyer.enableTCFDataCollection(enableTCFDataCollection)
                 }
-                if let deepLinkTimeout = settings[AppsFlyerConstants.Settings.deepLinkTimeout] as? Int {
+                if let deepLinkTimeout = settings[AppsFlyerConstants.Settings.deepLinkTimeout] as? Int,
+                   deepLinkTimeout >= 0 {
                     appsFlyer.deepLinkTimeout = UInt(deepLinkTimeout)
                 }
                 if let oneLinkCustomDomains = settings[AppsFlyerConstants.Settings.oneLinkCustomDomains] as? [String] {
@@ -157,8 +167,9 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
             }
             // Start the first session. Subsequent sessions require calling start()
             // on each applicationDidBecomeActive — see public func start() below.
-            self._onReady.publish(appsFlyer)
+            // Published after start() so onReady implies a started session.
             appsFlyer.start()
+            self._onReady.publish(appsFlyer)
         }
     }
 
@@ -230,17 +241,19 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     /// an `af_app_opened` event. In a JSON Remote Command setup, send a
     /// Tealium event mapped to the `"start"` command (e.g. `"wake"`).
     public func start() {
-        DispatchQueue.main.async {
+        TealiumQueues.secureMainThreadExecution {
             AppsFlyerLib.shared().start()
         }
     }
 
+    /// Gated on `onReady` because the SDK discards deep links received before `start()`,
+    /// which is what happens on a cold start without the gate.
     public func handleOpen(url: URL, sourceApplication: String?, annotation: Any?) {
-        AppsFlyerLib.shared().handleOpen(url, sourceApplication: sourceApplication, withAnnotation: annotation)
-    }
-
-    public func handleOpen(url: URL, options: [UIApplication.OpenURLOptionsKey: Any]) {
-        AppsFlyerLib.shared().handleOpen(url, options: options)
+        onReady { appsFlyer in
+            TealiumQueues.secureMainThreadExecution {
+                appsFlyer.handleOpen(url, sourceApplication: sourceApplication, withAnnotation: annotation)
+            }
+        }
     }
 
     public func setCurrentDeviceLanguage(_ language: String) {

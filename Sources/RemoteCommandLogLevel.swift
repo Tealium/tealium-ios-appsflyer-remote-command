@@ -2,7 +2,7 @@
 //  RemoteCommandLogLevel.swift
 //  TealiumAppsFlyer
 //
-//  Created by Tealium Inc. on 2026.
+//  Created by Sebastian Krajna on 4/22/26.
 //  Copyright © 2026 Tealium. All rights reserved.
 //
 

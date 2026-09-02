@@ -56,7 +56,7 @@ public enum AppsFlyerConstants {
         "openfrompushnotification": AFEventOpenedFromPushNotification
     ]
 
-    // Command names come from the AppsFlyer SDK https://dev.appsflyer.com/hc/docs/ios-sdk-reference-appsflyerlib
+    /// Command names come from the AppsFlyer SDK https://dev.appsflyer.com/hc/docs/ios-sdk-reference-appsflyerlib
     public enum CommandNames: String, CaseIterable {
         case initialize = "initialize"
         case trackLocation = "tracklocation"
@@ -96,11 +96,11 @@ public enum AppsFlyerConstants {
         case settings = "settings"
     }
 
-    // Settings names come from the AppsFlyer SDK https://dev.appsflyer.com/hc/docs/ios-sdk-reference-appsflyerlib
+    /// Settings names come from the AppsFlyer SDK https://dev.appsflyer.com/hc/docs/ios-sdk-reference-appsflyerlib
     public enum Settings {
         static let debug = "debug"
         static let disableAdTracking = "disable_ad_tracking"
-        // Android cross-platform alias — accepted alongside the canonical iOS key.
+        /// Android cross-platform alias — accepted alongside the canonical iOS key.
         static let disableAdvertisingIdentifiersAlias = "disable_advertising_identifiers"
         static let disableAppleAdsAttribution = "disable_apple_ads_attribution"
         static let disableAppleAdTracking = "disable_apple_ad_tracking"
@@ -132,7 +132,7 @@ public enum AppsFlyerConstants {
         static let stopTracking = "stop_tracking"
         static let anonymizeUser = "anonymize_user"
         static let deepLinkUrls = "af_deep_link"
-        // TiQ UI labels this key as "resolve_deep_links" — accepted as a fallback to avoid silent failures.
+        /// TiQ UI labels this key as "resolve_deep_links" — accepted as a fallback to avoid silent failures.
         static let deepLinkUrlsLegacyTiQ = "resolve_deep_links"
         static let event = "event"
         static let phoneNumber = "phone_number"
@@ -165,7 +165,6 @@ public enum AppsFlyerConstants {
         static let url = "url"
         static let sourceApplication = "source_application"
         static let annotation = "annotation"
-        static let options = "options"
 
         // Device language (for setCurrentDeviceLanguage)
         static let deviceLanguage = "device_language"

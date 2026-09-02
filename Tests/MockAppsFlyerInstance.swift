@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import UIKit
 @testable import TealiumAppsFlyer
 import AppsFlyerLib
 
@@ -33,7 +32,6 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var setSharingFilterForPartnersCount = 0
     var startCount = 0
     var handleOpenWithSourceAppCount = 0
-    var handleOpenWithOptionsCount = 0
     var setAppInviteOneLinkCount = 0
     var lastOneLinkId: String?
     
@@ -73,7 +71,6 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var lastHandleOpenUrl: URL?
     var lastHandleOpenSourceApplication: String?
     var lastHandleOpenAnnotation: Any?
-    var lastHandleOpenOptions: [UIApplication.OpenURLOptionsKey: Any]?
 
     func initialize(appId: String, appDevKey: String, settings: [String : Any]?) {
         lastAppId = appId
@@ -84,7 +81,6 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         } else {
             initWithoutSettingsCount += 1
         }
-        start()
     }
     
     func logEvent(_ eventName: String, values: [String : Any]) {
@@ -193,12 +189,6 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         lastHandleOpenUrl = url
         lastHandleOpenSourceApplication = sourceApplication
         lastHandleOpenAnnotation = annotation
-    }
-
-    func handleOpen(url: URL, options: [UIApplication.OpenURLOptionsKey: Any]) {
-        handleOpenWithOptionsCount += 1
-        lastHandleOpenUrl = url
-        lastHandleOpenOptions = options
     }
 
 }

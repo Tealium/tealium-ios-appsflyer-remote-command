@@ -1,3 +1,11 @@
+//
+//  EmailCryptType+Mapping.swift
+//  TealiumAppsFlyer
+//
+//  Created by Sebastian Krajna on 4/29/26.
+//  Copyright © 2026 Tealium. All rights reserved.
+//
+
 import Foundation
 import AppsFlyerLib
 

@@ -19,6 +19,9 @@
 		45FDF84E2FA3621400F64EE9 /* AppsFlyerInstanceDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45FDF84D2FA3621400F64EE9 /* AppsFlyerInstanceDelegateTests.swift */; };
 		45AAAB022FA3621400F64EE9 /* AppsFlyerInstanceInitializeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45AAAB012FA3621400F64EE9 /* AppsFlyerInstanceInitializeTests.swift */; };
 		45FDF84F2FA3621400F64EE9 /* AppsFlyerConstantsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45FDF84C2FA3621400F64EE9 /* AppsFlyerConstantsTests.swift */; };
+		5EC6EBA123B64FF19C175D5B /* RemoteCommandLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835D398BB5E14D11ADF49CEA /* RemoteCommandLoggerTests.swift */; };
+		01C214109D3741D7B7FD4C5B /* MockLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F2BDD1BCF724DA189A7B335 /* MockLogHandler.swift */; };
+		ADB526F828B34CA7A00E5CDE /* MockRemoteCommandResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9301FA8EE7B4015B90638D5 /* MockRemoteCommandResponse.swift */; };
 		9E7D214A2E12BDDA00EE7E5A /* AppsFlyerRemoteCommandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E7D21492E12BDDA00EE7E5A /* AppsFlyerRemoteCommandTests.swift */; };
 		CF0D01FC232AB7CB005BFE15 /* TealiumAppsFlyer.h in Headers */ = {isa = PBXBuildFile; fileRef = CF0D01EE232AB7CB005BFE15 /* TealiumAppsFlyer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CF0D0208232AB81A005BFE15 /* AppsFlyerRemoteCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF0D0205232AB81A005BFE15 /* AppsFlyerRemoteCommand.swift */; };
@@ -54,6 +57,9 @@
 		45AAAAFF2FA3620400F64EE9 /* LogHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogHandler.swift; sourceTree = "<group>"; };
 		45FDF8462FA3620400F64EE9 /* RemoteCommandLogLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteCommandLogLevel.swift; sourceTree = "<group>"; };
 		45FDF84C2FA3621400F64EE9 /* AppsFlyerConstantsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppsFlyerConstantsTests.swift; sourceTree = "<group>"; };
+		835D398BB5E14D11ADF49CEA /* RemoteCommandLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteCommandLoggerTests.swift; sourceTree = "<group>"; };
+		1F2BDD1BCF724DA189A7B335 /* MockLogHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockLogHandler.swift; sourceTree = "<group>"; };
+		D9301FA8EE7B4015B90638D5 /* MockRemoteCommandResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRemoteCommandResponse.swift; sourceTree = "<group>"; };
 		45FDF84D2FA3621400F64EE9 /* AppsFlyerInstanceDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppsFlyerInstanceDelegateTests.swift; sourceTree = "<group>"; };
 		45AAAB012FA3621400F64EE9 /* AppsFlyerInstanceInitializeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppsFlyerInstanceInitializeTests.swift; sourceTree = "<group>"; };
 		9E7D21492E12BDDA00EE7E5A /* AppsFlyerRemoteCommandTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppsFlyerRemoteCommandTests.swift; sourceTree = "<group>"; };
@@ -145,6 +151,9 @@
 			isa = PBXGroup;
 			children = (
 				45FDF84C2FA3621400F64EE9 /* AppsFlyerConstantsTests.swift */,
+				835D398BB5E14D11ADF49CEA /* RemoteCommandLoggerTests.swift */,
+				1F2BDD1BCF724DA189A7B335 /* MockLogHandler.swift */,
+				D9301FA8EE7B4015B90638D5 /* MockRemoteCommandResponse.swift */,
 				45FDF84D2FA3621400F64EE9 /* AppsFlyerInstanceDelegateTests.swift */,
 				45AAAB012FA3621400F64EE9 /* AppsFlyerInstanceInitializeTests.swift */,
 				15914AE0277A28250051BCB2 /* Support */,
@@ -289,6 +298,9 @@
 				45FDF84E2FA3621400F64EE9 /* AppsFlyerInstanceDelegateTests.swift in Sources */,
 				45AAAB022FA3621400F64EE9 /* AppsFlyerInstanceInitializeTests.swift in Sources */,
 				45FDF84F2FA3621400F64EE9 /* AppsFlyerConstantsTests.swift in Sources */,
+				5EC6EBA123B64FF19C175D5B /* RemoteCommandLoggerTests.swift in Sources */,
+				01C214109D3741D7B7FD4C5B /* MockLogHandler.swift in Sources */,
+				ADB526F828B34CA7A00E5CDE /* MockRemoteCommandResponse.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

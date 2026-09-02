@@ -2,7 +2,7 @@
 //  LogHandler.swift
 //  TealiumAppsFlyer
 //
-//  Created by Tealium Inc. on 2026.
+//  Created by Sebastian Krajna on 5/21/26.
 //  Copyright © 2026 Tealium. All rights reserved.
 //
 

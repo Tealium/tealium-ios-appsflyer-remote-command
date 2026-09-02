@@ -8,6 +8,12 @@
 
 import XCTest
 @testable import TealiumAppsFlyer
+import AppsFlyerLib
+#if COCOAPODS
+import TealiumSwift
+#else
+import TealiumCore
+#endif
 
 /// Tests for AppsFlyerInstance delegate methods that relay attribution events
 /// to Tealium. Uses a spy subclass to intercept tealiumTrack calls without
@@ -18,6 +24,33 @@ class AppsFlyerInstanceDelegateTests: XCTestCase {
 
     override func setUp() {
         instance = SpyAppsFlyerInstance(logger: RemoteCommandLogger())
+    }
+
+    override func tearDown() {
+        AppsFlyerLib.shared().delegate = nil
+        super.tearDown()
+    }
+
+    // MARK: - Delegate registration
+
+    /// `init(tealium:)` is the only path that registers for attribution callbacks — the
+    /// initializer the RemoteCommand uses deliberately leaves the delegate unset.
+    func testInitWithTealiumRegistersAsSDKDelegate() {
+        let config = TealiumConfig(account: "test", profile: "test", environment: "dev")
+        config.collectors = []
+        config.dispatchers = []
+        let tealium = Tealium(config: config)
+        let instance = AppsFlyerInstance(tealium: tealium)
+
+        XCTAssertTrue(AppsFlyerLib.shared().delegate === instance)
+        XCTAssertNil(AppsFlyerInstance(logger: RemoteCommandLogger()).tealium)
+    }
+
+    /// Attribution tracking on the RemoteCommand path has no Tealium instance, so it must
+    /// no-op rather than crash.
+    func testTealiumTrackWithoutTealiumInstanceDoesNothing() {
+        AppsFlyerInstance(logger: RemoteCommandLogger())
+            .tealiumTrack(title: "conversion_data_received", data: ["af_status": "Organic"])
     }
 
     // MARK: - onConversionDataSuccess

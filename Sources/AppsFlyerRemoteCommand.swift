@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import UIKit
 import AppsFlyerLib
 #if COCOAPODS
 import TealiumSwift
@@ -62,17 +61,24 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
         guard let command = payload[AppsFlyerConstants.commandName] as? String else {
             return
         }
+        // Trimmed here rather than relying on `CommandNames.fromString`, because an unresolved
+        // command is passed on as an event name and `getEventName` does not trim.
         let commands = command.split(separator: AppsFlyerConstants.separator)
         let appsflyerCommands = commands.map { command in
             return command.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
         }
-        parseCommands(appsflyerCommands, payload: payload)
+        executeCommands(appsflyerCommands, payload: payload)
     }
 
-    /// Calls each command in sequence; validation errors are caught and forwarded to the logger.
-    func parseCommands(_ commands: [String], payload: [String: Any]) {
+    /// Runs each command in the order given; validation errors are caught and sent to the logger.
+    func executeCommands(_ commands: [String], payload: [String: Any]) {
         commands.forEach { commandString in
-            let command = AppsFlyerConstants.CommandNames.fromString(commandString)
+            guard let command = AppsFlyerConstants.CommandNames.fromString(commandString) else {
+                // Not a built-in command, so treat it as a standard or custom AppsFlyer event.
+                appsFlyerInstance.logEvent(getEventName(command: commandString),
+                                           values: getEventParameters(payload: payload))
+                return
+            }
             do {
                 switch command {
                 case .initialize:
@@ -111,10 +117,6 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     try executeSetCurrentDeviceLanguage(payload)
                 case .setAppInviteOneLink:
                     try executeSetAppInviteOneLink(payload)
-                case nil:
-                    // Unknown command falls back to a standard or custom AppsFlyer event.
-                    appsFlyerInstance.logEvent(getEventName(command: commandString),
-                                               values: getEventParameters(payload: payload))
                 }
             } catch let error as AppsFlyerCommandError {
                 logger.error("Command '\(commandString)' failed: \(error.message)")
@@ -127,54 +129,44 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     // MARK: - Command execution methods
 
     private func executeInitialize(_ payload: [String: Any]) throws {
-        guard let appId = payload[AppsFlyerConstants.Configuration.appId.rawValue] as? String else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Configuration.appId.rawValue)
-        }
-        guard let appDevKey = payload[AppsFlyerConstants.Configuration.appDevKey.rawValue] as? String else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Configuration.appDevKey.rawValue)
-        }
+        let appId = try payload.requireParameter(AppsFlyerConstants.Configuration.appId.rawValue, as: String.self)
+        let appDevKey = try payload.requireParameter(AppsFlyerConstants.Configuration.appDevKey.rawValue, as: String.self)
         guard var settings = payload[AppsFlyerConstants.Configuration.settings.rawValue] as? [String: Any] else {
             logger.debug("Initializing AppsFlyer without settings")
             return appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: nil)
         }
 
-        if let deepLinkTimeout = settings[AppsFlyerConstants.Settings.deepLinkTimeout] as? Int,
-           deepLinkTimeout < 0 {
-            logger.warning("deepLinkTimeout must be >= 0, got: \(deepLinkTimeout). Ignoring setting.")
-            settings.removeValue(forKey: AppsFlyerConstants.Settings.deepLinkTimeout)
-        }
+        // The SDK takes both as `UInt`, so a negative value would trap on conversion.
+        dropNegative(AppsFlyerConstants.Settings.deepLinkTimeout, from: &settings)
+        dropNegative(AppsFlyerConstants.Settings.minTimeBetweenSessions, from: &settings)
 
         logger.debug("Initializing AppsFlyer with settings")
         appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: settings)
     }
 
+    private func dropNegative(_ key: String, from settings: inout [String: Any]) {
+        guard let value = settings[key] as? Int, value < 0 else {
+            return
+        }
+        logger.warning("\(key) must be >= 0, got: \(value). Ignoring setting.")
+        settings.removeValue(forKey: key)
+    }
+
     private func executeTrackLocation(_ payload: [String: Any]) throws {
-        guard let latitude = payload[AppsFlyerConstants.Parameters.latitude] as? Double else {
-            throw AppsFlyerCommandError.invalidParameterType(parameter: AppsFlyerConstants.Parameters.latitude, expectedTypes: "Double")
-        }
-        guard let longitude = payload[AppsFlyerConstants.Parameters.longitude] as? Double else {
-            throw AppsFlyerCommandError.invalidParameterType(parameter: AppsFlyerConstants.Parameters.longitude, expectedTypes: "Double")
-        }
+        let latitude = try payload.requireDouble(AppsFlyerConstants.Parameters.latitude)
+        let longitude = try payload.requireDouble(AppsFlyerConstants.Parameters.longitude)
         appsFlyerInstance.logLocation(longitude: longitude, latitude: latitude)
     }
 
     private func executeSetHost(_ payload: [String: Any]) throws {
-        guard let host = payload[AppsFlyerConstants.Parameters.host] as? String else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.host)
-        }
-        guard let hostPrefix = payload[AppsFlyerConstants.Parameters.hostPrefix] as? String else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.hostPrefix)
-        }
+        let host = try payload.requireParameter(AppsFlyerConstants.Parameters.host, as: String.self)
+        let hostPrefix = try payload.requireParameter(AppsFlyerConstants.Parameters.hostPrefix, as: String.self)
         appsFlyerInstance.setHost(host, with: hostPrefix)
     }
 
     private func executeSetUserEmails(_ payload: [String: Any]) throws {
-        guard let emails = payload[AppsFlyerConstants.Parameters.emails] as? [String] else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.emails)
-        }
-        guard let cryptTypeInt = payload[AppsFlyerConstants.Parameters.cryptType] as? Int else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.cryptType)
-        }
+        let emails = try payload.requireStringArrayAllowingSingleValue(AppsFlyerConstants.Parameters.emails)
+        let cryptTypeInt = try payload.requireParameter(AppsFlyerConstants.Parameters.cryptType, as: Int.self)
         guard let cryptType = EmailCryptType(rawInt: cryptTypeInt) else {
             throw AppsFlyerCommandError.invalidParameterValue(
                 parameter: AppsFlyerConstants.Parameters.cryptType,
@@ -186,62 +178,45 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     }
 
     private func executeSetCurrencyCode(_ payload: [String: Any]) throws {
-        guard let currency = payload[AppsFlyerConstants.Parameters.currency] as? String else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.currency)
-        }
+        let currency = try payload.requireParameter(AppsFlyerConstants.Parameters.currency, as: String.self)
         appsFlyerInstance.currencyCode(currency)
     }
 
     private func executeSetCustomerId(_ payload: [String: Any]) throws {
-        guard let customerId = payload[AppsFlyerConstants.Parameters.customerId] as? String else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.customerId)
-        }
+        let customerId = try payload.requireParameter(AppsFlyerConstants.Parameters.customerId, as: String.self)
         appsFlyerInstance.customerId(customerId)
     }
 
     private func executeDisableTracking(_ payload: [String: Any]) throws {
-        guard let disable = payload[AppsFlyerConstants.Parameters.stopTracking] as? Bool else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.stopTracking)
-        }
+        let disable = try payload.requireParameter(AppsFlyerConstants.Parameters.stopTracking, as: Bool.self)
         appsFlyerInstance.disableTracking(disable)
     }
 
     private func executeAnonymizeUser(_ payload: [String: Any]) throws {
-        guard let anonymize = payload[AppsFlyerConstants.Parameters.anonymizeUser] as? Bool else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.anonymizeUser)
-        }
+        let anonymize = try payload.requireParameter(AppsFlyerConstants.Parameters.anonymizeUser, as: Bool.self)
         appsFlyerInstance.anonymizeUser(anonymize)
     }
 
     private func executeResolveDeepLinkUrls(_ payload: [String: Any]) throws {
-        let deepLinkUrls = (payload[AppsFlyerConstants.Parameters.deepLinkUrls] as? [String])
-            ?? (payload[AppsFlyerConstants.Parameters.deepLinkUrlsLegacyTiQ] as? [String])
-        guard let urls = deepLinkUrls else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.deepLinkUrls)
-        }
+        // Reports against whichever key the tag actually mapped, falling back to the canonical one
+        // so an absent parameter is not blamed on the legacy TiQ alias.
+        let key = [AppsFlyerConstants.Parameters.deepLinkUrls,
+                   AppsFlyerConstants.Parameters.deepLinkUrlsLegacyTiQ].first { payload[$0] != nil }
+            ?? AppsFlyerConstants.Parameters.deepLinkUrls
+        let urls = try payload.requireParameter(key, as: [String].self)
         appsFlyerInstance.resolveDeepLinkURLs(urls)
     }
 
     private func executeSetPhoneNumber(_ payload: [String: Any]) throws {
-        guard let phoneNumber = payload[AppsFlyerConstants.Parameters.phoneNumber] as? String else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.phoneNumber)
-        }
+        let phoneNumber = try payload.requireParameter(AppsFlyerConstants.Parameters.phoneNumber, as: String.self)
         appsFlyerInstance.setPhoneNumber(phoneNumber)
     }
 
     private func executeLogAdRevenue(_ payload: [String: Any]) throws {
-        guard let monetizationNetwork = payload[AppsFlyerConstants.Parameters.monetizationNetwork] as? String else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.monetizationNetwork)
-        }
-        guard let mediationNetwork = payload[AppsFlyerConstants.Parameters.mediationNetwork] as? String else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.mediationNetwork)
-        }
-        guard let currency = payload[AppsFlyerConstants.Parameters.adRevenueCurrency] as? String else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.adRevenueCurrency)
-        }
-        guard let revenue = payload[AppsFlyerConstants.Parameters.adRevenueAmount] as? Double else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.adRevenueAmount)
-        }
+        let monetizationNetwork = try payload.requireParameter(AppsFlyerConstants.Parameters.monetizationNetwork, as: String.self)
+        let mediationNetwork = try payload.requireParameter(AppsFlyerConstants.Parameters.mediationNetwork, as: String.self)
+        let currency = try payload.requireParameter(AppsFlyerConstants.Parameters.adRevenueCurrency, as: String.self)
+        let revenue = try payload.requireDouble(AppsFlyerConstants.Parameters.adRevenueAmount)
         guard let mediationNetworkType = MediationNetworkType(mediationNetwork) else {
             throw AppsFlyerCommandError.invalidParameterValue(
                 parameter: AppsFlyerConstants.Parameters.mediationNetwork,
@@ -261,13 +236,26 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
         appsFlyerInstance.logAdRevenue(adRevenueData, additionalParams: additionalParams)
     }
 
+    /// AppsFlyer documents the call order as initialize, `setConsentData()`, then `start()`:
+    /// https://dev.appsflyer.com/hc/docs/ios-send-consent-for-dma-compliance
+    /// Not gated on `onReady`, which fires after `start()` and would invert that order.
+    ///
+    /// `is_user_subject_to_gdpr` is required, the three consent details are optional, and fields
+    /// left unmapped are omitted from the `consent_data` the SDK sends rather than defaulted.
     private func executeSetConsentData(_ payload: [String: Any]) throws {
-        guard let isUserSubjectToGDPR = payload[AppsFlyerConstants.Parameters.isUserSubjectToGDPR] as? Bool else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.isUserSubjectToGDPR)
-        }
+        let isUserSubjectToGDPR = try payload.requireParameter(AppsFlyerConstants.Parameters.isUserSubjectToGDPR, as: Bool.self)
         let hasConsentForDataUsage = payload[AppsFlyerConstants.Parameters.hasConsentForDataUsage] as? Bool
         let hasConsentForAdsPersonalization = payload[AppsFlyerConstants.Parameters.hasConsentForAdsPersonalization] as? Bool
         let hasConsentForAdStorage = payload[AppsFlyerConstants.Parameters.hasConsentForAdStorage] as? Bool
+
+        // AppsFlyer: "If the GDPR does not apply to the user isUserSubjectToGDPR is false and the
+        // rest of the parameters must be null."
+        // https://dev.appsflyer.com/hc/docs/android-send-consent-for-dma-compliance
+        // Warned rather than dropped, so a deliberate mapping is never silently discarded.
+        if !isUserSubjectToGDPR, hasConsentForDataUsage != nil || hasConsentForAdsPersonalization != nil
+            || hasConsentForAdStorage != nil {
+            logger.warning("\(AppsFlyerConstants.Parameters.isUserSubjectToGDPR) is false, so AppsFlyer expects the other consent parameters to be unmapped.")
+        }
 
         let consent = AppsFlyerConsent(
             isUserSubjectToGDPR: isUserSubjectToGDPR as NSNumber,
@@ -279,9 +267,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     }
 
     private func executeSetPartnerData(_ payload: [String: Any]) throws {
-        guard let partnerId = payload[AppsFlyerConstants.Parameters.partnerId] as? String else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.partnerId)
-        }
+        let partnerId = try payload.requireParameter(AppsFlyerConstants.Parameters.partnerId, as: String.self)
 
         let partnerInfo = payload[AppsFlyerConstants.Parameters.partnerInfo] as? [String: Any]
 
@@ -295,23 +281,17 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     }
 
     private func executeSetCurrentDeviceLanguage(_ payload: [String: Any]) throws {
-        guard let language = payload[AppsFlyerConstants.Parameters.deviceLanguage] as? String else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.deviceLanguage)
-        }
+        let language = try payload.requireParameter(AppsFlyerConstants.Parameters.deviceLanguage, as: String.self)
         appsFlyerInstance.setCurrentDeviceLanguage(language)
     }
 
     private func executeSetAppInviteOneLink(_ payload: [String: Any]) throws {
-        guard let oneLinkId = payload[AppsFlyerConstants.Parameters.appInviteOneLinkID] as? String else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.appInviteOneLinkID)
-        }
+        let oneLinkId = try payload.requireParameter(AppsFlyerConstants.Parameters.appInviteOneLinkID, as: String.self)
         appsFlyerInstance.setAppInviteOneLink(oneLinkId)
     }
 
     private func executeHandleOpen(_ payload: [String: Any]) throws {
-        guard let urlString = payload[AppsFlyerConstants.Parameters.url] as? String else {
-            throw AppsFlyerCommandError.missingParameter(AppsFlyerConstants.Parameters.url)
-        }
+        let urlString = try payload.requireParameter(AppsFlyerConstants.Parameters.url, as: String.self)
         guard let url = URL(string: urlString), url.scheme != nil else {
             throw AppsFlyerCommandError.invalidParameterValue(
                 parameter: AppsFlyerConstants.Parameters.url,
@@ -319,20 +299,11 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 allowedValues: ["a valid URL with scheme"]
             )
         }
-        let optionsDict = payload[AppsFlyerConstants.Parameters.options] as? [String: Any]
+        // Fed by Tealium's automatic deep link tracking, which supplies the URL and the
+        // source application. Annotations are not in the data layer yet, so they stay optional.
         let sourceApplication = payload[AppsFlyerConstants.Parameters.sourceApplication] as? String
         let annotation = payload[AppsFlyerConstants.Parameters.annotation]
-
-        // Prefer the options-based overload when `options` is present.
-        // Fall back to the legacy overload for cross-platform payloads that supply sourceApplication/annotation instead.
-        if let optionsDict = optionsDict {
-            let openURLOptions = Dictionary(uniqueKeysWithValues: optionsDict.map { key, value in
-                (UIApplication.OpenURLOptionsKey(rawValue: key), value)
-            })
-            appsFlyerInstance.handleOpen(url: url, options: openURLOptions)
-        } else {
-            appsFlyerInstance.handleOpen(url: url, sourceApplication: sourceApplication, annotation: annotation)
-        }
+        appsFlyerInstance.handleOpen(url: url, sourceApplication: sourceApplication, annotation: annotation)
     }
 
     func getEventParameters(payload: [String: Any]) -> [String: Any] {
@@ -348,7 +319,49 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
 
 }
 
-fileprivate extension Dictionary where Key == String, Value == Any {
+extension Dictionary where Key == String, Value == Any {
+
+    /// Reads a required parameter, reporting an unmapped key separately from one mapped to the
+    /// wrong type — the log then says which of the two the tag needs fixing.
+    func requireParameter<T>(_ parameter: String, as: T.Type) throws -> T {
+        guard let value = self[parameter] else {
+            throw AppsFlyerCommandError.missingParameter(parameter)
+        }
+        guard let typedValue = value as? T else {
+            throw AppsFlyerCommandError.invalidParameterType(parameter: parameter,
+                                                             expectedTypes: "\(T.self)")
+        }
+        return typedValue
+    }
+
+    /// JSON payloads carry `NSNumber`, which bridges to both `Double` and `Int`, but a payload
+    /// built in Swift carries a native number that only bridges to its own type — so `af_lat: 33`
+    /// needs the `Int` fallback to be accepted.
+    func requireDouble(_ parameter: String) throws -> Double {
+        guard let value = self[parameter] else {
+            throw AppsFlyerCommandError.missingParameter(parameter)
+        }
+        guard let double = value as? Double ?? (value as? Int).map(Double.init) else {
+            throw AppsFlyerCommandError.invalidParameterType(parameter: parameter,
+                                                             expectedTypes: "Double or Int")
+        }
+        return double
+    }
+
+    /// Customers map data layer primitives, so a mapped variable holding one email arrives as a
+    /// bare `String` while the SDK takes an array — both shapes resolve to an array here, as the
+    /// released 3.0.0 also did. Parameters the SDK never accepted as a single value use
+    /// `requireParameter(_:as:)` instead.
+    func requireStringArrayAllowingSingleValue(_ parameter: String) throws -> [String] {
+        guard let value = self[parameter] else {
+            throw AppsFlyerCommandError.missingParameter(parameter)
+        }
+        guard let strings = value as? [String] ?? (value as? String).map({ [$0] }) else {
+            throw AppsFlyerCommandError.invalidParameterType(parameter: parameter,
+                                                             expectedTypes: "[String] or String")
+        }
+        return strings
+    }
 
     private static let allExcludedKeys: Set<String> = {
         let excludedKeys: Set<String> = ["method", AppsFlyerConstants.commandName, AppsFlyerConstants.Settings.debug]

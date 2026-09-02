@@ -140,13 +140,11 @@ class AccountViewController: UIViewController {
         })
         
         ac.addAction(UIAlertAction(title: "Non-EU User", style: .default) { _ in
+            // AppsFlyer requires the consent details to be left out when GDPR does not apply.
             TealiumHelper.trackEvent(title: "set_consent", data: [
-                AccountViewController.isUserSubjectToGDPR: false,
-                AccountViewController.hasConsentForDataUsage: true,
-                AccountViewController.hasConsentForAdsPersonalization: true,
-                AccountViewController.hasConsentForAdStorage: true
+                AccountViewController.isUserSubjectToGDPR: false
             ])
-            self.showConsentResult("Non-EU user - full tracking enabled")
+            self.showConsentResult("GDPR not applicable - consent details omitted")
         })
         
         ac.addAction(UIAlertAction(title: "Cancel", style: .cancel))
