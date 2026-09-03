@@ -20,9 +20,20 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var setCurrencyCodeCount = 0
     var setCustomerIdCount = 0
     var disableTrackingCount = 0
+    var anonymizeUserCount = 0
     var resolveDeepLinkURLsCount = 0
     var setPhoneNumberCount = 0
     var lastPhoneNumber: String?
+    var setCurrentDeviceLanguageCount = 0
+    var lastDeviceLanguage: String?
+    var logAdRevenueCount = 0
+    var setConsentDataCount = 0
+    var setPartnerDataCount = 0
+    var setSharingFilterForPartnersCount = 0
+    var startCount = 0
+    var handleOpenWithSourceAppCount = 0
+    var setAppInviteOneLinkCount = 0
+    var lastOneLinkId: String?
     
     // Store last call parameters for verification
     var lastEventName: String?
@@ -36,18 +47,31 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var lastLatitude: Double?
     var lastHost: String?
     var lastPrefix: String?
-    var lastCryptType: Int?
+    var lastCryptType: EmailCryptType?
     var lastCustomerId: String?
     var lastDisableTracking: Bool?
+    var lastAnonymizeUser: Bool?
     var lastUrls: [String]?
     
-    func initialize(appId: String, appDevKey: String) {
-        initWithoutSettingsCount += 1
-        lastAppId = appId
-        lastAppDevKey = appDevKey
-        lastSettings = nil
-    }
+    // New function parameters
+    var lastMonetizationNetwork: String?
+    var lastMediationNetworkType: MediationNetworkType?
+    var lastAdRevenueCurrency: String?
+    var lastAdRevenueAmount: Double?
+    var lastAdRevenueAdditionalParams: [String: Any]?
+    var lastIsUserSubjectToGDPR: Bool?
+    var lastHasConsentForDataUsage: Bool?
+    var lastHasConsentForAdsPersonalization: Bool?
+    var lastHasConsentForAdStorage: Bool?
+    var lastPartnerId: String?
+    var lastPartnerInfo: [String: Any]?
+    var lastSharingFilter: [String]?
     
+    // Deep link handling parameters
+    var lastHandleOpenUrl: URL?
+    var lastHandleOpenSourceApplication: String?
+    var lastHandleOpenAnnotation: Any?
+
     func initialize(appId: String, appDevKey: String, settings: [String : Any]?) {
         lastAppId = appId
         lastAppDevKey = appDevKey
@@ -77,7 +101,7 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         lastPrefix = prefix
     }
     
-    func setUserEmails(emails: [String], with cryptType: Int) {
+    func setUserEmails(emails: [String], with cryptType: EmailCryptType) {
         setUserEmailsCount += 1
         lastEmails = emails
         lastCryptType = cryptType
@@ -97,7 +121,12 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         disableTrackingCount += 1
         lastDisableTracking = disable
     }
-    
+
+    func anonymizeUser(_ anonymize: Bool) {
+        anonymizeUserCount += 1
+        lastAnonymizeUser = anonymize
+    }
+
     func resolveDeepLinkURLs(_ urls: [String]) {
         resolveDeepLinkURLsCount += 1
         lastUrls = urls
@@ -107,9 +136,59 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         setPhoneNumberCount += 1
         lastPhoneNumber = phoneNumber
     }
-    
+
+    func setCurrentDeviceLanguage(_ language: String) {
+        setCurrentDeviceLanguageCount += 1
+        lastDeviceLanguage = language
+    }
+
+    func start() {
+        startCount += 1
+    }
+
     func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {
         onReady(AppsFlyerLib.shared())
     }
     
+    func logAdRevenue(_ adRevenueData: AFAdRevenueData, additionalParams: [String: Any]?) {
+        logAdRevenueCount += 1
+        lastMonetizationNetwork = adRevenueData.monetizationNetwork
+        lastMediationNetworkType = adRevenueData.mediationNetwork
+        lastAdRevenueCurrency = adRevenueData.currencyIso4217Code
+        lastAdRevenueAmount = adRevenueData.eventRevenue.doubleValue
+        lastAdRevenueAdditionalParams = additionalParams
+    }
+
+    func setConsentData(_ consent: AppsFlyerConsent) {
+        setConsentDataCount += 1
+        lastIsUserSubjectToGDPR = consent.isUserSubjectToGDPR
+        lastHasConsentForDataUsage = consent.hasConsentForDataUsage
+        lastHasConsentForAdsPersonalization = consent.hasConsentForAdsPersonalization
+        // `hasConsentForAdStorage` is exposed as `NSNumber?` on the SDK class — unwrap to Bool for verification.
+        lastHasConsentForAdStorage = consent.hasConsentForAdStorage?.boolValue
+    }
+    
+    func setPartnerData(partnerId: String, partnerInfo: [String: Any]?) {
+        setPartnerDataCount += 1
+        lastPartnerId = partnerId
+        lastPartnerInfo = partnerInfo
+    }
+    
+    func setSharingFilterForPartners(_ sharingFilter: [String]?) {
+        setSharingFilterForPartnersCount += 1
+        lastSharingFilter = sharingFilter
+    }
+    
+    func setAppInviteOneLink(_ oneLinkId: String) {
+        setAppInviteOneLinkCount += 1
+        lastOneLinkId = oneLinkId
+    }
+
+    func handleOpen(url: URL, sourceApplication: String?, annotation: Any?) {
+        handleOpenWithSourceAppCount += 1
+        lastHandleOpenUrl = url
+        lastHandleOpenSourceApplication = sourceApplication
+        lastHandleOpenAnnotation = annotation
+    }
+
 }

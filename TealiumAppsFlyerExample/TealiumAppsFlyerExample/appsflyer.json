@@ -15,7 +15,19 @@
             "app_invite_onelink_id": "",
             "deep_link_timeout": 2000,
             "one_link_custom_domains": [],
-            "facebook_deferred_app_link": ""
+            "facebook_deferred_app_link": "",
+            "push_notification_deep_link_path": ["af_push_link"],
+            "deep_link_parameters": [
+                {
+                    "contains": "onelink.me",
+                    "parameters": {
+                        "utm_source": "appsflyer",
+                        "utm_medium": "deep_link"
+                    }
+                }
+            ],
+            "enable_facebook_deferred_applinks": false,
+            "wait_for_att_user_authorization_timeout_interval": 60
         }
     },
     "mappings": {
@@ -28,8 +40,35 @@
         "host": "host",
         "host_prefix": "host_prefix",
         "stop_tracking": "stop_tracking",
+        "anonymize_user": "anonymize_user",
         "af_deep_link": "af_deep_link",
+        "deep_link_url": "url",
+        "deep_link_referrer_app": "source_application",
         "phone_number": "phone_number",
+        "monetization_network": "monetization_network",
+        "mediation_network": "mediation_network",
+        "ad_revenue_currency": "ad_revenue_currency",
+        "ad_revenue_amount": "ad_revenue_amount",
+        "ad_revenue_ad_unit_id": "ad_revenue_additional_params.ad_unit_id",
+        "ad_revenue_ad_format": "ad_revenue_additional_params.ad_format",
+        "ad_revenue_placement": "ad_revenue_additional_params.placement",
+        "ad_revenue_instance_id": "ad_revenue_additional_params.instance_id",
+        "ad_revenue_country": "ad_revenue_additional_params.country",
+        "ad_revenue_placement_id": "ad_revenue_additional_params.placement_id",
+        "ad_revenue_completion": "ad_revenue_additional_params.completion",
+        "is_user_subject_to_gdpr": "is_user_subject_to_gdpr",
+        "has_consent_for_data_usage": "has_consent_for_data_usage",
+        "has_consent_for_ads_personalization": "has_consent_for_ads_personalization",
+        "has_consent_for_ad_storage": "has_consent_for_ad_storage",
+        "partner_id": "partner_id",
+        "partner_puid": "partner_info.puid",
+        "partner_user_segment": "partner_info.user_segment",
+        "partner_ltv": "partner_info.ltv",
+        "partner_engagement_score": "partner_info.engagement_score",
+        "sharing_filter": "sharing_filter",
+        "url": "url",
+        "source_application": "source_application",
+        "annotation": "annotation",
         "signup_method": "event.signup_method",
         "achievement_id": "event.achievement_id",
         "checkout_option": "event.checkout_option",
@@ -82,16 +121,24 @@
         "preferred_price_range": "event.preferred_price_range",
         "preferred_number_stops": "event.preferred_number_stops",
         "destination_list": "event.destination_list",
-        "category_name": "event.af_content_type"
+        "category_name": "event.af_content_type",
+        "device_language": "device_language"
     },
     "commands": {
         "launch": "initialize",
+        "wake": "start",
         "track_location": "tracklocation",
         "set_host": "sethost",
         "set_currency": "setcurrencycode",
         "disable_tracking": "disabletracking",
+        "anonymize_user": "anonymizeuser",
         "resolve_deep_links": "resolvedeeplinkurls",
         "set_phone_number": "setphonenumber",
+        "set_device_language": "setcurrentdevicelanguage",
+        "ad_revenue": "logadrevenue",
+        "set_consent": "setconsentdata",
+        "set_partner_data": "setpartnerdata",
+        "set_sharing_filter": "setsharingfilterforpartners",
         "user_login": "login",
         "user_register": "setuseremails,setcustomerid,completeregistration",
         "show_offers": "adclick",
@@ -114,6 +161,7 @@
         "start_trial": "starttrial",
         "join_group": "invite",
         "screen_view": "custom_event",
-        "custom_event": "custom_event"
+        "custom_event": "custom_event",
+        "deep_link": "handleopen"
     }
 }

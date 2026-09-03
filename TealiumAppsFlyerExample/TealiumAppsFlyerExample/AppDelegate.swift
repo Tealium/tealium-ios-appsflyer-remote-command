@@ -8,10 +8,7 @@
 
 import UIKit
 import UserNotifications
-import AppsFlyerLib
 import TealiumSwift
-// AppsFlyer Push Notification Campaign
-// https://support.appsflyer.com/hc/en-us/articles/207364076-Measuring-push-notification-re-engagement-campaigns#setting-up-a-push-notification-campaign
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -23,22 +20,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         notificationRegistration(application)
         return true
     }
-    
+
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         tealiumHelper.appsFlyerRemoteCommand.onReady { appsFlyer in
             appsFlyer.registerUninstall(deviceToken)
         }
     }
 
-    func applicationWillResignActive(_ application: UIApplication) { }
-
-    func applicationDidEnterBackground(_ application: UIApplication) { }
-
-    func applicationWillEnterForeground(_ application: UIApplication) { }
-
-    func applicationDidBecomeActive(_ application: UIApplication) { }
-
-    func applicationWillTerminate(_ application: UIApplication) { }
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        TealiumHelper.trackEvent(title: "wake", data: nil)
+    }
 
 }
 

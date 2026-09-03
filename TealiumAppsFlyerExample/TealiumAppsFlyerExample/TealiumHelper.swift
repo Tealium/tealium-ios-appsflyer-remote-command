@@ -27,13 +27,17 @@ class TealiumHelper {
     var tealium: Tealium?
     
     // JSON Remote Command
-    let appsFlyerRemoteCommand = AppsFlyerRemoteCommand(type: .local(file: "appsflyer"))
+    let appsFlyerRemoteCommand = AppsFlyerRemoteCommand(type: .local(file: "appsflyer"),
+                                                       logLevel: .debug)
 
     private init() {
         config.shouldUseRemotePublishSettings = false
         config.batchingEnabled = false
         config.remoteAPIEnabled = true
         config.logLevel = .info
+        // Deep link tracking is automatic, but the `deep_link` event that drives the
+        // `handleopen` command is opt-in. Without this the AppsFlyer SDK never sees the link.
+        config.sendDeepLinkEvent = true
         config.collectors = [Collectors.Lifecycle]
         config.dispatchers = [Dispatchers.TagManagement, Dispatchers.RemoteCommands]
         
