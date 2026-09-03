@@ -497,9 +497,7 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
             onReadyCalled.fulfill()
         }
         appsFlyerCommand.processRemoteCommand(with: payload)
-        TealiumQueues.backgroundSerialQueue.sync {
-            waitForExpectations(timeout: 1.0)
-        }
+        waitForExpectations(timeout: 1.0)
     }
 
     func testOnReadyCalledOnFirstLogWhenManuallyInitialized() {
@@ -513,9 +511,7 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         lib.appleAppID = "test_appid"
         lib.appsFlyerDevKey = "test_devkey"
         appsFlyerCommand.processRemoteCommand(with: payload)
-        TealiumQueues.backgroundSerialQueue.sync {
-            waitForExpectations(timeout: 1.0)
-        }
+        waitForExpectations(timeout: 1.0)
     }
 
     func testOnReadyCalledOnRegistrationWhenPreviouslyManuallyInitialized() {
@@ -527,9 +523,7 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         appsFlyerCommand.onReady { _ in
             onReadyCalled.fulfill()
         }
-        TealiumQueues.backgroundSerialQueue.sync {
-            waitForExpectations(timeout: 1.0)
-        }
+        waitForExpectations(timeout: 1.0)
     }
 
     func testSetPhoneNumber() {

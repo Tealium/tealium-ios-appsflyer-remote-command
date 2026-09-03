@@ -24,6 +24,8 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
         return AppsFlyerConstants.version
     }
 
+    /// Host apps call this from wherever they happen to be — typically `AppDelegate`, on the main
+    /// thread — so hop onto the queue `AppsFlyerInstance` expects.
     public func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {
         TealiumQueues.backgroundSerialQueue.async {
             self.appsFlyerInstance.onReady(onReady)
@@ -80,6 +82,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 return
             }
             do {
+                logger.debug("Executing command: \(commandString)")
                 switch command {
                 case .initialize:
                     try executeInitialize(payload)

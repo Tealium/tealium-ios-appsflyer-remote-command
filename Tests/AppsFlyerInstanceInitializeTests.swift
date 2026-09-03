@@ -44,37 +44,25 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         lib.facebookDeferredAppLink = nil
     }
 
-    /// `initialize` runs its body through `TealiumQueues.secureMainThreadExecution`, which defers
-    /// when called off the main thread — flush before asserting on `AppsFlyerLib.shared()`.
-    private func waitForMainQueue() {
-        let exp = expectation(description: "main queue flushed")
-        DispatchQueue.main.async { exp.fulfill() }
-        wait(for: [exp], timeout: 1.0)
-    }
-
     func testInitializeAppliesCredentials() {
         instance.initialize(appId: "test_app_id", appDevKey: "test_dev_key", settings: nil)
-        waitForMainQueue()
         XCTAssertEqual(AppsFlyerLib.shared().appsFlyerDevKey, "test_dev_key")
         XCTAssertEqual(AppsFlyerLib.shared().appleAppID, "test_app_id")
     }
 
     func testInitializeAppliesMinTimeBetweenSessions() {
         instance.initialize(appId: "id", appDevKey: "key", settings: ["time_between_sessions": 60])
-        waitForMainQueue()
         XCTAssertEqual(AppsFlyerLib.shared().minTimeBetweenSessions, 60)
     }
 
     /// The SDK property is `UInt`, so converting a negative value would trap.
     func testInitializeIgnoresNegativeMinTimeBetweenSessions() {
         instance.initialize(appId: "id", appDevKey: "key", settings: ["time_between_sessions": -1])
-        waitForMainQueue()
         XCTAssertEqual(AppsFlyerLib.shared().minTimeBetweenSessions, 0)
     }
 
     func testInitializeIgnoresNegativeDeepLinkTimeout() {
         instance.initialize(appId: "id", appDevKey: "key", settings: ["deep_link_timeout": -1])
-        waitForMainQueue()
         XCTAssertEqual(AppsFlyerLib.shared().deepLinkTimeout, 0)
     }
 
@@ -83,14 +71,12 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
             "disable_apple_ad_tracking": true,
             "disable_apple_ads_attribution": true
         ])
-        waitForMainQueue()
         XCTAssertTrue(AppsFlyerLib.shared().disableSKAdNetwork)
         XCTAssertTrue(AppsFlyerLib.shared().disableAppleAdsAttribution)
     }
 
     func testInitializeAppliesCollectDeviceName() {
         instance.initialize(appId: "id", appDevKey: "key", settings: ["collect_device_name": true])
-        waitForMainQueue()
         XCTAssertTrue(AppsFlyerLib.shared().shouldCollectDeviceName)
     }
 
@@ -98,7 +84,6 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         instance.initialize(appId: "id", appDevKey: "key", settings: [
             "custom_data": ["custom_key": "custom_value"]
         ])
-        waitForMainQueue()
         XCTAssertEqual(AppsFlyerLib.shared().customData?["custom_key"] as? String, "custom_value")
     }
 
@@ -106,7 +91,6 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         instance.initialize(appId: "id", appDevKey: "key", settings: [
             "facebook_deferred_app_link": "https://example.com/deferred"
         ])
-        waitForMainQueue()
         XCTAssertEqual(AppsFlyerLib.shared().facebookDeferredAppLink?.absoluteString,
                        "https://example.com/deferred")
     }
@@ -122,33 +106,28 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
                 ["contains": "onelink.me", "parameters": ["utm_source": "appsflyer"]]
             ]
         ])
-        waitForMainQueue()
         XCTAssertEqual(AppsFlyerLib.shared().appsFlyerDevKey, "key")
         XCTAssertEqual(spyLogHandler.messages(for: .error), [])
     }
 
     func testInitializeAppliesDebugSetting() {
         instance.initialize(appId: "id", appDevKey: "key", settings: ["debug": true])
-        waitForMainQueue()
         XCTAssertTrue(AppsFlyerLib.shared().isDebug)
     }
 
     func testInitializeAppliesAnonymizeUser() {
         instance.initialize(appId: "id", appDevKey: "key", settings: ["anonymize_user": true])
-        waitForMainQueue()
         XCTAssertTrue(AppsFlyerLib.shared().anonymizeUser)
     }
 
     func testInitializeAppliesDeepLinkTimeout() {
         instance.initialize(appId: "id", appDevKey: "key", settings: ["deep_link_timeout": 5000])
-        waitForMainQueue()
         XCTAssertEqual(AppsFlyerLib.shared().deepLinkTimeout, 5000)
     }
 
     func testInitializeAppliesOneLinkCustomDomains() {
         let domains = ["a.example.com", "b.example.com"]
         instance.initialize(appId: "id", appDevKey: "key", settings: ["one_link_custom_domains": domains])
-        waitForMainQueue()
         XCTAssertEqual(AppsFlyerLib.shared().oneLinkCustomDomains ?? [], domains)
     }
 
@@ -160,7 +139,6 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
             appDevKey: "key",
             settings: ["enable_facebook_deferred_applinks": true]
         )
-        waitForMainQueue()
         XCTAssertTrue(spyLogHandler.messages(for: .error).contains { $0.contains("Facebook SDK not found") },
                       "Expected error log when FBSDKAppLinkUtility class is unavailable")
     }
@@ -172,7 +150,6 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
             appDevKey: "key",
             settings: ["enable_facebook_deferred_applinks": false]
         )
-        waitForMainQueue()
         XCTAssertEqual(spyLogHandler.messages(for: .error), [])
     }
 
@@ -183,7 +160,6 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
             appDevKey: "key",
             settings: ["disable_advertising_identifiers": true]
         )
-        waitForMainQueue()
         XCTAssertTrue(AppsFlyerLib.shared().disableAdvertisingIdentifier)
         XCTAssertTrue(AppsFlyerLib.shared().disableIDFVCollection)
     }
@@ -199,7 +175,6 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
                 "disable_idfv_collection": false
             ]
         )
-        waitForMainQueue()
         XCTAssertTrue(AppsFlyerLib.shared().disableAdvertisingIdentifier)
         XCTAssertFalse(AppsFlyerLib.shared().disableIDFVCollection)
     }

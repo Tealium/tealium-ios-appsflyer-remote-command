@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [3.1.0] - 2026-04-29
 
 ### Added
+- Session start command (`start`). AppsFlyer starts the first session during initialize only, and documents calling `start` on every `applicationDidBecomeActive`, so map this to a foreground event such as `wake` to log each return to the foreground
+- App invite OneLink ID configuration (`setappinviteonelink` command)
 - User anonymization support (`anonymizeuser` command)
 - Deep link handling via `handleopen` command, driven by Tealium's automatic deep link tracking (`url`, `source_application`, `annotation` parameters). Requires `config.sendDeepLinkEvent = true`, as the `deep_link` event is opt-in
 - Ad revenue logging (`logadrevenue` command) with support for multiple ad networks
@@ -36,7 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking:** `setUserEmails(emails:with:)` now takes an `EmailCryptType` instead of an `Int`, and `email_hash_type` accepts only `0` (none) and `3` (SHA256) — the values AppsFlyer kept in SDK 6.x. Tags mapping the removed SHA1/MD5 types now fail validation instead of hashing with an undefined type
 - Refactor `AppsFlyerConstants` `Configuration` to `String`-based `CaseIterable` enum for improved type safety
 - Standardize parameter names and command structures across all classes
-- Add `AppsFlyerCommandError` with typed error cases (`missingParameter`, `invalidParameterValue`, `invalidParameterType`) replacing scattered `print` calls; errors now route through `RemoteCommandLogger` with configurable log level
+- Add `AppsFlyerCommandError` with typed error cases (`missingParameter`, `invalidParameterValue`, `invalidParameterType`) replacing scattered `print` calls; errors now route through `RemoteCommandLogger` with configurable log level, and executed commands are logged at `.debug`
 - Replace deprecated methods with current AppsFlyer SDK equivalents
 - Improve `filterVariables` to use a `Set` for excluded keys
 - Replace event enum with an `eventsMap` dictionary for better maintainability
