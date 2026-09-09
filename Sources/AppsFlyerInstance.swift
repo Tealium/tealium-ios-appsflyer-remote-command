@@ -101,8 +101,12 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
             return
         }
         let appsFlyer = AppsFlyerLib.shared()
-        let appsFlyerManuallyInitialized = !appsFlyer.appsFlyerDevKey.isEmpty || !appsFlyer.appleAppID.isEmpty
-        guard appsFlyerManuallyInitialized else {
+        // SDK 7: credentials being set doesn't mean the session-ready listener has fired, so check
+        // the SDK's own readiness flag instead of inferring it from `appsFlyerDevKey`/`appleAppID`.
+        // A host app that initializes AppsFlyer itself (bypassing `initialize(appId:appDevKey:settings:)`
+        // below) owns the single `registerSessionReadyListener` slot — registering a second listener
+        // here would silently replace theirs, so this only reads readiness, never registers one.
+        guard appsFlyer.isSessionReady() else {
             return
         }
         _onReady.publish(appsFlyer)

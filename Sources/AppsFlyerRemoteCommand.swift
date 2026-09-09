@@ -39,10 +39,10 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     ///     (onConversionDataSuccess etc.). Defaults to a logger-only instance with
     ///     no attribution tracking.
     ///   - type: The RemoteCommand type (webview or JSON).
-    ///   - logLevel: Controls RC log verbosity. Defaults to `.silent` (no output).
+    ///   - logLevel: Controls RC log verbosity. Defaults to `.error` (errors only).
     public init(appsFlyerInstance: AppsFlyerCommand? = nil,
                 type: RemoteCommandType = .webview,
-                logLevel: RemoteCommandLogLevel) {
+                logLevel: RemoteCommandLogLevel = .error) {
         self.logger = RemoteCommandLogger(logLevel: logLevel)
         self.appsFlyerInstance = appsFlyerInstance ?? AppsFlyerInstance(logger: logger)
         weak var weakSelf: AppsFlyerRemoteCommand?
@@ -381,7 +381,11 @@ extension Dictionary where Key == String, Value == Any {
     }
 
     private static let allExcludedKeys: Set<String> = {
-        let excludedKeys: Set<String> = ["method", AppsFlyerConstants.commandName, AppsFlyerConstants.Settings.debug]
+        // "customer_emails"/"email_hash_type" backed the removed SDK 6 setUserEmails API. Excluded
+        // here too so a tag still mapping the removed `setuseremails` command doesn't leak the raw,
+        // unhashed email array as event data through the unknown-command fallback.
+        let excludedKeys: Set<String> = ["method", AppsFlyerConstants.commandName, AppsFlyerConstants.Settings.debug,
+                                          "customer_emails", "email_hash_type"]
         let configurationKeys = Set(AppsFlyerConstants.Configuration.allCases.map { $0.rawValue })
         return excludedKeys.union(configurationKeys)
     }()
