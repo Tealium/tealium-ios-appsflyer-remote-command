@@ -19,7 +19,7 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
     var appsFlyerCommand: AppsFlyerRemoteCommand!
     
     override func setUp() {
-        appsFlyerCommand = AppsFlyerRemoteCommand(appsFlyerInstance: appsFlyerInstance)
+        appsFlyerCommand = AppsFlyerRemoteCommand(appsFlyerInstance: appsFlyerInstance, logLevel: .silent)
     }
 
     override func tearDown() { }
@@ -41,63 +41,95 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertEqual(appsFlyerInstance.logEventCount, 0)
     }
     
-    func testSetUserEmailsWithSingleEmailArray() {
+    func testSetUserEmail() {
         let payload: [String: Any] = [
-            "command_name": "setuseremails",
-            "customer_emails": ["test@example.com"],
+            "command_name": "setuseremail",
+            "email": "test@example.com"
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.setUserEmailCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastEmail, "test@example.com")
+    }
+
+    /// `customer_emails`/`email_hash_type` no longer exist as parameters; leftover mappings from
+    /// the removed `setuseremails` command must not block the call.
+    func testSetUserEmailIgnoresLegacyCryptType() {
+        let payload: [String: Any] = [
+            "command_name": "setuseremail",
+            "email": "test@example.com",
             "email_hash_type": 0
         ]
         appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(appsFlyerInstance.setUserEmailsCount, 1)
-        XCTAssertEqual(appsFlyerInstance.lastEmails?.count, 1)
-        XCTAssertEqual(appsFlyerInstance.lastEmails?.first, "test@example.com")
-        XCTAssertEqual(appsFlyerInstance.lastCryptType, EmailCryptTypeNone)
+        XCTAssertEqual(appsFlyerInstance.setUserEmailCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastEmail, "test@example.com")
     }
 
-    /// A tag mapping one email variable sends a String, not an array — 3.0.0 accepted that.
-    func testSetUserEmailsWithSingleString() {
+    func testSetUserEmailNotRunWithUnsupportedEmailType() {
         let payload: [String: Any] = [
-            "command_name": "setuseremails",
-            "customer_emails": "test@example.com",
-            "email_hash_type": 0
+            "command_name": "setuseremail",
+            "email": 42
         ]
         appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(appsFlyerInstance.setUserEmailsCount, 1)
-        XCTAssertEqual(appsFlyerInstance.lastEmails, ["test@example.com"])
+        XCTAssertEqual(appsFlyerInstance.setUserEmailCount, 0)
+        XCTAssertNil(appsFlyerInstance.lastEmail)
     }
 
-    func testSetUserEmailsNotRunWithUnsupportedEmailsType() {
-        let payload: [String: Any] = [
-            "command_name": "setuseremails",
-            "customer_emails": 42,
-            "email_hash_type": 0
-        ]
+    func testSetUserEmailNotRunWithMissingParameter() {
+        let payload: [String: Any] = ["command_name": "setuseremail"]
         appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(appsFlyerInstance.setUserEmailsCount, 0)
-        XCTAssertNil(appsFlyerInstance.lastEmails)
+        XCTAssertEqual(appsFlyerInstance.setUserEmailCount, 0)
+        XCTAssertNil(appsFlyerInstance.lastEmail)
     }
 
-    func testSetUserEmailsNotRunWithInvalidCryptType() {
-        let payload: [String: Any] = [
-            "command_name": "setuseremails",
-            "customer_emails": ["test@example.com"],
-            "email_hash_type": 2
-        ]
+    func testSetUserFirstName() {
+        let payload: [String: Any] = ["command_name": "setuserfirstname", "first_name": "Ada"]
         appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(appsFlyerInstance.setUserEmailsCount, 0)
-        XCTAssertNil(appsFlyerInstance.lastEmails)
-        XCTAssertNil(appsFlyerInstance.lastCryptType)
+        XCTAssertEqual(appsFlyerInstance.setUserFirstNameCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastFirstName, "Ada")
     }
 
-    func testSetUserEmailsNotRunWithMissingCryptType() {
-        let payload: [String: Any] = [
-            "command_name": "setuseremails",
-            "customer_emails": ["test@example.com"]
-        ]
+    func testSetUserFirstNameNotRunWithMissingParameter() {
+        appsFlyerCommand.processRemoteCommand(with: ["command_name": "setuserfirstname"])
+        XCTAssertEqual(appsFlyerInstance.setUserFirstNameCount, 0)
+    }
+
+    func testSetUserLastName() {
+        let payload: [String: Any] = ["command_name": "setuserlastname", "last_name": "Lovelace"]
         appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(appsFlyerInstance.setUserEmailsCount, 0)
-        XCTAssertNil(appsFlyerInstance.lastEmails)
-        XCTAssertNil(appsFlyerInstance.lastCryptType)
+        XCTAssertEqual(appsFlyerInstance.setUserLastNameCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastLastName, "Lovelace")
+    }
+
+    func testSetUserLastNameNotRunWithMissingParameter() {
+        appsFlyerCommand.processRemoteCommand(with: ["command_name": "setuserlastname"])
+        XCTAssertEqual(appsFlyerInstance.setUserLastNameCount, 0)
+    }
+
+    func testSetUserFbLoginId() {
+        let payload: [String: Any] = ["command_name": "setuserfbloginid", "fb_login_id": 1234567890123]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.setUserFbLoginIdCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastFbLoginId, 1234567890123)
+    }
+
+    /// `0` is the SDK's unset sentinel, so it must reach the SDK rather than be rejected.
+    func testSetUserFbLoginIdAcceptsZeroSentinel() {
+        let payload: [String: Any] = ["command_name": "setuserfbloginid", "fb_login_id": 0]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.setUserFbLoginIdCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastFbLoginId, 0)
+    }
+
+    func testSetUserFbLoginIdNotRunWithUnsupportedType() {
+        let payload: [String: Any] = ["command_name": "setuserfbloginid", "fb_login_id": "not-a-number"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.setUserFbLoginIdCount, 0)
+        XCTAssertNil(appsFlyerInstance.lastFbLoginId)
+    }
+
+    func testClearUserPii() {
+        appsFlyerCommand.processRemoteCommand(with: ["command_name": "clearuserpii"])
+        XCTAssertEqual(appsFlyerInstance.clearUserPiiCount, 1)
     }
     
     func testMultipleCommands() {
@@ -403,24 +435,17 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertNil(appsFlyerInstance.lastPrefix)
     }
 
-    func testSetUserEmails() {
-        let emails = ["user@example.com", "admin@example.com"]
+    /// `setuseremails` was removed with the SDK 7 API behind it. Unrecognised command names fall
+    /// through to the custom-event path, so a stale tag logs an event rather than failing — pinned
+    /// here so the consequence stays deliberate and visible.
+    func testRemovedSetUserEmailsCommandFallsThroughToCustomEvent() {
         let payload: [String: Any] = ["command_name": "setuseremails",
-                                      "customer_emails": emails,
+                                      "customer_emails": ["user@example.com"],
                                       "email_hash_type": 3]
         appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(1, self.appsFlyerInstance.setUserEmailsCount)
-        XCTAssertEqual(appsFlyerInstance.lastEmails, emails)
-        XCTAssertEqual(appsFlyerInstance.lastCryptType, EmailCryptTypeSHA256)
-    }
-
-    func testSetUserEmailsNotRunWithoutEmails() {
-        let payload: [String: Any] = ["command_name": "setuseremails",
-                                      "email_hash_type": 0]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(0, self.appsFlyerInstance.setUserEmailsCount)
-        XCTAssertNil(appsFlyerInstance.lastEmails)
-        XCTAssertNil(appsFlyerInstance.lastCryptType)
+        XCTAssertEqual(0, appsFlyerInstance.setUserEmailCount)
+        XCTAssertEqual(1, appsFlyerInstance.logEventCount)
+        XCTAssertEqual("setuseremails", appsFlyerInstance.lastEventName)
     }
     
     func testSetCurrencyCode() {
@@ -492,7 +517,7 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         let payload: [String: Any] = ["command_name": "initialize",
                                       "app_id": "test",
                                       "app_dev_key": "test"]
-        appsFlyerCommand = AppsFlyerRemoteCommand()
+        appsFlyerCommand = AppsFlyerRemoteCommand(logLevel: .silent)
         appsFlyerCommand.onReady { _ in
             onReadyCalled.fulfill()
         }
@@ -503,23 +528,21 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
     func testOnReadyCalledOnFirstLogWhenManuallyInitialized() {
         let onReadyCalled = expectation(description: "OnReady is called")
         let payload: [String: Any] = ["command_name": "viewedcontent"]
-        appsFlyerCommand = AppsFlyerRemoteCommand()
+        appsFlyerCommand = AppsFlyerRemoteCommand(logLevel: .silent)
         appsFlyerCommand.onReady { _ in
             onReadyCalled.fulfill()
         }
         let lib = AppsFlyerLib.shared()
-        lib.appleAppID = "test_appid"
-        lib.appsFlyerDevKey = "test_devkey"
+        lib.initialize(devKey: "test_devkey", appId: "test_appid")
         appsFlyerCommand.processRemoteCommand(with: payload)
         waitForExpectations(timeout: 1.0)
     }
 
     func testOnReadyCalledOnRegistrationWhenPreviouslyManuallyInitialized() {
         let onReadyCalled = expectation(description: "OnReady is called")
-        appsFlyerCommand = AppsFlyerRemoteCommand()
+        appsFlyerCommand = AppsFlyerRemoteCommand(logLevel: .silent)
         let lib = AppsFlyerLib.shared()
-        lib.appleAppID = "test_appid"
-        lib.appsFlyerDevKey = "test_devkey"
+        lib.initialize(devKey: "test_devkey", appId: "test_appid")
         appsFlyerCommand.onReady { _ in
             onReadyCalled.fulfill()
         }
@@ -529,11 +552,25 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
     func testSetPhoneNumber() {
         let payload: [String: Any] = [
             "command_name": "setphonenumber",
-            "phone_number": "+48123456789"
+            "country_code": "48",
+            "phone_number": "123456789"
         ]
         appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(appsFlyerInstance.setPhoneNumberCount, 1)
-        XCTAssertEqual(appsFlyerInstance.lastPhoneNumber, "+48123456789")
+        XCTAssertEqual(appsFlyerInstance.setUserPhoneCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastCountryCode, "48")
+        XCTAssertEqual(appsFlyerInstance.lastPhoneNumber, "123456789")
+    }
+
+    /// SDK 7 needs the country code separately, so a tag mapping only `phone_number` must fail
+    /// rather than send a number the SDK cannot normalise.
+    func testSetPhoneNumberNotRunWithoutCountryCode() {
+        let payload: [String: Any] = [
+            "command_name": "setphonenumber",
+            "phone_number": "123456789"
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.setUserPhoneCount, 0)
+        XCTAssertNil(appsFlyerInstance.lastPhoneNumber)
     }
 
     func testDeepLinkTimeoutValidation() {
@@ -813,7 +850,7 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
     func testHandleOpenNotRunWhenURLInitReturnsNil() {
         for urlString in ["http://exa mple.com", ""] {
             appsFlyerInstance = MockAppsFlyerInstance()
-            appsFlyerCommand = AppsFlyerRemoteCommand(appsFlyerInstance: appsFlyerInstance)
+            appsFlyerCommand = AppsFlyerRemoteCommand(appsFlyerInstance: appsFlyerInstance, logLevel: .silent)
 
             appsFlyerCommand.processRemoteCommand(with: [
                 "command_name": "handleopen",
@@ -847,7 +884,7 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
 
         for (index, testURL) in testURLs.enumerated() {
             appsFlyerInstance = MockAppsFlyerInstance()
-            appsFlyerCommand = AppsFlyerRemoteCommand(appsFlyerInstance: appsFlyerInstance)
+            appsFlyerCommand = AppsFlyerRemoteCommand(appsFlyerInstance: appsFlyerInstance, logLevel: .silent)
 
             let payload: [String: Any] = [
                 "command_name": "handleopen",
@@ -898,7 +935,7 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
     func testSetPhoneNumberNotRun() {
         let payload: [String: Any] = ["command_name": "setphonenumber"]
         appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(0, appsFlyerInstance.setPhoneNumberCount)
+        XCTAssertEqual(0, appsFlyerInstance.setUserPhoneCount)
         XCTAssertNil(appsFlyerInstance.lastPhoneNumber)
     }
 
@@ -941,7 +978,7 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
     /// 3.0.0 exposed `AppsFlyerInstance()` and integrators passed it in like this, so the
     /// parameterless initializer has to keep compiling.
     func testParameterlessInstanceInitRemainsAvailable() {
-        let command = AppsFlyerRemoteCommand(appsFlyerInstance: AppsFlyerInstance())
+        let command = AppsFlyerRemoteCommand(appsFlyerInstance: AppsFlyerInstance(), logLevel: .silent)
         XCTAssertEqual(command.version, AppsFlyerConstants.version)
     }
 

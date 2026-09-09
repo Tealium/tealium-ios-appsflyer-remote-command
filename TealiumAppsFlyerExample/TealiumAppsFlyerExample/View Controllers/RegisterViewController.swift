@@ -15,7 +15,6 @@ class RegisterViewController: UIViewController {
     @IBOutlet weak var email: UITextField!
     @IBOutlet weak var username: UITextField!
     @IBOutlet weak var password: UITextField!
-    var customerEmails = [String]()
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -31,12 +30,11 @@ class RegisterViewController: UIViewController {
     }
 
     @IBAction func onRegister(_ sender: Any) {
-        if let customerEmail = email.text {
-            customerEmails.append(customerEmail)
-        }
-        // Add customer emails array to payload
-        // Add email hash type of 3 to payload
-        TealiumHelper.trackEvent(title: "user_register", data: [RegisterViewController.customerId: "ABC123", RegisterViewController.signUpMethod: "apple", RegisterViewController.customerEmails: customerEmails, RegisterViewController.emailHashType: 3])
+        TealiumHelper.trackEvent(title: "user_register", data: [
+            RegisterViewController.customerId: "ABC123",
+            RegisterViewController.signUpMethod: "apple",
+            RegisterViewController.email: email.text ?? ""
+        ])
     }
 
     @IBAction func setPhoneNumberTapped(_ sender: UIButton) {
@@ -86,7 +84,6 @@ extension RegisterViewController: UITextFieldDelegate {
 extension RegisterViewController {
     static let customerId = "customer_id"
     static let signUpMethod = "signup_method"
-    static let customerEmails = "customer_emails"
-    static let emailHashType = "email_hash_type"
+    static let email = "email"
     static let phoneNumber = "phone_number"
 }

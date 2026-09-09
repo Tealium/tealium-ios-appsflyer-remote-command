@@ -23,7 +23,7 @@ class AppsFlyerInstanceDelegateTests: XCTestCase {
     var instance: SpyAppsFlyerInstance!
 
     override func setUp() {
-        instance = SpyAppsFlyerInstance(logger: RemoteCommandLogger())
+        instance = SpyAppsFlyerInstance(logger: RemoteCommandLogger(logLevel: .silent))
     }
 
     override func tearDown() {
@@ -40,16 +40,16 @@ class AppsFlyerInstanceDelegateTests: XCTestCase {
         config.collectors = []
         config.dispatchers = []
         let tealium = Tealium(config: config)
-        let instance = AppsFlyerInstance(tealium: tealium)
+        let instance = AppsFlyerInstance(tealium: tealium, logLevel: .silent)
 
         XCTAssertTrue(AppsFlyerLib.shared().delegate === instance)
-        XCTAssertNil(AppsFlyerInstance(logger: RemoteCommandLogger()).tealium)
+        XCTAssertNil(AppsFlyerInstance(logger: RemoteCommandLogger(logLevel: .silent)).tealium)
     }
 
     /// Attribution tracking on the RemoteCommand path has no Tealium instance, so it must
     /// no-op rather than crash.
     func testTealiumTrackWithoutTealiumInstanceDoesNothing() {
-        AppsFlyerInstance(logger: RemoteCommandLogger())
+        AppsFlyerInstance(logger: RemoteCommandLogger(logLevel: .silent))
             .tealiumTrack(title: "conversion_data_received", data: ["af_status": "Organic"])
     }
 
@@ -145,31 +145,34 @@ class AppsFlyerInstanceDelegateTests: XCTestCase {
         XCTAssertEqual(instance.trackedData?["error_description"] as? String, error.localizedDescription)
     }
 
-    // MARK: - onAppOpenAttribution
+    // MARK: - didResolveDeepLink (via trackDeepLinkResult — AppsFlyerDeepLinkResult/DeepLink have
+    // no public initializer, so the SDK type itself cannot be constructed in a test)
 
-    func testAppOpenAttributionTracksWithData() {
-        let data: [AnyHashable: Any] = ["deep_link_value": "product123", "campaign": "promo"]
-        instance.onAppOpenAttribution(data)
+    func testDeepLinkFoundTracksWithClickEvent() {
+        let clickEvent: [String: Any] = ["deep_link_value": "product123", "campaign": "promo"]
+        instance.trackDeepLinkResult(status: .found, clickEvent: clickEvent, error: nil)
         XCTAssertEqual(instance.trackedTitle, "app_open_attribution")
         XCTAssertEqual(instance.trackedData?["deep_link_value"] as? String, "product123")
     }
 
-    func testAppOpenAttributionTracksWithoutDataWhenCastFails() {
-        // Keys are NSNumber — cast to [String: Any] fails, fallback to nil data.
-        let data: [AnyHashable: Any] = [NSNumber(value: 1): "val"]
-        instance.onAppOpenAttribution(data)
+    func testDeepLinkFoundTracksWithoutDataWhenClickEventMissing() {
+        instance.trackDeepLinkResult(status: .found, clickEvent: nil, error: nil)
         XCTAssertEqual(instance.trackedTitle, "app_open_attribution")
         XCTAssertNil(instance.trackedData)
     }
 
-    // MARK: - onAppOpenAttributionFailure
-
-    func testAppOpenAttributionFailureTracksErrorEvent() {
+    func testDeepLinkFailureTracksErrorEvent() {
         let error = NSError(domain: "test", code: 99, userInfo: [NSLocalizedDescriptionKey: "deep link error"])
-        instance.onAppOpenAttributionFailure(error)
+        instance.trackDeepLinkResult(status: .failure, clickEvent: nil, error: error)
         XCTAssertEqual(instance.trackedTitle, "appsflyer_error")
         XCTAssertEqual(instance.trackedData?["error_name"] as? String, "app_open_attribution_failure")
         XCTAssertEqual(instance.trackedData?["error_description"] as? String, error.localizedDescription)
+    }
+
+    func testDeepLinkNotFoundTracksNothing() {
+        instance.trackDeepLinkResult(status: .notFound, clickEvent: nil, error: nil)
+        XCTAssertNil(instance.trackedTitle)
+        XCTAssertNil(instance.trackedData)
     }
 }
 

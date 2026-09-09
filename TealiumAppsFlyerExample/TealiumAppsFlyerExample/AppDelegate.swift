@@ -27,10 +27,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
 
-    func applicationDidBecomeActive(_ application: UIApplication) {
-        TealiumHelper.trackEvent(title: "wake", data: nil)
-    }
-
 }
 
 extension AppDelegate: UNUserNotificationCenterDelegate {

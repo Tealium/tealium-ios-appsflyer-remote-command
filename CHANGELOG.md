@@ -5,10 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.1.0] - 2026-04-29
+## [4.0.0]
 
 ### Added
-- Session start command (`start`). AppsFlyer starts the first session during initialize only, and documents calling `start` on every `applicationDidBecomeActive`, so map this to a foreground event such as `wake` to log each return to the foreground
+- Session start command (`start`), for manually resuming a session after `disabletracking`/`stoptracking` — matches Android's usage. AppsFlyer SDK 7 re-invokes the session-ready listener registered during `initialize` on every foreground automatically, so this command is no longer needed for that
+- Hashed-PII commands added in AppsFlyer SDK 7 — `setuseremail`, `setuserfirstname`, `setuserlastname`, `setuserfbloginid`, `clearuserpii` — with `email`, `first_name`, `last_name`, and `fb_login_id` parameters. The SDK normalizes and SHA-256 hashes each value on-device before sending it
 - App invite OneLink ID configuration (`setappinviteonelink` command)
 - User anonymization support (`anonymizeuser` command)
 - Deep link handling via `handleopen` command, driven by Tealium's automatic deep link tracking (`url`, `source_application`, `annotation` parameters). Requires `config.sendDeepLinkEvent = true`, as the `deep_link` event is opt-in
@@ -26,16 +27,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Validation for negative `deepLinkTimeout` values
 
 ### Fixed
-- Deep links arriving on a cold start are no longer lost. `handleOpen` is now gated on `onReady`, and `onReady` publishes after `start()`, so the SDK never receives a deep link before the session has started
+- Deep links arriving on a cold start are no longer lost. `handleOpen` is now gated on `onReady`, and `onReady` publishes once the session-ready listener fires, so the SDK never receives a deep link before the session has started
+- `isDebug` is now set before any other SDK call during `initialize`, instead of partway through — AppsFlyer SDK 7 requires this ordering for debug logging to cover the full initialization sequence
 
 ### Changed
-- Update AppsFlyer iOS SDK to 6.17.9
+- Update AppsFlyer iOS SDK to `~> 7.0`
 - Update tealium-swift to 2.18.3
 - Upgrade TealiumSwift dependency to `~> 2.18`
-- Upgrade AppsFlyerFramework to `~> 6.17`
+- **Breaking:** AppsFlyer SDK 7 replaces automatic session start with an explicit readiness model. `initialize` now registers a session-ready listener and calls `start` inside it, rather than starting the session directly
+- **Breaking:** `setHost` and `setPartnerData` internal argument order/labels changed to match AppsFlyer SDK 7's renamed methods. No change to the `sethost`/`setpartnerdata` command parameters themselves
+- **Breaking:** `setphonenumber` now also requires `country_code`, matching AppsFlyer SDK 7's `setUserPhone(countryCode:phoneNumber:)`. A tag mapping only `phone_number` now fails validation instead of sending a number the SDK can no longer accept alone
 - **Breaking:** `disabletracking` now requires `stop_tracking` instead of defaulting to `false`. The old default resumed tracking whenever the parameter was unmapped, which could re-enable it for a user who had opted out
-- **Breaking:** `AppsFlyerCommand` gained requirements for the new commands, so existing conformances outside this library no longer compile
-- **Breaking:** `setUserEmails(emails:with:)` now takes an `EmailCryptType` instead of an `Int`, and `email_hash_type` accepts only `0` (none) and `3` (SHA256) — the values AppsFlyer kept in SDK 6.x. Tags mapping the removed SHA1/MD5 types now fail validation instead of hashing with an undefined type
+- **Breaking:** `AppsFlyerCommand` gained requirements for the new commands added in this release (including the hashed-PII ones), so existing conformances outside this library no longer compile
+- **Breaking:** `logLevel` is now a required argument on `AppsFlyerRemoteCommand.init` and `AppsFlyerInstance.init`, instead of defaulting to `.silent`. Existing call sites that omitted it no longer compile — pass `.silent` to keep the previous behaviour
+- **Breaking:** `tealium` is now a required argument on `AppsFlyerInstance.init(tealium:logLevel:)`, instead of defaulting to `nil`. Passing `nil` silently left attribution callbacks untracked, so the choice is now explicit at the call site
+- Attribution data for app opens is now delivered through `AppsFlyerDeepLinkDelegate.didResolveDeepLink`, which AppsFlyer SDK 7 uses in place of the removed `onAppOpenAttribution`/`onAppOpenAttributionFailure` callbacks. Tracked event names and data shape are unchanged
 - Refactor `AppsFlyerConstants` `Configuration` to `String`-based `CaseIterable` enum for improved type safety
 - Standardize parameter names and command structures across all classes
 - Add `AppsFlyerCommandError` with typed error cases (`missingParameter`, `invalidParameterValue`, `invalidParameterType`) replacing scattered `print` calls; errors now route through `RemoteCommandLogger` with configurable log level, and executed commands are logged at `.debug`
@@ -43,6 +49,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improve `filterVariables` to use a `Set` for excluded keys
 - Replace event enum with an `eventsMap` dictionary for better maintainability
 - Update advertising identifier and IDFV collection settings with deprecation handling
+
+### Removed
+- **Breaking:** `setuseremails` command and its `customer_emails`/`email_hash_type` parameters. AppsFlyer SDK 7 removed the underlying `setUserEmails(_:withCryptType:)` API — hashing is no longer optional. Use `setuseremail` with the new `email` parameter instead; a tag still mapping `customer_emails` now fails with a missing-parameter error instead of continuing to work
+- **Breaking:** `wait_for_att_user_authorization_timeout_interval` setting. AppsFlyer SDK 7 removed ATT timing management from the SDK — collecting ATT consent before `start` is now the host app's responsibility, done inside the session-ready listener. A tag still mapping this setting is silently ignored
 
 ## [3.0.0] - 2024-03-15
 

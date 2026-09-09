@@ -11,7 +11,6 @@
 		15914AD7277A12F50051BCB2 /* TealiumCore.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 15914AD4277A12F50051BCB2 /* TealiumCore.xcframework */; };
 		15914AD8277A12F50051BCB2 /* TealiumRemoteCommands.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 15914AD5277A12F50051BCB2 /* TealiumRemoteCommands.xcframework */; };
 		45FDF8472FA3620400F64EE9 /* RemoteCommandLogLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45FDF8462FA3620400F64EE9 /* RemoteCommandLogLevel.swift */; };
-		45FDF8482FA3620400F64EE9 /* EmailCryptType+Mapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45FDF8432FA3620400F64EE9 /* EmailCryptType+Mapping.swift */; };
 		45FDF8492FA3620400F64EE9 /* MediationNetworkType+Mapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45FDF8442FA3620400F64EE9 /* MediationNetworkType+Mapping.swift */; };
 		45FDF84A2FA3620400F64EE9 /* AppsFlyerCommandError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45FDF8422FA3620400F64EE9 /* AppsFlyerCommandError.swift */; };
 		45FDF84B2FA3620400F64EE9 /* RemoteCommandLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45FDF8452FA3620400F64EE9 /* RemoteCommandLogger.swift */; };
@@ -51,7 +50,6 @@
 		15914ADF277A28170051BCB2 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		15914AE1277A28250051BCB2 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		45FDF8422FA3620400F64EE9 /* AppsFlyerCommandError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppsFlyerCommandError.swift; sourceTree = "<group>"; };
-		45FDF8432FA3620400F64EE9 /* EmailCryptType+Mapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EmailCryptType+Mapping.swift"; sourceTree = "<group>"; };
 		45FDF8442FA3620400F64EE9 /* MediationNetworkType+Mapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MediationNetworkType+Mapping.swift"; sourceTree = "<group>"; };
 		45FDF8452FA3620400F64EE9 /* RemoteCommandLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteCommandLogger.swift; sourceTree = "<group>"; };
 		45AAAAFF2FA3620400F64EE9 /* LogHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogHandler.swift; sourceTree = "<group>"; };
@@ -133,7 +131,6 @@
 			isa = PBXGroup;
 			children = (
 				45FDF8422FA3620400F64EE9 /* AppsFlyerCommandError.swift */,
-				45FDF8432FA3620400F64EE9 /* EmailCryptType+Mapping.swift */,
 				45FDF8442FA3620400F64EE9 /* MediationNetworkType+Mapping.swift */,
 				45FDF8452FA3620400F64EE9 /* RemoteCommandLogger.swift */,
 				45AAAAFF2FA3620400F64EE9 /* LogHandler.swift */,
@@ -281,7 +278,6 @@
 				CF3F5C1223E258D10007C9B1 /* AppsFlyerInstance.swift in Sources */,
 				CF0D0208232AB81A005BFE15 /* AppsFlyerRemoteCommand.swift in Sources */,
 				45FDF8472FA3620400F64EE9 /* RemoteCommandLogLevel.swift in Sources */,
-				45FDF8482FA3620400F64EE9 /* EmailCryptType+Mapping.swift in Sources */,
 				45FDF8492FA3620400F64EE9 /* MediationNetworkType+Mapping.swift in Sources */,
 				45FDF84A2FA3620400F64EE9 /* AppsFlyerCommandError.swift in Sources */,
 				45FDF84B2FA3620400F64EE9 /* RemoteCommandLogger.swift in Sources */,

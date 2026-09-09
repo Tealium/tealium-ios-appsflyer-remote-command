@@ -25,7 +25,7 @@ class TealiumHelper {
                                environment: TealiumConfiguration.environment)
 
     var tealium: Tealium?
-    
+
     // JSON Remote Command
     let appsFlyerRemoteCommand = AppsFlyerRemoteCommand(type: .local(file: "appsflyer"),
                                                        logLevel: .debug)
@@ -40,9 +40,9 @@ class TealiumHelper {
         config.sendDeepLinkEvent = true
         config.collectors = [Collectors.Lifecycle]
         config.dispatchers = [Dispatchers.TagManagement, Dispatchers.RemoteCommands]
-        
+
         config.addRemoteCommand(appsFlyerRemoteCommand)
-        
+
         tealium = Tealium(config: config)
     }
 

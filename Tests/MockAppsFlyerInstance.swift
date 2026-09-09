@@ -16,14 +16,19 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var logEventCount = 0
     var logLocationCount = 0
     var setHostCount = 0
-    var setUserEmailsCount = 0
+    var setUserEmailCount = 0
+    var setUserFirstNameCount = 0
+    var setUserLastNameCount = 0
+    var setUserFbLoginIdCount = 0
+    var clearUserPiiCount = 0
     var setCurrencyCodeCount = 0
     var setCustomerIdCount = 0
     var disableTrackingCount = 0
     var anonymizeUserCount = 0
     var resolveDeepLinkURLsCount = 0
-    var setPhoneNumberCount = 0
+    var setUserPhoneCount = 0
     var lastPhoneNumber: String?
+    var lastCountryCode: String?
     var setCurrentDeviceLanguageCount = 0
     var lastDeviceLanguage: String?
     var logAdRevenueCount = 0
@@ -38,7 +43,10 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     // Store last call parameters for verification
     var lastEventName: String?
     var lastEventValues: [String: Any]?
-    var lastEmails: [String]?
+    var lastEmail: String?
+    var lastFirstName: String?
+    var lastLastName: String?
+    var lastFbLoginId: Int64?
     var lastCurrency: String?
     var lastAppId: String?
     var lastAppDevKey: String?
@@ -47,7 +55,6 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var lastLatitude: Double?
     var lastHost: String?
     var lastPrefix: String?
-    var lastCryptType: EmailCryptType?
     var lastCustomerId: String?
     var lastDisableTracking: Bool?
     var lastAnonymizeUser: Bool?
@@ -101,10 +108,28 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         lastPrefix = prefix
     }
     
-    func setUserEmails(emails: [String], with cryptType: EmailCryptType) {
-        setUserEmailsCount += 1
-        lastEmails = emails
-        lastCryptType = cryptType
+    func setUserEmail(_ email: String) {
+        setUserEmailCount += 1
+        lastEmail = email
+    }
+
+    func setUserFirstName(_ firstName: String) {
+        setUserFirstNameCount += 1
+        lastFirstName = firstName
+    }
+
+    func setUserLastName(_ lastName: String) {
+        setUserLastNameCount += 1
+        lastLastName = lastName
+    }
+
+    func setUserFbLoginId(_ fbLoginId: Int64) {
+        setUserFbLoginIdCount += 1
+        lastFbLoginId = fbLoginId
+    }
+
+    func clearUserPii() {
+        clearUserPiiCount += 1
     }
     
     func currencyCode(_ currency: String) {
@@ -132,8 +157,9 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
         lastUrls = urls
     }
     
-    func setPhoneNumber(_ phoneNumber: String) {
-        setPhoneNumberCount += 1
+    func setUserPhone(countryCode: String, phoneNumber: String) {
+        setUserPhoneCount += 1
+        lastCountryCode = countryCode
         lastPhoneNumber = phoneNumber
     }
 
