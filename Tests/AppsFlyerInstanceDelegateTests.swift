@@ -28,6 +28,7 @@ class AppsFlyerInstanceDelegateTests: XCTestCase {
 
     override func tearDown() {
         AppsFlyerLib.shared().delegate = nil
+        AppsFlyerLib.shared().deepLinkDelegate = nil
         super.tearDown()
     }
 
@@ -145,35 +146,11 @@ class AppsFlyerInstanceDelegateTests: XCTestCase {
         XCTAssertEqual(instance.trackedData?["error_description"] as? String, error.localizedDescription)
     }
 
-    // MARK: - didResolveDeepLink (via trackDeepLinkResult — AppsFlyerDeepLinkResult/DeepLink have
-    // no public initializer, so the SDK type itself cannot be constructed in a test)
-
-    func testDeepLinkFoundTracksWithClickEvent() {
-        let clickEvent: [String: Any] = ["deep_link_value": "product123", "campaign": "promo"]
-        instance.trackDeepLinkResult(status: .found, clickEvent: clickEvent, error: nil)
-        XCTAssertEqual(instance.trackedTitle, "app_open_attribution")
-        XCTAssertEqual(instance.trackedData?["deep_link_value"] as? String, "product123")
-    }
-
-    func testDeepLinkFoundTracksWithoutDataWhenClickEventMissing() {
-        instance.trackDeepLinkResult(status: .found, clickEvent: nil, error: nil)
-        XCTAssertEqual(instance.trackedTitle, "app_open_attribution")
-        XCTAssertNil(instance.trackedData)
-    }
-
-    func testDeepLinkFailureTracksErrorEvent() {
-        let error = NSError(domain: "test", code: 99, userInfo: [NSLocalizedDescriptionKey: "deep link error"])
-        instance.trackDeepLinkResult(status: .failure, clickEvent: nil, error: error)
-        XCTAssertEqual(instance.trackedTitle, "appsflyer_error")
-        XCTAssertEqual(instance.trackedData?["error_name"] as? String, "app_open_attribution_failure")
-        XCTAssertEqual(instance.trackedData?["error_description"] as? String, error.localizedDescription)
-    }
-
-    func testDeepLinkNotFoundTracksNothing() {
-        instance.trackDeepLinkResult(status: .notFound, clickEvent: nil, error: nil)
-        XCTAssertNil(instance.trackedTitle)
-        XCTAssertNil(instance.trackedData)
-    }
+    // MARK: - didResolveDeepLink
+    //
+    // Not covered: `AppsFlyerDeepLinkResult` and `AppsFlyerDeepLink` both declare
+    // `init`/`new` as `NS_UNAVAILABLE` with readonly properties, so a `DeepLinkResult`
+    // cannot be constructed to call the delegate method with.
 }
 
 // MARK: - Spy

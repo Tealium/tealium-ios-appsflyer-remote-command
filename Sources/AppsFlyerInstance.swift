@@ -49,6 +49,11 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     private let _onReady = TealiumReplaySubject<AppsFlyerLib>(cacheSize: 1)
     private let logger: RemoteCommandLogger
 
+    /// Whether `initialize` claimed the SDK's single session-ready listener slot. That listener is
+    /// the only way this library learns the session started, so `onReady` needs a fallback when the
+    /// slot belongs to the host app instead.
+    private var didRegisterSessionReadyListener = false
+
     /// Sets no delegate, so attribution callbacks do not fire. Use `init(tealium:)` to track them.
     public override convenience init() {
         self.init(logger: RemoteCommandLogger(logLevel: .silent))
@@ -83,17 +88,6 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         super.init()
     }
 
-    /// Clears this instance from the `AppsFlyerLib` singleton's delegate slots, guarded so it
-    /// doesn't clobber a different, still-alive instance that has since taken over as delegate.
-    deinit {
-        if AppsFlyerLib.shared().delegate === self {
-            AppsFlyerLib.shared().delegate = nil
-        }
-        if AppsFlyerLib.shared().deepLinkDelegate === self {
-            AppsFlyerLib.shared().deepLinkDelegate = nil
-        }
-    }
-
     public func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {
         defer { _onReady.subscribeOnce(onReady) }
         let appsFlyerAlreadyPublished = _onReady.last() != nil
@@ -101,12 +95,17 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
             return
         }
         let appsFlyer = AppsFlyerLib.shared()
-        // SDK 7: credentials being set doesn't mean the session-ready listener has fired, so check
-        // the SDK's own readiness flag instead of inferring it from `appsFlyerDevKey`/`appleAppID`.
-        // A host app that initializes AppsFlyer itself (bypassing `initialize(appId:appDevKey:settings:)`
-        // below) owns the single `registerSessionReadyListener` slot — registering a second listener
-        // here would silently replace theirs, so this only reads readiness, never registers one.
-        guard appsFlyer.isSessionReady() else {
+        // SDK 7: credentials being set doesn't mean the session started, so the SDK's own readiness
+        // flag decides — `isSessionReady()` turns true once a session-ready listener has fired.
+        if appsFlyer.isSessionReady() {
+            _onReady.publish(appsFlyer)
+            return
+        }
+        // Fallback for a host app that initializes AppsFlyer itself the SDK 6 way (`initialize` plus a
+        // direct `start`): it owns the SDK's single listener slot, so no readiness flag is ever set
+        // here and without this every gated command is stranded forever. `appsFlyerDevKey` is readonly
+        // and set by `initialize(devKey:appId:)`, so it answers whether the SDK was initialized at all.
+        guard !didRegisterSessionReadyListener, !appsFlyer.appsFlyerDevKey.isEmpty else {
             return
         }
         _onReady.publish(appsFlyer)
@@ -193,10 +192,31 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         // SDK 7: the listener re-fires every foreground, so `start` belongs inside it, replacing
         // the old per-`applicationDidBecomeActive` call. Publishing `onReady` inside the block (not
         // right after registering) makes it wait on the listener's own readiness checks too.
+        //
+        // Two things the SDK expects from the host app, which a RemoteCommand cannot do for it:
+        // - Universal Links: the SDK only waits for a cold-launch link to resolve before firing this
+        //   listener if `AppsFlyerLib.shared().handleLaunchOptions(_:)` was called from
+        //   `application(_:didFinishLaunchingWithOptions:)`, and only the host has `launchOptions`.
+        // - ATT consent before `start`: the SDK keeps a single listener, claimed here, so a host that
+        //   must collect consent first initializes AppsFlyer itself and registers its own listener
+        //   rather than mapping the `initialize` command. `onReady` supports that path.
         appsFlyer.registerSessionReadyListener { [weak self] in
-            appsFlyer.start()
-            self?._onReady.publish(appsFlyer)
+            // Always dispatched on the main queue by the SDK, while `_onReady` subscribers are added
+            // from `TealiumQueues.backgroundSerialQueue` — `TealiumObservable` is not synchronized,
+            // so publishing has to hop back onto that queue.
+            //
+            // The listener fires again on every foreground, so an unconditional `start` would resume
+            // tracking for a user who opted out through `disabletracking`/`stoptracking`.
+            if appsFlyer.isStopped {
+                self?.logger.debug("Session start skipped: tracking is stopped.")
+            } else {
+                appsFlyer.start()
+            }
+            TealiumQueues.backgroundSerialQueue.async {
+                self?._onReady.publish(appsFlyer)
+            }
         }
+        didRegisterSessionReadyListener = true
     }
 
     /// Gated on `onReady`: the SDK discards events logged before `start()`.
@@ -355,23 +375,25 @@ extension AppsFlyerInstance: AppsFlyerLibDelegate {
 
 extension AppsFlyerInstance: AppsFlyerDeepLinkDelegate {
 
-    /// `AppsFlyerDeepLinkResult`/`AppsFlyerDeepLink` have no public initializer, so they cannot be
-    /// constructed in tests. This unpacks the SDK type into plain values and hands off to
-    /// `trackDeepLinkResult`, which is what the tests exercise.
+    /// SDK 7 delivers app-open attribution here, replacing the removed `onAppOpenAttribution` and
+    /// `onAppOpenAttributionFailure` callbacks.
     public func didResolveDeepLink(_ result: DeepLinkResult) {
-        trackDeepLinkResult(status: result.status, clickEvent: result.deepLink?.clickEvent, error: result.error)
-    }
-
-    func trackDeepLinkResult(status: DeepLinkResultStatus, clickEvent: [String: Any]?, error: Error?) {
-        switch status {
+        switch result.status {
         case .found:
-            tealiumTrack(title: AppsFlyerConstants.Attribution.appOpen, data: clickEvent)
+            // A deferred link resolves on first install, which `onConversionDataSuccess` already
+            // reports as `conversion_data_received`. The removed `onAppOpenAttribution` never fired
+            // for it, so tracking it here would double-report the same install.
+            guard result.deepLink?.isDeferred != true else {
+                logger.debug("\(AppsFlyerConstants.attributionLog)Deferred deep link resolved — reported through conversion data instead.")
+                return
+            }
+            tealiumTrack(title: AppsFlyerConstants.Attribution.appOpen, data: result.deepLink?.clickEvent)
         case .failure:
             tealiumTrack(
                 title: AppsFlyerConstants.Attribution.error,
                 data: [
                     AppsFlyerConstants.Attribution.errorName: AppsFlyerConstants.Attribution.appOpenFailure,
-                    AppsFlyerConstants.Attribution.errorDescription: error?.localizedDescription ?? ""
+                    AppsFlyerConstants.Attribution.errorDescription: result.error?.localizedDescription ?? ""
                 ]
             )
         case .notFound:

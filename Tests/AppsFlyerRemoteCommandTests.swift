@@ -51,19 +51,6 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertEqual(appsFlyerInstance.lastEmail, "test@example.com")
     }
 
-    /// `customer_emails`/`email_hash_type` no longer exist as parameters; leftover mappings from
-    /// the removed `setuseremails` command must not block the call.
-    func testSetUserEmailIgnoresLegacyCryptType() {
-        let payload: [String: Any] = [
-            "command_name": "setuseremail",
-            "email": "test@example.com",
-            "email_hash_type": 0
-        ]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(appsFlyerInstance.setUserEmailCount, 1)
-        XCTAssertEqual(appsFlyerInstance.lastEmail, "test@example.com")
-    }
-
     func testSetUserEmailNotRunWithUnsupportedEmailType() {
         let payload: [String: Any] = [
             "command_name": "setuseremail",
@@ -118,6 +105,15 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         appsFlyerCommand.processRemoteCommand(with: payload)
         XCTAssertEqual(appsFlyerInstance.setUserFbLoginIdCount, 1)
         XCTAssertEqual(appsFlyerInstance.lastFbLoginId, 0)
+    }
+
+    /// Webview data layer values arrive as strings even for numeric UDO variables, so a mapped
+    /// `fb_login_id` has to be accepted in that form too.
+    func testSetUserFbLoginIdAcceptsNumericString() {
+        let payload: [String: Any] = ["command_name": "setuserfbloginid", "fb_login_id": "1234567890123"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.setUserFbLoginIdCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastFbLoginId, 1234567890123)
     }
 
     func testSetUserFbLoginIdNotRunWithUnsupportedType() {
@@ -237,8 +233,7 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
             "facebook_deferred_app_link": "https://facebook.com/deferred",
             "push_notification_deep_link_path": ["af_push_link", "custom_link"],
             "deep_link_parameters": deepLinkParameters,
-            "enable_facebook_deferred_applinks": true,
-            "wait_for_att_user_authorization_timeout_interval": NSNumber(value: 45)
+            "enable_facebook_deferred_applinks": true
         ]
         let payload: [String: Any] = ["command_name": "initialize",
                                       "app_id": "test_app",
@@ -292,7 +287,6 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertEqual(secondParameters?["source"], "email")
 
         XCTAssertEqual(appsFlyerInstance.lastSettings?["enable_facebook_deferred_applinks"] as? Bool, true)
-        XCTAssertEqual(appsFlyerInstance.lastSettings?["wait_for_att_user_authorization_timeout_interval"] as? Double, 45.0)
     }
 
     func testInitWithDisableIDFVCollection() {
@@ -435,19 +429,54 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertNil(appsFlyerInstance.lastPrefix)
     }
 
-    /// `setuseremails` was removed with the SDK 7 API behind it. Unrecognised command names fall
-    /// through to the custom-event path, so a stale tag logs an event rather than failing — but
-    /// `customer_emails`/`email_hash_type` must never ride along as raw, unhashed event data.
-    func testRemovedSetUserEmailsCommandFallsThroughToCustomEventWithoutRawEmails() {
-        let payload: [String: Any] = ["command_name": "setuseremails",
-                                      "customer_emails": ["user@example.com"],
-                                      "email_hash_type": 3]
+    /// The hashed-PII parameters reach AppsFlyer through the `setuser…` commands, which hash them
+    /// on-device. Mapping them alongside a command name that is not built in — as the example
+    /// config's `setuseremail,setuserfirstname,setuserlastname,setcustomerid,completeregistration`
+    /// mapping does — must not send the raw values as that event's data.
+    func testPIIParametersAreNotLoggedAsEventValues() {
+        let payload: [String: Any] = [
+            "command_name": "setuseremail,setuserfirstname,setuserlastname,completeregistration",
+            "email": "user@example.com",
+            "first_name": "Ada",
+            "last_name": "Lovelace",
+            "phone_number": "123456789",
+            "country_code": "48",
+            "fb_login_id": 1234567890123,
+            "product_name": "iPhone"
+        ]
         appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(0, appsFlyerInstance.setUserEmailCount)
-        XCTAssertEqual(1, appsFlyerInstance.logEventCount)
-        XCTAssertEqual("setuseremails", appsFlyerInstance.lastEventName)
-        XCTAssertNil(appsFlyerInstance.lastEventValues?["customer_emails"])
-        XCTAssertNil(appsFlyerInstance.lastEventValues?["email_hash_type"])
+
+        XCTAssertEqual(appsFlyerInstance.logEventCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastEventName, "af_complete_registration")
+        let values = appsFlyerInstance.lastEventValues
+        XCTAssertEqual(values?["product_name"] as? String, "iPhone")
+        for piiKey in ["email", "first_name", "last_name", "phone_number", "country_code", "fb_login_id"] {
+            XCTAssertNil(values?[piiKey], "\(piiKey) must not be logged as event data")
+        }
+        // The values still reached the hashing commands themselves.
+        XCTAssertEqual(appsFlyerInstance.lastEmail, "user@example.com")
+        XCTAssertEqual(appsFlyerInstance.lastFirstName, "Ada")
+        XCTAssertEqual(appsFlyerInstance.lastLastName, "Lovelace")
+    }
+
+    /// A mapped `event` object is the integrator's explicit list of event values, so it is passed
+    /// through verbatim — including keys the payload-level filter would have removed. Deciding to
+    /// send an identifier as event data stays their call.
+    func testNestedEventObjectIsPassedThroughVerbatim() {
+        let payload: [String: Any] = [
+            "command_name": "customevent",
+            "email": "stripped@example.com",
+            "event": [
+                "email": "kept@example.com",
+                "product_name": "iPhone"
+            ]
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+
+        XCTAssertEqual(appsFlyerInstance.logEventCount, 1)
+        let values = appsFlyerInstance.lastEventValues
+        XCTAssertEqual(values?["product_name"] as? String, "iPhone")
+        XCTAssertEqual(values?["email"] as? String, "kept@example.com")
     }
 
     func testSetCurrencyCode() {

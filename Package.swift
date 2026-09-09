@@ -11,7 +11,7 @@ let package = Package(
     ],
     dependencies: [
         .package(name: "TealiumSwift", url: "https://github.com/tealium/tealium-swift", .upToNextMajor(from: "2.18.0")),
-        .package(name: "AppsFlyerLib", url: "https://github.com/AppsFlyerSDK/AppsFlyerFramework-Static", .upToNextMajor(from: "7.0.2"))
+        .package(name: "AppsFlyerLib", url: "https://github.com/AppsFlyerSDK/AppsFlyerFramework", .upToNextMajor(from: "7.0.2"))
     ],
     targets: [
         .target(
@@ -19,7 +19,7 @@ let package = Package(
             dependencies: [
                 .product(name: "TealiumCore", package: "TealiumSwift"),
                 .product(name: "TealiumRemoteCommands", package: "TealiumSwift"),
-                .product(name: "AppsFlyerLib-Static", package: "AppsFlyerLib")
+                .product(name: "AppsFlyerLib", package: "AppsFlyerLib")
             ],
             path: "./Sources",
             exclude: ["Support"]),

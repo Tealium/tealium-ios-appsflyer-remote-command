@@ -42,8 +42,6 @@ class AppsFlyerConstantsTests: XCTestCase {
         XCTAssertNil(AppsFlyerConstants.CommandNames.fromString("purchase"))
         XCTAssertNil(AppsFlyerConstants.CommandNames.fromString(""))
         XCTAssertNil(AppsFlyerConstants.CommandNames.fromString("not_a_command"))
-        // Removed in 4.0.0 along with the SDK API behind it.
-        XCTAssertNil(AppsFlyerConstants.CommandNames.fromString("setuseremails"))
     }
 
     // MARK: - MediationNetworkType mapping

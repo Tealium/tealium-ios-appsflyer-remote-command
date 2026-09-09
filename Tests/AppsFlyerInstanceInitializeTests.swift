@@ -42,6 +42,15 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         lib.minTimeBetweenSessions = 0
         lib.customData = nil
         lib.facebookDeferredAppLink = nil
+        lib.unregisterSessionReadyListener()
+    }
+
+    /// Every `initialize` call registers a session-ready listener on the shared singleton. Left in
+    /// place it can fire during an unrelated later test, calling `start()` and publishing `onReady`
+    /// mid-test.
+    override func tearDown() {
+        AppsFlyerLib.shared().unregisterSessionReadyListener()
+        super.tearDown()
     }
 
     /// Asserts on the configuration the SDK actually uses, instead of on the public getter.
@@ -60,6 +69,9 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
     ///
     /// Reaching into `sdkConfig` via KVC is deliberate but fragile: if AppsFlyer renames these
     /// internals the guard below fails the test with an explanatory message rather than crashing.
+    /// The key's existence is checked with the runtime before `value(forKey:)` reads it, because
+    /// KVC raises an `NSUnknownKeyException` on an unknown key and Swift cannot catch that — it
+    /// would abort the whole test bundle instead of failing this assertion.
     /// Switch back to the public getters once the getters are fixed upstream.
     ///
     /// Reported to AppsFlyer: https://github.com/AppsFlyerSDK/AppsFlyerFramework/issues/334
@@ -69,6 +81,8 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
                                            line: UInt = #line) {
         guard class_getInstanceVariable(AppsFlyerLib.self, "_sdkConfig") != nil,
               let config = AppsFlyerLib.shared().value(forKey: "sdkConfig") as AnyObject?,
+              class_getProperty(type(of: config), key) != nil
+                || class_getInstanceVariable(type(of: config), "_" + key) != nil,
               let actual = config.value(forKey: key) as? Bool else {
             return XCTFail("Could not read `sdkConfig.\(key)`. AppsFlyer SDK internals changed — "
                            + "recheck whether the public getter works again.",
@@ -212,5 +226,6 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         XCTAssertTrue(AppsFlyerLib.shared().disableAdvertisingIdentifier)
         assertEffectiveConfigFlag("disableIdfvCollection", false)
     }
+
 }
 
