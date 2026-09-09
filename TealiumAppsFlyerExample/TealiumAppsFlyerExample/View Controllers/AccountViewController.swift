@@ -105,11 +105,14 @@ class AccountViewController: UIViewController {
     
     @IBAction func trackingToggleTapped(_ sender: UISwitch) {
         let isTrackingDisabled = !sender.isOn
-        
-        TealiumHelper.trackEvent(title: "disable_tracking", data: [
+
+        // Turning tracking back on goes through `resume_tracking`, which clears the stop flag and
+        // then starts a session in the same foreground cycle. `disable_tracking` alone would only
+        // clear the flag, leaving the session to resume on the next foreground.
+        TealiumHelper.trackEvent(title: isTrackingDisabled ? "disable_tracking" : "resume_tracking", data: [
             AccountViewController.stopTracking: isTrackingDisabled
         ])
-        
+
         let message = isTrackingDisabled ? "AppsFlyer tracking has been disabled (privacy mode)" : "AppsFlyer tracking has been enabled"
         let ac = UIAlertController(title: "Tracking Status", message: message, preferredStyle: .alert)
         ac.addAction(UIAlertAction(title: "OK", style: .default))

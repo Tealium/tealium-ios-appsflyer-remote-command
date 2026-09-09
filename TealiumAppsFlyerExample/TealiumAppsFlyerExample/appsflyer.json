@@ -12,7 +12,6 @@
             "anonymize_user": false,
             "collect_device_name": false,
             "enable_tcf_data_collection": false,
-            "app_invite_onelink_id": "",
             "deep_link_timeout": 2000,
             "one_link_custom_domains": [],
             "facebook_deferred_app_link": "",
@@ -26,15 +25,13 @@
                     }
                 }
             ],
-            "enable_facebook_deferred_applinks": false,
-            "wait_for_att_user_authorization_timeout_interval": 60
+            "enable_facebook_deferred_applinks": false
         }
     },
     "mappings": {
         "latitude": "af_lat",
         "longitude": "af_long",
-        "customer_emails": "customer_emails",
-        "email_hash_type": "email_hash_type",
+        "email": "email",
         "currency_code": "af_currency",
         "customer_id": "af_customer_user_id",
         "host": "host",
@@ -45,6 +42,11 @@
         "deep_link_url": "url",
         "deep_link_referrer_app": "source_application",
         "phone_number": "phone_number",
+        "country_code": "country_code",
+        "first_name": "first_name",
+        "last_name": "last_name",
+        "fb_login_id": "fb_login_id",
+        "app_invite_onelink_id": "app_invite_onelink_id",
         "monetization_network": "monetization_network",
         "mediation_network": "mediation_network",
         "ad_revenue_currency": "ad_revenue_currency",
@@ -126,7 +128,7 @@
     },
     "commands": {
         "launch": "initialize",
-        "wake": "start",
+        "resume_tracking": "disabletracking,start",
         "track_location": "tracklocation",
         "set_host": "sethost",
         "set_currency": "setcurrencycode",
@@ -135,12 +137,15 @@
         "resolve_deep_links": "resolvedeeplinkurls",
         "set_phone_number": "setphonenumber",
         "set_device_language": "setcurrentdevicelanguage",
+        "set_invite_link": "setappinviteonelink",
         "ad_revenue": "logadrevenue",
         "set_consent": "setconsentdata",
         "set_partner_data": "setpartnerdata",
         "set_sharing_filter": "setsharingfilterforpartners",
         "user_login": "login",
-        "user_register": "setuseremails,setcustomerid,completeregistration",
+        "user_register": "setuseremail,setuserfirstname,setuserlastname,setcustomerid,completeregistration",
+        "fb_login": "setuserfbloginid",
+        "decline_consent": "clearuserpii",
         "show_offers": "adclick",
         "cart_add": "addtocart",
         "wishlist_add": "addtowishlist",

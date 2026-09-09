@@ -15,9 +15,8 @@ public enum AppsFlyerConstants {
     static let separator: Character = ","
     static let commandId = "appsflyer"
     static let description = "AppsFlyer Remote Command"
-    static let errorPrefix = "AppsFlyer Error: "
     static let attributionLog = "AppsFlyer Attribution: "
-    static let version = "3.1.0"
+    static let version = "4.0.0"
 
     /// Standard AppsFlyer events: https://dev.appsflyer.com/hc/docs/in-app-events-ios
     static let eventsMap: [String: String] = [
@@ -61,7 +60,11 @@ public enum AppsFlyerConstants {
         case initialize = "initialize"
         case trackLocation = "tracklocation"
         case setHost = "sethost"
-        case setUserEmails = "setuseremails"
+        case setUserEmail = "setuseremail"
+        case setUserFirstName = "setuserfirstname"
+        case setUserLastName = "setuserlastname"
+        case setUserFbLoginId = "setuserfbloginid"
+        case clearUserPii = "clearuserpii"
         case setCurrencyCode = "setcurrencycode"
         case setCustomerId = "setcustomerid" // customerUserID
         case disableTracking = "disabletracking"
@@ -115,18 +118,15 @@ public enum AppsFlyerConstants {
         static let pushNotificationDeepLinkPath = "push_notification_deep_link_path"
         static let deepLinkParameters = "deep_link_parameters"
         static let enableFacebookDeferredApplinks = "enable_facebook_deferred_applinks"
-        static let waitForATTUserAuthorizationTimeoutInterval = "wait_for_att_user_authorization_timeout_interval"
         static let disableIDFVCollection = "disable_idfv_collection"
     }
 
     public enum Parameters {
         static let latitude = "af_lat"
         static let longitude = "af_long"
-        static let pushPayload = "af_push_payload"
         static let host = "host"
         static let hostPrefix = "host_prefix"
-        static let emails = "customer_emails"
-        static let cryptType = "email_hash_type"
+        static let email = "email"
         static let currency = "af_currency"
         static let customerId = "af_customer_user_id"
         static let stopTracking = "stop_tracking"
@@ -136,31 +136,37 @@ public enum AppsFlyerConstants {
         static let deepLinkUrlsLegacyTiQ = "resolve_deep_links"
         static let event = "event"
         static let phoneNumber = "phone_number"
-        
-        // Deep link parameters configuration (for appendParametersToDeeplinkURL)
+
+        // Hashed PII (for setUserPhone / setUserFirstName / setUserLastName / setUserFbLoginId)
+        static let countryCode = "country_code"
+        static let firstName = "first_name"
+        static let lastName = "last_name"
+        static let fbLoginId = "fb_login_id"
+
+        // Deep link parameters configuration (for appendParametersToDeepLinkingURL)
         static let deepLinkContains = "contains"
         static let deepLinkParameters = "parameters"
-        
+
         // Ad revenue parameters (for logAdRevenue)
         static let monetizationNetwork = "monetization_network"
         static let mediationNetwork = "mediation_network"
         static let adRevenueCurrency = "ad_revenue_currency"
         static let adRevenueAmount = "ad_revenue_amount"
         static let adRevenueAdditionalParams = "ad_revenue_additional_params"
-        
+
         // Consent data parameters (for setConsentData)
         static let isUserSubjectToGDPR = "is_user_subject_to_gdpr"
         static let hasConsentForDataUsage = "has_consent_for_data_usage"
         static let hasConsentForAdsPersonalization = "has_consent_for_ads_personalization"
         static let hasConsentForAdStorage = "has_consent_for_ad_storage"
-        
+
         // Partner data parameters (for setPartnerData)
         static let partnerId = "partner_id"
         static let partnerInfo = "partner_info"
-        
+
         // Sharing filter parameters (for setSharingFilterForPartners)
         static let sharingFilter = "sharing_filter"
-        
+
         // Deep link handling parameters
         static let url = "url"
         static let sourceApplication = "source_application"

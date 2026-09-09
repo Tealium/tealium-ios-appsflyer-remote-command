@@ -14,7 +14,7 @@ struct RemoteCommandLogger {
     let logLevel: RemoteCommandLogLevel
     private let handler: LogHandler
 
-    init(logLevel: RemoteCommandLogLevel = .silent, handler: LogHandler = OSLogHandler()) {
+    init(logLevel: RemoteCommandLogLevel, handler: LogHandler = OSLogHandler()) {
         self.logLevel = logLevel
         self.handler = handler
     }

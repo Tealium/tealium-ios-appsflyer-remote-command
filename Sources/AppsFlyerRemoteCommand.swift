@@ -39,12 +39,11 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     ///     (onConversionDataSuccess etc.). Defaults to a logger-only instance with
     ///     no attribution tracking.
     ///   - type: The RemoteCommand type (webview or JSON).
-    ///   - logLevel: Controls RC log verbosity. Defaults to `.silent` (no output).
+    ///   - logLevel: Controls RC log verbosity. Defaults to `.error` (errors only).
     public init(appsFlyerInstance: AppsFlyerCommand? = nil,
                 type: RemoteCommandType = .webview,
-                logLevel: RemoteCommandLogLevel = .silent) {
-        let logger = RemoteCommandLogger(logLevel: logLevel)
-        self.logger = logger
+                logLevel: RemoteCommandLogLevel = .error) {
+        self.logger = RemoteCommandLogger(logLevel: logLevel)
         self.appsFlyerInstance = appsFlyerInstance ?? AppsFlyerInstance(logger: logger)
         weak var weakSelf: AppsFlyerRemoteCommand?
         super.init(commandId: AppsFlyerConstants.commandId,
@@ -90,8 +89,16 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     try executeTrackLocation(payload)
                 case .setHost:
                     try executeSetHost(payload)
-                case .setUserEmails:
-                    try executeSetUserEmails(payload)
+                case .setUserEmail:
+                    try executeSetUserEmail(payload)
+                case .setUserFirstName:
+                    try executeSetUserFirstName(payload)
+                case .setUserLastName:
+                    try executeSetUserLastName(payload)
+                case .setUserFbLoginId:
+                    try executeSetUserFbLoginId(payload)
+                case .clearUserPii:
+                    appsFlyerInstance.clearUserPii()
                 case .setCurrencyCode:
                     try executeSetCurrencyCode(payload)
                 case .setCustomerId:
@@ -167,17 +174,24 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
         appsFlyerInstance.setHost(host, with: hostPrefix)
     }
 
-    private func executeSetUserEmails(_ payload: [String: Any]) throws {
-        let emails = try payload.requireStringArrayAllowingSingleValue(AppsFlyerConstants.Parameters.emails)
-        let cryptTypeInt = try payload.requireParameter(AppsFlyerConstants.Parameters.cryptType, as: Int.self)
-        guard let cryptType = EmailCryptType(rawInt: cryptTypeInt) else {
-            throw AppsFlyerCommandError.invalidParameterValue(
-                parameter: AppsFlyerConstants.Parameters.cryptType,
-                value: "\(cryptTypeInt)",
-                allowedValues: EmailCryptType.validValues.map { "\($0)" }
-            )
-        }
-        appsFlyerInstance.setUserEmails(emails: emails, with: cryptType)
+    private func executeSetUserEmail(_ payload: [String: Any]) throws {
+        let email = try payload.requireParameter(AppsFlyerConstants.Parameters.email, as: String.self)
+        appsFlyerInstance.setUserEmail(email)
+    }
+
+    private func executeSetUserFirstName(_ payload: [String: Any]) throws {
+        let firstName = try payload.requireParameter(AppsFlyerConstants.Parameters.firstName, as: String.self)
+        appsFlyerInstance.setUserFirstName(firstName)
+    }
+
+    private func executeSetUserLastName(_ payload: [String: Any]) throws {
+        let lastName = try payload.requireParameter(AppsFlyerConstants.Parameters.lastName, as: String.self)
+        appsFlyerInstance.setUserLastName(lastName)
+    }
+
+    private func executeSetUserFbLoginId(_ payload: [String: Any]) throws {
+        let fbLoginId = try payload.requireInt64(AppsFlyerConstants.Parameters.fbLoginId)
+        appsFlyerInstance.setUserFbLoginId(fbLoginId)
     }
 
     private func executeSetCurrencyCode(_ payload: [String: Any]) throws {
@@ -211,8 +225,9 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     }
 
     private func executeSetPhoneNumber(_ payload: [String: Any]) throws {
+        let countryCode = try payload.requireParameter(AppsFlyerConstants.Parameters.countryCode, as: String.self)
         let phoneNumber = try payload.requireParameter(AppsFlyerConstants.Parameters.phoneNumber, as: String.self)
-        appsFlyerInstance.setPhoneNumber(phoneNumber)
+        appsFlyerInstance.setUserPhone(countryCode: countryCode, phoneNumber: phoneNumber)
     }
 
     private func executeLogAdRevenue(_ payload: [String: Any]) throws {
@@ -351,23 +366,26 @@ extension Dictionary where Key == String, Value == Any {
         return double
     }
 
-    /// Customers map data layer primitives, so a mapped variable holding one email arrives as a
-    /// bare `String` while the SDK takes an array — both shapes resolve to an array here, as the
-    /// released 3.0.0 also did. Parameters the SDK never accepted as a single value use
-    /// `requireParameter(_:as:)` instead.
-    func requireStringArrayAllowingSingleValue(_ parameter: String) throws -> [String] {
+    /// `setUserFbLoginId` takes an `Int64`. A JSON payload brings `NSNumber`, which bridges to both,
+    /// while a Swift-built payload brings a native `Int` — so the `Int` fallback is needed, as in
+    /// `requireDouble` above. The `String` fallback covers webview data layer values, which arrive
+    /// as strings even for numeric UDO variables.
+    func requireInt64(_ parameter: String) throws -> Int64 {
         guard let value = self[parameter] else {
             throw AppsFlyerCommandError.missingParameter(parameter)
         }
-        guard let strings = value as? [String] ?? (value as? String).map({ [$0] }) else {
+        guard let int64 = value as? Int64
+                ?? (value as? Int).map(Int64.init)
+                ?? (value as? String).flatMap(Int64.init) else {
             throw AppsFlyerCommandError.invalidParameterType(parameter: parameter,
-                                                             expectedTypes: "[String] or String")
+                                                             expectedTypes: "Int64, Int or numeric String")
         }
-        return strings
+        return int64
     }
 
     private static let allExcludedKeys: Set<String> = {
-        let excludedKeys: Set<String> = ["method", AppsFlyerConstants.commandName, AppsFlyerConstants.Settings.debug]
+        let excludedKeys: Set<String> = ["method", AppsFlyerConstants.commandName,
+                                         AppsFlyerConstants.Settings.debug]
         let configurationKeys = Set(AppsFlyerConstants.Configuration.allCases.map { $0.rawValue })
         return excludedKeys.union(configurationKeys)
     }()

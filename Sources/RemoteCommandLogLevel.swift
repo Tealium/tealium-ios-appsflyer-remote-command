@@ -22,7 +22,7 @@ public enum RemoteCommandLogLevel: Int, Comparable {
     /// Error messages only.
     case error = 3
 
-    /// No output. Default.
+    /// No output.
     case silent = 4
 
     public static func < (lhs: RemoteCommandLogLevel, rhs: RemoteCommandLogLevel) -> Bool {

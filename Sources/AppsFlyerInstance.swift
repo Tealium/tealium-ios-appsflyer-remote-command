@@ -22,13 +22,17 @@ public protocol AppsFlyerCommand {
     func logEvent(_ eventName: String, values: [String: Any])
     func logLocation(longitude: Double, latitude: Double)
     func setHost(_ host: String, with prefix: String)
-    func setUserEmails(emails: [String], with cryptType: EmailCryptType)
+    func setUserEmail(_ email: String)
+    func setUserPhone(countryCode: String, phoneNumber: String)
+    func setUserFirstName(_ firstName: String)
+    func setUserLastName(_ lastName: String)
+    func setUserFbLoginId(_ fbLoginId: Int64)
+    func clearUserPii()
     func currencyCode(_ currency: String)
     func customerId(_ id: String)
     func disableTracking(_ disable: Bool)
     func anonymizeUser(_ anonymize: Bool)
     func resolveDeepLinkURLs(_ urls: [String])
-    func setPhoneNumber(_ phoneNumber: String)
     func setPartnerData(partnerId: String, partnerInfo: [String: Any]?)
     func setSharingFilterForPartners(_ sharingFilter: [String]?)
     func logAdRevenue(_ adRevenueData: AFAdRevenueData, additionalParams: [String: Any]?)
@@ -47,19 +51,34 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
 
     /// Sets no delegate, so attribution callbacks do not fire. Use `init(tealium:)` to track them.
     public override convenience init() {
-        self.init(logger: RemoteCommandLogger())
+        self.init(logger: RemoteCommandLogger(logLevel: .silent))
     }
 
-    /// Registers as the `AppsFlyerLibDelegate`, so attribution callbacks
-    /// (`onConversionDataSuccess` and friends) are tracked through `tealium`.
-    public init(tealium: Tealium) {
-        self.logger = RemoteCommandLogger()
+    /// Registers as `AppsFlyerLibDelegate` and `AppsFlyerDeepLinkDelegate`, tracked through `tealium`.
+    /// `AppsFlyerLib.shared()` is a singleton — a second instance created with this initializer
+    /// silently steals both delegate slots from the first.
+    ///
+    /// `tealium` is non-optional because this initializer exists only to track attribution: with
+    /// nothing to track to, it would claim both delegate slots — displacing whatever the host app
+    /// registered — and then discard every callback. Use `AppsFlyerInstance()` for an instance that
+    /// deliberately does not track attribution.
+    public convenience init(tealium: Tealium,
+                             logLevel: RemoteCommandLogLevel) {
+        self.init(tealium: tealium, logger: RemoteCommandLogger(logLevel: logLevel))
+    }
+
+    init(tealium: Tealium, logger: RemoteCommandLogger) {
+        self.logger = logger
         super.init()
         self.tealium = tealium
+
         AppsFlyerLib.shared().delegate = self
+        AppsFlyerLib.shared().deepLinkDelegate = self
     }
 
-    /// Used by `AppsFlyerRemoteCommand` when no instance is supplied. Sets no delegate, so
+
+    /// Used by `AppsFlyerRemoteCommand` when no instance is supplied, so it can share its own
+    /// logger with this instance instead of building a second one. Sets no delegate, so
     /// attribution callbacks do not fire on this path — a `RemoteCommand` has no access to the
     /// Tealium instance it belongs to, so it cannot track on its own.
     /// Pass `AppsFlyerInstance(tealium:)` to `AppsFlyerRemoteCommand.init(appsFlyerInstance:)`
@@ -71,20 +90,30 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
 
     public func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {
         defer { _onReady.subscribeOnce(onReady) }
-        let appsFlyerAlreadyPublished = _onReady.last() != nil
-        guard !appsFlyerAlreadyPublished else {
+        guard _onReady.last() == nil else {
             return
         }
         let appsFlyer = AppsFlyerLib.shared()
-        let appsFlyerManuallyInitialized = !appsFlyer.appsFlyerDevKey.isEmpty || !appsFlyer.appleAppID.isEmpty
-        guard appsFlyerManuallyInitialized else {
-            return
+        // `isSessionReady()` is the only readiness signal SDK 7 exposes — credentials being set is
+        // not one, since the session no longer starts on its own. It turns true once a session-ready
+        // listener has fired in this foreground cycle, which covers a host app that owns the SDK's
+        // single listener slot, and a host that registers a listener after the `initialize` command
+        // already claimed that slot. The `initialize` path itself publishes from its own listener
+        // block instead, right after `start()`.
+        //
+        // A host that must gate `start` on ATT consent collected inside its listener block starts
+        // later than the listener fires, so commands released here can still miss that session.
+        if appsFlyer.isSessionReady() {
+            _onReady.publish(appsFlyer)
         }
-        _onReady.publish(appsFlyer)
     }
 
     public func initialize(appId: String, appDevKey: String, settings: [String: Any]?) {
         let appsFlyer = AppsFlyerLib.shared()
+        // SDK 7: isDebug must be set before any other SDK call, or earlier calls log nothing.
+        if let debug = settings?[AppsFlyerConstants.Settings.debug] as? Bool {
+            appsFlyer.isDebug = debug
+        }
         // enableFacebookDeferredApplinks must be called before credentials are set and before start().
         if let enableFacebookDeferredApplinks = settings?[AppsFlyerConstants.Settings.enableFacebookDeferredApplinks] as? Bool {
             if enableFacebookDeferredApplinks {
@@ -98,12 +127,9 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
                 appsFlyer.enableFacebookDeferredApplinks(with: nil)
             }
         }
-        appsFlyer.appsFlyerDevKey = appDevKey
-        appsFlyer.appleAppID = appId
+
+        appsFlyer.initialize(devKey: appDevKey, appId: appId)
         if let settings = settings {
-            if let debug = settings[AppsFlyerConstants.Settings.debug] as? Bool {
-                appsFlyer.isDebug = debug
-            }
             let disableAdTracking = (settings[AppsFlyerConstants.Settings.disableAdTracking]
                 ?? settings[AppsFlyerConstants.Settings.disableAdvertisingIdentifiersAlias]) as? Bool
             if let disableAdTracking = disableAdTracking {
@@ -151,13 +177,8 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
                 for parameter in deepLinkParameters {
                     if let contains = parameter[AppsFlyerConstants.Parameters.deepLinkContains] as? String,
                        let parameters = parameter[AppsFlyerConstants.Parameters.deepLinkParameters] as? [String: String] {
-                        appsFlyer.appendParametersToDeeplinkURL(contains: contains, parameters: parameters)
+                        appsFlyer.appendParametersToDeepLinkingURL(contains: contains, parameters: parameters)
                     }
-                }
-            }
-            if let waitForATTTimeoutInterval = settings[AppsFlyerConstants.Settings.waitForATTUserAuthorizationTimeoutInterval] as? Double {
-                if #available(iOS 14, *) {
-                    appsFlyer.waitForATTUserAuthorization(timeoutInterval: waitForATTTimeoutInterval)
                 }
             }
             // Applied after disable_ad_tracking so it can override the IDFV portion independently.
@@ -165,19 +186,43 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
                 appsFlyer.disableIDFVCollection = disableIDFVCollection
             }
         }
-        // Start the first session. Subsequent sessions require calling start()
-        // on each applicationDidBecomeActive — see public func start() below.
-        // Published after start() so onReady implies a started session.
-        appsFlyer.start()
-        _onReady.publish(appsFlyer)
+        // SDK 7: the listener re-fires every foreground, so `start` belongs inside it, replacing
+        // the old per-`applicationDidBecomeActive` call. Publishing `onReady` inside the block (not
+        // right after registering) makes it wait on the listener's own readiness checks too.
+        //
+        // Two things the SDK expects from the host app, which a RemoteCommand cannot do for it:
+        // - Universal Links: the SDK only waits for a cold-launch link to resolve before firing this
+        //   listener if `AppsFlyerLib.shared().handleLaunchOptions(_:)` was called from
+        //   `application(_:didFinishLaunchingWithOptions:)`, and only the host has `launchOptions`.
+        // - ATT consent before `start`: the SDK keeps a single listener, claimed here, so a host that
+        //   must collect consent first initializes AppsFlyer itself and registers its own listener
+        //   rather than mapping the `initialize` command. `onReady` supports that path.
+        appsFlyer.registerSessionReadyListener { [weak self] in
+            // Always dispatched on the main queue by the SDK, while `_onReady` subscribers are added
+            // from `TealiumQueues.backgroundSerialQueue` — `TealiumObservable` is not synchronized,
+            // so publishing has to hop back onto that queue.
+            //
+            // The listener fires again on every foreground, so an unconditional `start` would resume
+            // tracking for a user who opted out through `disabletracking`/`stoptracking`.
+            if appsFlyer.isStopped {
+                self?.logger.debug("Session start skipped: tracking is stopped.")
+            } else {
+                appsFlyer.start()
+            }
+            TealiumQueues.backgroundSerialQueue.async {
+                self?._onReady.publish(appsFlyer)
+            }
+        }
     }
 
+    /// Gated on `onReady`: the SDK discards events logged before `start()`.
     public func logEvent(_ eventName: String, values: [String: Any]) {
         onReady { appsFlyer in
             appsFlyer.logEvent(eventName, withValues: values)
         }
     }
 
+    /// Gated on `onReady`: the SDK discards events logged before `start()`.
     public func logLocation(longitude: Double, latitude: Double) {
         onReady { appsFlyer in
             appsFlyer.logLocation(longitude: longitude, latitude: latitude)
@@ -185,11 +230,34 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     }
 
     public func setHost(_ host: String, with prefix: String) {
-        AppsFlyerLib.shared().setHost(host, withHostPrefix: prefix)
+        // SDK 7 swapped the argument order to match Android: prefix first, host second.
+        AppsFlyerLib.shared().setHost(prefix, hostName: host)
     }
 
-    public func setUserEmails(emails: [String], with cryptType: EmailCryptType) {
-        AppsFlyerLib.shared().setUserEmails(emails, with: cryptType)
+    /// The SDK normalises and SHA-256 hashes the value on-device before it reaches the payload, so
+    /// the caller passes it in clear text. Same for the other `setUser…` methods below.
+    public func setUserEmail(_ email: String) {
+        AppsFlyerLib.shared().setUserEmail(email)
+    }
+
+    public func setUserPhone(countryCode: String, phoneNumber: String) {
+        AppsFlyerLib.shared().setUserPhone(countryCode: countryCode, phoneNumber: phoneNumber)
+    }
+
+    public func setUserFirstName(_ firstName: String) {
+        AppsFlyerLib.shared().setUserFirstName(firstName)
+    }
+
+    public func setUserLastName(_ lastName: String) {
+        AppsFlyerLib.shared().setUserLastName(lastName)
+    }
+
+    public func setUserFbLoginId(_ fbLoginId: Int64) {
+        AppsFlyerLib.shared().setUserFbLoginId(fbLoginId)
+    }
+
+    public func clearUserPii() {
+        AppsFlyerLib.shared().clearUserPii()
     }
 
     public func currencyCode(_ currency: String) {
@@ -212,10 +280,7 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         AppsFlyerLib.shared().resolveDeepLinkURLs = urls
     }
 
-    public func setPhoneNumber(_ phoneNumber: String) {
-        AppsFlyerLib.shared().phoneNumber = phoneNumber
-    }
-
+    /// Gated on `onReady`: the SDK discards events logged before `start()`.
     public func logAdRevenue(_ adRevenueData: AFAdRevenueData, additionalParams: [String: Any]?) {
         onReady { appsFlyer in
             appsFlyer.logAdRevenue(adRevenueData, additionalParameters: additionalParams)
@@ -228,19 +293,25 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
 
 
     public func setPartnerData(partnerId: String, partnerInfo: [String: Any]?) {
-        AppsFlyerLib.shared().setPartnerData(partnerId: partnerId, partnerInfo: partnerInfo)
+        AppsFlyerLib.shared().setPartnerData(partnerId: partnerId, data: partnerInfo)
     }
 
     public func setSharingFilterForPartners(_ sharingFilter: [String]?) {
         AppsFlyerLib.shared().setSharingFilterForPartners(sharingFilter)
     }
 
-    /// Starts (or re-starts) an AppsFlyer session. Call this on every
-    /// `applicationDidBecomeActive` to ensure each foreground visit logs
-    /// an `af_app_opened` event. In a JSON Remote Command setup, send a
-    /// Tealium event mapped to the `"start"` command (e.g. `"wake"`).
+    /// SDK 7 re-invokes the session-ready listener registered in `initialize` on every foreground,
+    /// calling `start` there automatically — this command is no longer needed for that. It now
+    /// matches Android's usage: call it only to manually resume after `disabletracking`/`stoptracking`.
     public func start() {
-        AppsFlyerLib.shared().start()
+        let appsFlyer = AppsFlyerLib.shared()
+        // `isStopped` shuts down all SDK activity, so `start` on its own cannot resume a session —
+        // the flag has to be cleared first. Warned rather than treated as an error, because the
+        // command itself is mapped correctly; only the order in the mapping is wrong.
+        if appsFlyer.isStopped {
+            logger.warning("start has no effect while tracking is stopped. Map disabletracking with stop_tracking: false ahead of it to resume.")
+        }
+        appsFlyer.start()
     }
 
     /// Gated on `onReady` because the SDK discards deep links received before `start()`,
@@ -303,23 +374,33 @@ extension AppsFlyerInstance: AppsFlyerLibDelegate {
         )
     }
 
-    public func onAppOpenAttribution(_ attributionData: [AnyHashable: Any]) {
-        guard let attributionData = attributionData as? [String: Any] else {
-            return tealiumTrack(title: AppsFlyerConstants.Attribution.appOpen)
-        }
-        tealiumTrack(
-            title: AppsFlyerConstants.Attribution.appOpen,
-            data: attributionData
-        )
-    }
+}
 
-    public func onAppOpenAttributionFailure(_ error: Error) {
-        tealiumTrack(
-            title: AppsFlyerConstants.Attribution.error,
-            data: [
-                AppsFlyerConstants.Attribution.errorName: AppsFlyerConstants.Attribution.appOpenFailure,
-                AppsFlyerConstants.Attribution.errorDescription: error.localizedDescription
-            ]
-        )
+extension AppsFlyerInstance: AppsFlyerDeepLinkDelegate {
+
+    /// SDK 7 delivers app-open attribution here, replacing the removed `onAppOpenAttribution` and
+    /// `onAppOpenAttributionFailure` callbacks.
+    public func didResolveDeepLink(_ result: DeepLinkResult) {
+        switch result.status {
+        case .found:
+            // A deferred link resolves on first install, which `onConversionDataSuccess` already
+            // reports as `conversion_data_received`. The removed `onAppOpenAttribution` never fired
+            // for it, so tracking it here would double-report the same install.
+            guard result.deepLink?.isDeferred != true else {
+                logger.debug("\(AppsFlyerConstants.attributionLog)Deferred deep link resolved — reported through conversion data instead.")
+                return
+            }
+            tealiumTrack(title: AppsFlyerConstants.Attribution.appOpen, data: result.deepLink?.clickEvent)
+        case .failure:
+            tealiumTrack(
+                title: AppsFlyerConstants.Attribution.error,
+                data: [
+                    AppsFlyerConstants.Attribution.errorName: AppsFlyerConstants.Attribution.appOpenFailure,
+                    AppsFlyerConstants.Attribution.errorDescription: result.error?.localizedDescription ?? ""
+                ]
+            )
+        case .notFound:
+            break
+        }
     }
 }
