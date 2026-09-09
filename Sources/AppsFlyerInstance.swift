@@ -57,12 +57,17 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     /// Registers as `AppsFlyerLibDelegate` and `AppsFlyerDeepLinkDelegate`, tracked through `tealium`.
     /// `AppsFlyerLib.shared()` is a singleton — a second instance created with this initializer
     /// silently steals both delegate slots from the first.
-    public convenience init(tealium: Tealium?,
+    ///
+    /// `tealium` is non-optional because this initializer exists only to track attribution: with
+    /// nothing to track to, it would claim both delegate slots — displacing whatever the host app
+    /// registered — and then discard every callback. Use `AppsFlyerInstance()` for an instance that
+    /// deliberately does not track attribution.
+    public convenience init(tealium: Tealium,
                              logLevel: RemoteCommandLogLevel) {
         self.init(tealium: tealium, logger: RemoteCommandLogger(logLevel: logLevel))
     }
 
-    init(tealium: Tealium?, logger: RemoteCommandLogger) {
+    init(tealium: Tealium, logger: RemoteCommandLogger) {
         self.logger = logger
         super.init()
         self.tealium = tealium

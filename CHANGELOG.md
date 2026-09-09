@@ -46,7 +46,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking:** `AppsFlyerCommand` gained requirements for the new commands added in this release (including the hashed-PII ones), so existing conformances outside this library no longer compile
 - **Breaking:** `logLevel` is now a required argument on `AppsFlyerInstance.init(tealium:logLevel:)`, instead of defaulting to `.silent`. Existing call sites that omitted it no longer compile — pass `.silent` to keep the previous behaviour. The parameterless `AppsFlyerInstance()` initializer is unaffected
 - `AppsFlyerRemoteCommand.init`'s `logLevel` still defaults, but now to `.error` instead of `.silent`, so integrators see error logs out of the box without opting in
-- **Breaking:** `tealium` is now a required argument on `AppsFlyerInstance.init(tealium:logLevel:)`, instead of defaulting to `nil`. Passing `nil` silently left attribution callbacks untracked, so the choice is now explicit at the call site
 - Attribution data for app opens is now delivered through `AppsFlyerDeepLinkDelegate.didResolveDeepLink`, which AppsFlyer SDK 7 uses in place of the removed `onAppOpenAttribution`/`onAppOpenAttributionFailure` callbacks. Event names and data shape are unchanged, apart from deferred links (see Fixed)
 - Refactor `AppsFlyerConstants` `Configuration` to `String`-based `CaseIterable` enum for improved type safety
 - Standardize parameter names and command structures across all classes
