@@ -31,8 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `isDebug` is now set before any other SDK call during `initialize`, instead of partway through — AppsFlyer SDK 7 requires this ordering for debug logging to cover the full initialization sequence
 
 ### Changed
-- Update AppsFlyer iOS SDK to `~> 7.0`
-- Update tealium-swift to 2.18.3
+- Update AppsFlyer iOS SDK to `>= 7.0.2, < 8.0`; SPM moves to the `AppsFlyerFramework-Static` distribution
 - Upgrade TealiumSwift dependency to `~> 2.18`
 - **Breaking:** AppsFlyer SDK 7 replaces automatic session start with an explicit readiness model. `initialize` now registers a session-ready listener and calls `start` inside it, rather than starting the session directly
 - **Breaking:** `setHost` and `setPartnerData` internal argument order/labels changed to match AppsFlyer SDK 7's renamed methods. No change to the `sethost`/`setpartnerdata` command parameters themselves
