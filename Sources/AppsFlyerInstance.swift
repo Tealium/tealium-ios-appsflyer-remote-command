@@ -49,11 +49,6 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     private let _onReady = TealiumReplaySubject<AppsFlyerLib>(cacheSize: 1)
     private let logger: RemoteCommandLogger
 
-    /// Whether `initialize` claimed the SDK's single session-ready listener slot. That listener is
-    /// the only way this library learns the session started, so `onReady` needs a fallback when the
-    /// slot belongs to the host app instead.
-    private var didRegisterSessionReadyListener = false
-
     /// Sets no delegate, so attribution callbacks do not fire. Use `init(tealium:)` to track them.
     public override convenience init() {
         self.init(logger: RemoteCommandLogger(logLevel: .silent))
@@ -90,25 +85,22 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
 
     public func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {
         defer { _onReady.subscribeOnce(onReady) }
-        let appsFlyerAlreadyPublished = _onReady.last() != nil
-        guard !appsFlyerAlreadyPublished else {
+        guard _onReady.last() == nil else {
             return
         }
         let appsFlyer = AppsFlyerLib.shared()
-        // SDK 7: credentials being set doesn't mean the session started, so the SDK's own readiness
-        // flag decides — `isSessionReady()` turns true once a session-ready listener has fired.
+        // `isSessionReady()` is the only readiness signal SDK 7 exposes — credentials being set is
+        // not one, since the session no longer starts on its own. It turns true once a session-ready
+        // listener has fired in this foreground cycle, which covers a host app that owns the SDK's
+        // single listener slot, and a host that registers a listener after the `initialize` command
+        // already claimed that slot. The `initialize` path itself publishes from its own listener
+        // block instead, right after `start()`.
+        //
+        // A host that must gate `start` on ATT consent collected inside its listener block starts
+        // later than the listener fires, so commands released here can still miss that session.
         if appsFlyer.isSessionReady() {
             _onReady.publish(appsFlyer)
-            return
         }
-        // Fallback for a host app that initializes AppsFlyer itself the SDK 6 way (`initialize` plus a
-        // direct `start`): it owns the SDK's single listener slot, so no readiness flag is ever set
-        // here and without this every gated command is stranded forever. `appsFlyerDevKey` is readonly
-        // and set by `initialize(devKey:appId:)`, so it answers whether the SDK was initialized at all.
-        guard !didRegisterSessionReadyListener, !appsFlyer.appsFlyerDevKey.isEmpty else {
-            return
-        }
-        _onReady.publish(appsFlyer)
     }
 
     public func initialize(appId: String, appDevKey: String, settings: [String: Any]?) {
@@ -216,7 +208,6 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
                 self?._onReady.publish(appsFlyer)
             }
         }
-        didRegisterSessionReadyListener = true
     }
 
     /// Gated on `onReady`: the SDK discards events logged before `start()`.
@@ -308,7 +299,14 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     /// calling `start` there automatically — this command is no longer needed for that. It now
     /// matches Android's usage: call it only to manually resume after `disabletracking`/`stoptracking`.
     public func start() {
-        AppsFlyerLib.shared().start()
+        let appsFlyer = AppsFlyerLib.shared()
+        // `isStopped` shuts down all SDK activity, so `start` on its own cannot resume a session —
+        // the flag has to be cleared first. Warned rather than treated as an error, because the
+        // command itself is mapped correctly; only the order in the mapping is wrong.
+        if appsFlyer.isStopped {
+            logger.warning("start has no effect while tracking is stopped. Map disabletracking with stop_tracking: false ahead of it to resume.")
+        }
+        appsFlyer.start()
     }
 
     /// Gated on `onReady` because the SDK discards deep links received before `start()`,

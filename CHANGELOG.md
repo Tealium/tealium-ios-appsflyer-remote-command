@@ -30,10 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Deep links arriving on a cold start are no longer lost — `handleOpen` is gated on `onReady`, which publishes once the session-ready listener fires. Host apps supporting Universal Links must also call `AppsFlyerLib.shared().handleLaunchOptions(_:)` in `application(_:didFinishLaunchingWithOptions:)`; a RemoteCommand has no access to `launchOptions`
 - `isDebug` is set before any other SDK call during `initialize`, as AppsFlyer SDK 7 requires for debug logging to cover initialization
-- `onReady` waits for `isSessionReady()` instead of treating credentials as readiness. Credentials remain the fallback for a host app that initialized AppsFlyer itself, which owns the SDK's single listener slot so no readiness signal reaches this library
+- `onReady` waits for `isSessionReady()` instead of treating credentials as readiness
 - The automatic per-foreground `start` is skipped while `isStopped` is set, so re-foregrounding no longer resumes tracking for an opted-out user
+- `start` logs a warning when tracking is stopped, where the SDK ignores it silently. `disabletracking`/`stoptracking` with `stop_tracking: false` has to clear the flag first — map it ahead of `start`
 - `onReady` publishes on `TealiumQueues.backgroundSerialQueue`, where its subscribers are added; the SDK fires the listener on the main queue and the observable is not synchronized
-- User-identifier parameters (`email`, `first_name`, `last_name`, `phone_number`, `country_code`, `fb_login_id`) are stripped from event values and logged at `.warning`, so a mapping like `setuseremail,…,completeregistration` no longer sends them raw as event data. A mapped `event` object is still passed through verbatim
 - Deferred deep links no longer track `app_open_attribution`; `onConversionDataSuccess` already reports that install as `conversion_data_received`
 
 ### Changed

@@ -10,12 +10,12 @@ import XCTest
 @testable import TealiumAppsFlyer
 import AppsFlyerLib
 
-/// Exercises the real `AppsFlyerInstance.initialize` body against the
+/// Exercises the real `AppsFlyerInstance` body against the
 /// `AppsFlyerLib.shared()` singleton. Mock-based coverage in
-/// `AppsFlyerRemoteCommandTests` only verifies the payload-to-`initialize`
-/// dispatch — these tests verify the settings-to-SDK property mapping
-/// and the Facebook Deferred AppLinks fallback that lives inside the
-/// real implementation.
+/// `AppsFlyerRemoteCommandTests` only verifies the payload-to-command
+/// dispatch — these tests verify the settings-to-SDK property mapping,
+/// the Facebook Deferred AppLinks fallback and the `isStopped` handling
+/// that live inside the real implementation.
 class AppsFlyerInstanceInitializeTests: XCTestCase {
 
     var spyLogHandler: MockLogHandler!
@@ -42,6 +42,9 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         lib.minTimeBetweenSessions = 0
         lib.customData = nil
         lib.facebookDeferredAppLink = nil
+        // Left set, this would make the session-ready listener registered by every later
+        // `initialize` skip its `start()` call.
+        lib.isStopped = false
         lib.unregisterSessionReadyListener()
     }
 
@@ -225,6 +228,23 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         )
         XCTAssertTrue(AppsFlyerLib.shared().disableAdvertisingIdentifier)
         assertEffectiveConfigFlag("disableIdfvCollection", false)
+    }
+
+    /// The SDK ignores `start` while `isStopped` is set, so a tag mapping `resume_tracking` to
+    /// `start` alone silently resumes nothing. The warning is the only signal an integrator gets.
+    func testStartWarnsWhileTrackingStopped() {
+        AppsFlyerLib.shared().isStopped = true
+
+        instance.start()
+
+        XCTAssertTrue(spyLogHandler.messages(for: .warning).contains { $0.contains("stop_tracking: false") },
+                      "Expected a warning naming the parameter that clears the stop flag")
+    }
+
+    func testStartDoesNotWarnWhileTrackingActive() {
+        instance.start()
+
+        XCTAssertEqual(spyLogHandler.messages(for: .warning), [])
     }
 
 }

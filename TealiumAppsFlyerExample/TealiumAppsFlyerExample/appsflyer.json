@@ -128,7 +128,7 @@
     },
     "commands": {
         "launch": "initialize",
-        "resume_tracking": "start",
+        "resume_tracking": "disabletracking,start",
         "track_location": "tracklocation",
         "set_host": "sethost",
         "set_currency": "setcurrencycode",

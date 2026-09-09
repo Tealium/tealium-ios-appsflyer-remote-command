@@ -324,20 +324,8 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
         appsFlyerInstance.handleOpen(url: url, sourceApplication: sourceApplication, annotation: annotation)
     }
 
-    /// A mapped `event` object is passed through verbatim — it is the integrator's explicit list of
-    /// event values, so filtering it would silently drop keys they deliberately put there.
-    ///
-    /// The payload is filtered instead, because it is a mixed bag: it also carries command plumbing
-    /// (`command_name`, credentials, `settings`) and the user-identifier parameters, none of which
-    /// belong in event data. Mapping an identifier into `event` is an explicit choice to send it as
-    /// event data, and stays the integrator's to make.
     func getEventParameters(payload: [String: Any]) -> [String: Any] {
         guard let eventParameters = payload[AppsFlyerConstants.Parameters.event] as? [String: Any] else {
-            let strippedIdentifiers = payload.keys.filter { [String: Any].piiKeys.contains($0) }
-            if !strippedIdentifiers.isEmpty {
-                logger.warning("Removed user identifiers from event values: \(strippedIdentifiers.sorted().joined(separator: ", ")). "
-                               + "Map these through the setuseremail/setuserfirstname/setuserlastname/setphonenumber/setuserfbloginid commands instead.")
-            }
             return payload.filterVariables()
         }
         return eventParameters
@@ -395,28 +383,11 @@ extension Dictionary where Key == String, Value == Any {
         return int64
     }
 
-    /// Parameters this library routes to AppsFlyer's user-identifier APIs rather than to event data.
-    /// A tag mapping them alongside a command name that is not built in would otherwise send them as
-    /// that event's values in clear text, bypassing the on-device hashing SDK 7 made mandatory.
-    ///
-    /// Stripping them is our choice, not an AppsFlyer requirement: their ingestion only validates the
-    /// dedicated `*_hashed` fields, so raw values arriving as arbitrary event values are stored as-is.
-    /// `fb_login_id` is sent unhashed and `country_code` is not personal alone — both are listed only
-    /// because they reach this library as part of the identifier mappings.
-    static let piiKeys: Set<String> = [
-        AppsFlyerConstants.Parameters.email,
-        AppsFlyerConstants.Parameters.firstName,
-        AppsFlyerConstants.Parameters.lastName,
-        AppsFlyerConstants.Parameters.phoneNumber,
-        AppsFlyerConstants.Parameters.countryCode,
-        AppsFlyerConstants.Parameters.fbLoginId,
-    ]
-
     private static let allExcludedKeys: Set<String> = {
         let excludedKeys: Set<String> = ["method", AppsFlyerConstants.commandName,
                                          AppsFlyerConstants.Settings.debug]
         let configurationKeys = Set(AppsFlyerConstants.Configuration.allCases.map { $0.rawValue })
-        return excludedKeys.union(configurationKeys).union(piiKeys)
+        return excludedKeys.union(configurationKeys)
     }()
 
     func filterVariables() -> [String: Any] {

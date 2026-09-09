@@ -429,19 +429,16 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertNil(appsFlyerInstance.lastPrefix)
     }
 
-    /// The hashed-PII parameters reach AppsFlyer through the `setuser…` commands, which hash them
-    /// on-device. Mapping them alongside a command name that is not built in — as the example
-    /// config's `setuseremail,setuserfirstname,setuserlastname,setcustomerid,completeregistration`
-    /// mapping does — must not send the raw values as that event's data.
-    func testPIIParametersAreNotLoggedAsEventValues() {
+    /// Without a mapped `event` object the payload becomes the event values, minus command plumbing
+    /// only. A mapping like `setuseremail,…,completeregistration` therefore feeds the identifier
+    /// parameters to both the `setuser…` commands, which hash them on-device, and the event itself —
+    /// the tag mapped them, so passing them on is the integrator's call, not this library's to veto.
+    func testIdentifierParametersReachBothCommandsAndEventValues() {
         let payload: [String: Any] = [
             "command_name": "setuseremail,setuserfirstname,setuserlastname,completeregistration",
             "email": "user@example.com",
             "first_name": "Ada",
             "last_name": "Lovelace",
-            "phone_number": "123456789",
-            "country_code": "48",
-            "fb_login_id": 1234567890123,
             "product_name": "iPhone"
         ]
         appsFlyerCommand.processRemoteCommand(with: payload)
@@ -450,22 +447,22 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertEqual(appsFlyerInstance.lastEventName, "af_complete_registration")
         let values = appsFlyerInstance.lastEventValues
         XCTAssertEqual(values?["product_name"] as? String, "iPhone")
-        for piiKey in ["email", "first_name", "last_name", "phone_number", "country_code", "fb_login_id"] {
-            XCTAssertNil(values?[piiKey], "\(piiKey) must not be logged as event data")
-        }
-        // The values still reached the hashing commands themselves.
+        XCTAssertEqual(values?["email"] as? String, "user@example.com")
+        XCTAssertEqual(values?["first_name"] as? String, "Ada")
+        // The values also reached the hashing commands themselves.
         XCTAssertEqual(appsFlyerInstance.lastEmail, "user@example.com")
         XCTAssertEqual(appsFlyerInstance.lastFirstName, "Ada")
         XCTAssertEqual(appsFlyerInstance.lastLastName, "Lovelace")
     }
 
-    /// A mapped `event` object is the integrator's explicit list of event values, so it is passed
-    /// through verbatim — including keys the payload-level filter would have removed. Deciding to
-    /// send an identifier as event data stays their call.
+    /// A mapped `event` object is the integrator's explicit list of event values, so it replaces the
+    /// payload wholesale rather than being merged with it — a key present in both wins from `event`,
+    /// and a payload key absent from `event` is not added.
     func testNestedEventObjectIsPassedThroughVerbatim() {
         let payload: [String: Any] = [
             "command_name": "customevent",
-            "email": "stripped@example.com",
+            "email": "payload@example.com",
+            "af_currency": "USD",
             "event": [
                 "email": "kept@example.com",
                 "product_name": "iPhone"
@@ -474,9 +471,11 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         appsFlyerCommand.processRemoteCommand(with: payload)
 
         XCTAssertEqual(appsFlyerInstance.logEventCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastEventValues?.count, 2)
         let values = appsFlyerInstance.lastEventValues
         XCTAssertEqual(values?["product_name"] as? String, "iPhone")
         XCTAssertEqual(values?["email"] as? String, "kept@example.com")
+        XCTAssertNil(values?["af_currency"])
     }
 
     func testSetCurrencyCode() {
