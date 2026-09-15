@@ -37,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Deferred deep links no longer track `app_open_attribution`; `onConversionDataSuccess` already reports that install as `conversion_data_received`
 
 ### Changed
-- Update AppsFlyer iOS SDK to `>= 7.0.2, < 8.0` in SPM and CocoaPods; Carthage pins `== 7.0.2`, having no compound-range operator
+- Update AppsFlyer iOS SDK to `>= 7.0.2, < 8.0` in SPM and CocoaPods; Carthage pins `>= 7.0.2`, having no compound-range operator, so a future 8.x may need a follow-up release to cap it
 - Upgrade TealiumSwift dependency to `~> 2.18`
 - **Breaking:** AppsFlyer SDK 7 replaces automatic session start with an explicit readiness model. `initialize` now registers a session-ready listener and calls `start` inside it, rather than starting the session directly
 - `setHost` and `setPartnerData` call SDK 7's renamed methods with the new argument order/labels. No change to the `AppsFlyerCommand` signatures or the `sethost`/`setpartnerdata` command parameters
