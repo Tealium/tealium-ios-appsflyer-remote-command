@@ -128,11 +128,11 @@
     },
     "commands": {
         "launch": "initialize",
-        "resume_tracking": "disabletracking,start",
         "track_location": "tracklocation",
         "set_host": "sethost",
         "set_currency": "setcurrencycode",
-        "disable_tracking": "disabletracking",
+        "disable_tracking,stop_tracking:true": "disabletracking",
+        "disable_tracking,stop_tracking:false": "disabletracking,start",
         "anonymize_user": "anonymizeuser",
         "resolve_deep_links": "resolvedeeplinkurls",
         "set_phone_number": "setphonenumber",
