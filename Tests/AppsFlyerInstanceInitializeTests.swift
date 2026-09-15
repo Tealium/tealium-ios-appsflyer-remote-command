@@ -26,9 +26,12 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         spyLogHandler = MockLogHandler()
         let logger = RemoteCommandLogger(logLevel: .debug, handler: spyLogHandler)
         instance = AppsFlyerInstance(logger: logger)
-        // Reset shared singleton state to keep tests isolated. `appsFlyerDevKey`/`appleAppID` are
-        // read-only in SDK 7 (set only via `initialize(devKey:appId:)`), so they are not reset here
-        // — every test calls `instance.initialize` with its own values, which overwrites them.
+    }
+
+    /// Resets shared singleton state in tearDown, not setUp, so a class that runs after this one
+    /// doesn't inherit whatever these tests last left on `AppsFlyerLib.shared()`. `appsFlyerDevKey`/
+    /// `appleAppID` are skipped — every test's `instance.initialize` overwrites them anyway.
+    override func tearDown() {
         let lib = AppsFlyerLib.shared()
         lib.isDebug = false
         lib.anonymizeUser = false
@@ -42,17 +45,9 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         lib.minTimeBetweenSessions = 0
         lib.customData = nil
         lib.facebookDeferredAppLink = nil
-        // Left set, this would make the session-ready listener registered by every later
-        // `initialize` skip its `start()` call.
         lib.isStopped = false
+        // Left registered, this fires `start()` during an unrelated later test.
         lib.unregisterSessionReadyListener()
-    }
-
-    /// Every `initialize` call registers a session-ready listener on the shared singleton. Left in
-    /// place it can fire during an unrelated later test, calling `start()` and publishing `onReady`
-    /// mid-test.
-    override func tearDown() {
-        AppsFlyerLib.shared().unregisterSessionReadyListener()
         super.tearDown()
     }
 
