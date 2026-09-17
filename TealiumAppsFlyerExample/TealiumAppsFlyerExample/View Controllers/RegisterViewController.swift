@@ -15,7 +15,6 @@ class RegisterViewController: UIViewController {
     @IBOutlet weak var email: UITextField!
     @IBOutlet weak var username: UITextField!
     @IBOutlet weak var password: UITextField!
-    var customerEmails = [String]()
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -31,40 +30,48 @@ class RegisterViewController: UIViewController {
     }
 
     @IBAction func onRegister(_ sender: Any) {
-        if let customerEmail = email.text {
-            customerEmails.append(customerEmail)
-        }
-        // Add customer emails array to payload
-        // Add email hash type of 3 to payload
-        TealiumHelper.trackEvent(title: "user_register", data: [RegisterViewController.customerId: "ABC123", RegisterViewController.signUpMethod: "apple", RegisterViewController.customerEmails: customerEmails, RegisterViewController.emailHashType: 3])
+        TealiumHelper.trackEvent(title: "user_register", data: [
+            RegisterViewController.customerId: "ABC123",
+            RegisterViewController.signUpMethod: "apple",
+            RegisterViewController.email: email.text ?? "",
+            RegisterViewController.firstName: "John",
+            RegisterViewController.lastName: "Doe"
+        ])
     }
 
     @IBAction func setPhoneNumberTapped(_ sender: UIButton) {
         let ac = UIAlertController(title: "Set Phone Number", message: "Enter your phone number for AppsFlyer tracking", preferredStyle: .alert)
-        
+
         ac.addTextField { textField in
-            textField.placeholder = "Phone number (e.g., +1234567890)"
+            textField.placeholder = "Country code (e.g., 1)"
             textField.keyboardType = .phonePad
-            textField.text = "+1234567890"
+            textField.text = "1"
         }
-        
+        ac.addTextField { textField in
+            textField.placeholder = "Phone number (e.g., 1234567890)"
+            textField.keyboardType = .phonePad
+            textField.text = "1234567890"
+        }
+
         ac.addAction(UIAlertAction(title: "Set Phone Number", style: .default) { _ in
-            guard let phoneNumber = ac.textFields?[0].text, !phoneNumber.isEmpty else {
-                let errorAlert = UIAlertController(title: "Error", message: "Please enter a valid phone number", preferredStyle: .alert)
+            guard let countryCode = ac.textFields?[0].text, !countryCode.isEmpty,
+                  let phoneNumber = ac.textFields?[1].text, !phoneNumber.isEmpty else {
+                let errorAlert = UIAlertController(title: "Error", message: "Please enter a valid country code and phone number", preferredStyle: .alert)
                 errorAlert.addAction(UIAlertAction(title: "OK", style: .default))
                 self.present(errorAlert, animated: true)
                 return
             }
-            
+
             TealiumHelper.trackEvent(title: "set_phone_number", data: [
+                RegisterViewController.countryCode: countryCode,
                 RegisterViewController.phoneNumber: phoneNumber
             ])
-            
+
             let successAlert = UIAlertController(title: "Phone Number Set", message: "AppsFlyer phone number set to: \(phoneNumber)", preferredStyle: .alert)
             successAlert.addAction(UIAlertAction(title: "OK", style: .default))
             self.present(successAlert, animated: true)
         })
-        
+
         ac.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         present(ac, animated: true)
     }
@@ -86,7 +93,9 @@ extension RegisterViewController: UITextFieldDelegate {
 extension RegisterViewController {
     static let customerId = "customer_id"
     static let signUpMethod = "signup_method"
-    static let customerEmails = "customer_emails"
-    static let emailHashType = "email_hash_type"
+    static let email = "email"
+    static let firstName = "first_name"
+    static let lastName = "last_name"
     static let phoneNumber = "phone_number"
+    static let countryCode = "country_code"
 }
