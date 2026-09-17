@@ -72,6 +72,9 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         super.init()
         self.tealium = tealium
 
+        // The SDK singleton's `init` reads `UIApplication.applicationState`, so create it on the main
+        // thread here rather than from the first command on `TealiumQueues.backgroundSerialQueue`.
+        TealiumQueues.secureMainThreadExecution { _ = AppsFlyerLib.shared() }
         AppsFlyerLib.shared().delegate = self
         AppsFlyerLib.shared().deepLinkDelegate = self
     }
@@ -86,6 +89,10 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     init(logger: RemoteCommandLogger) {
         self.logger = logger
         super.init()
+
+        // The SDK singleton's `init` reads `UIApplication.applicationState`, so create it on the main
+        // thread here rather than from the first command on `TealiumQueues.backgroundSerialQueue`.
+        TealiumQueues.secureMainThreadExecution { _ = AppsFlyerLib.shared() }
     }
 
     public func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {
@@ -194,35 +201,58 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         // - Universal Links: the SDK only waits for a cold-launch link to resolve before firing this
         //   listener if `AppsFlyerLib.shared().handleLaunchOptions(_:)` was called from
         //   `application(_:didFinishLaunchingWithOptions:)`, and only the host has `launchOptions`.
-        // - ATT consent before `start`: the SDK keeps a single listener, claimed here, so a host that
-        //   must collect consent first initializes AppsFlyer itself and registers its own listener
-        //   rather than mapping the `initialize` command. `onReady` supports that path.
-        appsFlyer.registerSessionReadyListener { [weak self] in
-            // Always dispatched on the main queue by the SDK, while `_onReady` subscribers are added
-            // from `TealiumQueues.backgroundSerialQueue` — `TealiumObservable` is not synchronized,
-            // so publishing has to hop back onto that queue.
-            //
-            // The listener fires again on every foreground, so an unconditional `start` would resume
-            // tracking for a user who opted out through `disabletracking`/`stoptracking`.
-            if appsFlyer.isStopped {
-                self?.logger.debug("Session start skipped: tracking is stopped.")
-            } else {
-                appsFlyer.start()
-            }
-            TealiumQueues.backgroundSerialQueue.async {
-                self?._onReady.publish(appsFlyer)
+        // - ATT consent before `start`: a host that must collect consent first registers its own
+        //   listener and starts inside it. `onReady` supports that path, and the check below leaves
+        //   that listener in place.
+        //
+        // One slot only: a second registration replaces the block in it, and the replaced block never
+        // runs again. Readiness already reported means a listener — the host app's, or ours from an
+        // earlier `initialize` this foreground cycle — already fired, so taking the slot would
+        // silently kill its per-foreground work — an ATT-gated `start`, say. Leave it alone and only
+        // release the queued commands; `start` stays with that listener.
+        if appsFlyer.isSessionReady() {
+            logger.warning("Session already ready in this foreground cycle. Keeping the registered session-ready listener, which owns start, and releasing queued commands.")
+            _onReady.publish(appsFlyer)
+            return
+        }
+        // What the check above cannot cover: a listener the host registered whose readiness is still
+        // pending — a cold-launch Universal Link resolving, bounded by `deepLinkTimeout` — has not
+        // fired yet, so the registration below replaces it before it ever ran. The SDK exposes no way
+        // to tell an occupied slot from a free one, so this is logged rather than detected.
+        logger.info("Registering the session-ready listener. The AppsFlyer SDK keeps only one, so a listener the app registered itself is replaced by this.")
+        // `registerSessionReadyListener` reads `UIApplication.applicationState` synchronously, so it has to
+        // run on the main thread; commands arrive here on `TealiumQueues.backgroundSerialQueue`.
+        TealiumQueues.secureMainThreadExecution {
+            appsFlyer.registerSessionReadyListener { [weak self] in
+                // Always dispatched on the main queue by the SDK, while `_onReady` subscribers are added
+                // from `TealiumQueues.backgroundSerialQueue` — `TealiumObservable` is not synchronized,
+                // so publishing has to hop back onto that queue.
+                //
+                // The listener fires again on every foreground, and the SDK's `start()` ignores
+                // `isStopped` (see `start()` below), so an unconditional call would keep the SDK
+                // working for a user who opted out through `disabletracking`/`stoptracking`.
+                if appsFlyer.isStopped {
+                    self?.logger.debug("Session start skipped: tracking is stopped.")
+                } else {
+                    appsFlyer.start()
+                }
+                TealiumQueues.backgroundSerialQueue.async {
+                    self?._onReady.publish(appsFlyer)
+                }
             }
         }
     }
 
-    /// Gated on `onReady`: the SDK discards events logged before `start()`.
+    /// Gated on `onReady`: the SDK holds events logged before a successful `start()` and replays them
+    /// only on its next init, so they would not reach AppsFlyer in this session.
     public func logEvent(_ eventName: String, values: [String: Any]) {
         onReady { appsFlyer in
             appsFlyer.logEvent(eventName, withValues: values)
         }
     }
 
-    /// Gated on `onReady`: the SDK discards events logged before `start()`.
+    /// Gated on `onReady`: the SDK holds events logged before a successful `start()` and replays them
+    /// only on its next init, so they would not reach AppsFlyer in this session.
     public func logLocation(longitude: Double, latitude: Double) {
         onReady { appsFlyer in
             appsFlyer.logLocation(longitude: longitude, latitude: latitude)
@@ -280,7 +310,8 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         AppsFlyerLib.shared().resolveDeepLinkURLs = urls
     }
 
-    /// Gated on `onReady`: the SDK discards events logged before `start()`.
+    /// Gated on `onReady`: the SDK holds events logged before a successful `start()` and replays them
+    /// only on its next init, so they would not reach AppsFlyer in this session.
     public func logAdRevenue(_ adRevenueData: AFAdRevenueData, additionalParams: [String: Any]?) {
         onReady { appsFlyer in
             appsFlyer.logAdRevenue(adRevenueData, additionalParameters: additionalParams)
@@ -305,11 +336,15 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     /// matches Android's usage: call it only to manually resume after `disabletracking`/`stoptracking`.
     public func start() {
         let appsFlyer = AppsFlyerLib.shared()
-        // `isStopped` shuts down all SDK activity, so `start` on its own cannot resume a session —
-        // the flag has to be cleared first. Warned rather than treated as an error, because the
-        // command itself is mapped correctly; only the order in the mapping is wrong.
-        if appsFlyer.isStopped {
+        // The AppsFlyer SDK's own `start()` does not check `isStopped` — the check sits further down,
+        // in the request executor shared by every SDK request, so only the outgoing HTTP request is
+        // refused. Everything upstream still runs: the remote-config check, SKAdNetwork work, and the
+        // session-timestamp write that makes the next real `start` land inside
+        // `minTimeBetweenSessions` and be skipped. Verified against 7.0.2 with the SDK's debug log.
+        // Warned, not errored: the command is mapped correctly, only its order in the mapping is wrong.
+        guard !appsFlyer.isStopped else {
             logger.warning("start has no effect while tracking is stopped. Map disabletracking with stop_tracking: false ahead of it to resume.")
+            return
         }
         appsFlyer.start()
     }

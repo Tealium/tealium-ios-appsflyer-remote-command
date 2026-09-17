@@ -9,6 +9,11 @@
 import XCTest
 @testable import TealiumAppsFlyer
 import AppsFlyerLib
+#if COCOAPODS
+import TealiumSwift
+#else
+import TealiumCore
+#endif
 
 /// Exercises the real `AppsFlyerInstance` body against the
 /// `AppsFlyerLib.shared()` singleton. Mock-based coverage in
@@ -225,22 +230,145 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         assertEffectiveConfigFlag("disableIdfvCollection", false)
     }
 
-    /// The SDK ignores `start` while `isStopped` is set, so a tag mapping `resume_tracking` to
-    /// `start` alone silently resumes nothing. The warning is the only signal an integrator gets.
-    func testStartWarnsWhileTrackingStopped() {
+    /// The SDK's own `start()` ignores `isStopped` (verified against 7.0.2), so the wrapper must
+    /// not forward the call — warning alone would not stop the SDK.
+    func testStartIsNotForwardedToSDKWhileTrackingStopped() {
         AppsFlyerLib.shared().isStopped = true
 
-        instance.start()
+        let sdkStartCalls = countingSDKStartCalls { instance.start() }
 
+        XCTAssertEqual(sdkStartCalls, 0, "Expected `start` not to reach the SDK while tracking is stopped")
         XCTAssertTrue(spyLogHandler.messages(for: .warning).contains { $0.contains("stop_tracking: false") },
                       "Expected a warning naming the parameter that clears the stop flag")
     }
 
-    func testStartDoesNotWarnWhileTrackingActive() {
-        instance.start()
+    func testStartIsForwardedToSDKWhileTrackingActive() {
+        let sdkStartCalls = countingSDKStartCalls { instance.start() }
 
+        XCTAssertEqual(sdkStartCalls, 1)
         XCTAssertEqual(spyLogHandler.messages(for: .warning), [])
     }
 
-}
+    /// Swaps `AppsFlyerLib.start()` for a counter while `body` runs, so a forwarded call can be
+    /// observed without the SDK opening a real session.
+    private func countingSDKStartCalls(_ body: () -> Void) -> Int {
+        guard let method = class_getInstanceMethod(AppsFlyerLib.self, NSSelectorFromString("start")) else {
+            XCTFail("AppsFlyerLib.start() not found")
+            return -1
+        }
+        Self.sdkStartCallCount = 0
+        let original = method_getImplementation(method)
+        let counter: @convention(block) (AnyObject) -> Void = { _ in Self.sdkStartCallCount += 1 }
+        method_setImplementation(method, imp_implementationWithBlock(counter))
+        defer { method_setImplementation(method, original) }
+        body()
+        return Self.sdkStartCallCount
+    }
 
+    private static var sdkStartCallCount = 0
+
+    /// SDK 7 keeps a single session-ready listener slot and a second registration replaces what is in
+    /// it, so `initialize` has to leave a host app's own listener alone — commands still have to be
+    /// released, otherwise everything mapped after `initialize` would queue forever.
+    func testInitializeKeepsAlreadyRegisteredListenerAndStillReleasesCommands() {
+        var released = false
+        instance.onReady { _ in released = true }
+
+        let registrations = stubbingSessionReady(true) {
+            countingListenerRegistrations {
+                instance.initialize(appId: "test_app_id", appDevKey: "test_dev_key", settings: nil)
+            }
+        }
+
+        XCTAssertEqual(registrations, 0, "Expected the existing session-ready listener to be left in place")
+        XCTAssertTrue(released, "Expected queued commands to be released without our own listener")
+        XCTAssertTrue(spyLogHandler.messages(for: .warning).contains { $0.contains("session-ready listener") },
+                      "Expected a warning explaining why no listener was registered")
+    }
+
+    func testInitializeRegistersListenerWhenSessionNotReady() {
+        let registrations = stubbingSessionReady(false) {
+            countingListenerRegistrations {
+                instance.initialize(appId: "test_app_id", appDevKey: "test_dev_key", settings: nil)
+            }
+        }
+
+        XCTAssertEqual(registrations, 1)
+        XCTAssertEqual(spyLogHandler.messages(for: .warning), [])
+    }
+
+    /// `registerSessionReadyListener` reads `UIApplication.applicationState`, so it must reach the SDK
+    /// on the main thread even though commands run on `TealiumQueues.backgroundSerialQueue`.
+    func testInitializeRegistersListenerOnMainThreadWhenCalledOffMain() {
+        let expectation = expectation(description: "registerSessionReadyListener called")
+        var calledOnMainThread = false
+
+        stubbingSessionReady(false) {
+            installingListenerRegistrationRecorder(fulfilling: expectation,
+                                                    recordingMainThreadInto: { calledOnMainThread = $0 }) {
+                TealiumQueues.backgroundSerialQueue.async {
+                    self.instance.initialize(appId: "test_app_id", appDevKey: "test_dev_key", settings: nil)
+                }
+            }
+        }
+
+        XCTAssertTrue(calledOnMainThread, "Expected registerSessionReadyListener to reach the SDK on the main thread")
+    }
+
+    /// Swaps `AppsFlyerLib.registerSessionReadyListener:` for a block that records
+    /// `Thread.isMainThread` and fulfils `expectation`, runs `body`, waits for `expectation`, then
+    /// restores the original implementation. Unlike `countingListenerRegistrations`'s `defer`, the
+    /// restore happens after the wait, not right after `body` returns — `body` here only starts the
+    /// async call, so an immediate `defer` would remove the swizzle before it has run.
+    private func installingListenerRegistrationRecorder(fulfilling expectation: XCTestExpectation,
+                                                          recordingMainThreadInto record: @escaping (Bool) -> Void,
+                                                          _ body: () -> Void) {
+        guard let method = class_getInstanceMethod(AppsFlyerLib.self,
+                                                   NSSelectorFromString("registerSessionReadyListener:")) else {
+            XCTFail("AppsFlyerLib.registerSessionReadyListener: not found")
+            return
+        }
+        let original = method_getImplementation(method)
+        let recorder: @convention(block) (AnyObject, Any?) -> Void = { _, _ in
+            record(Thread.isMainThread)
+            expectation.fulfill()
+        }
+        method_setImplementation(method, imp_implementationWithBlock(recorder))
+        body()
+        wait(for: [expectation], timeout: 2)
+        method_setImplementation(method, original)
+    }
+
+    /// Real readiness needs a foreground cycle and a live session, so the getter is stubbed instead.
+    private func stubbingSessionReady<T>(_ ready: Bool, _ body: () -> T) -> T {
+        guard let method = class_getInstanceMethod(AppsFlyerLib.self, NSSelectorFromString("isSessionReady")) else {
+            XCTFail("AppsFlyerLib.isSessionReady() not found")
+            return body()
+        }
+        let original = method_getImplementation(method)
+        let stub: @convention(block) (AnyObject) -> Bool = { _ in ready }
+        method_setImplementation(method, imp_implementationWithBlock(stub))
+        defer { method_setImplementation(method, original) }
+        return body()
+    }
+
+    /// Counts registrations while `body` runs, without installing a listener that would later fire
+    /// `start()` into an unrelated test.
+    private func countingListenerRegistrations(_ body: () -> Void) -> Int {
+        guard let method = class_getInstanceMethod(AppsFlyerLib.self,
+                                                   NSSelectorFromString("registerSessionReadyListener:")) else {
+            XCTFail("AppsFlyerLib.registerSessionReadyListener: not found")
+            return -1
+        }
+        Self.listenerRegistrationCount = 0
+        let original = method_getImplementation(method)
+        let counter: @convention(block) (AnyObject, Any?) -> Void = { _, _ in Self.listenerRegistrationCount += 1 }
+        method_setImplementation(method, imp_implementationWithBlock(counter))
+        defer { method_setImplementation(method, original) }
+        body()
+        return Self.listenerRegistrationCount
+    }
+
+    private static var listenerRegistrationCount = 0
+
+}

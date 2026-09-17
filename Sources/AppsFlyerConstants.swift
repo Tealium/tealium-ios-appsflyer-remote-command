@@ -135,9 +135,9 @@ public enum AppsFlyerConstants {
         /// TiQ UI labels this key as "resolve_deep_links" — accepted as a fallback to avoid silent failures.
         static let deepLinkUrlsLegacyTiQ = "resolve_deep_links"
         static let event = "event"
-        static let phoneNumber = "phone_number"
 
         // Hashed PII (for setUserPhone / setUserFirstName / setUserLastName / setUserFbLoginId)
+        static let phoneNumber = "phone_number"
         static let countryCode = "country_code"
         static let firstName = "first_name"
         static let lastName = "last_name"

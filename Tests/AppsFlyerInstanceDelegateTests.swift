@@ -147,10 +147,85 @@ class AppsFlyerInstanceDelegateTests: XCTestCase {
     }
 
     // MARK: - didResolveDeepLink
-    //
-    // Not covered: `AppsFlyerDeepLinkResult` and `AppsFlyerDeepLink` both declare
-    // `init`/`new` as `NS_UNAVAILABLE` with readonly properties, so a `DeepLinkResult`
-    // cannot be constructed to call the delegate method with.
+
+    /// A direct deep link is what the removed `onAppOpenAttribution` used to report, so it still
+    /// tracks `app_open_attribution`, forwarding the SDK's click event as the event data.
+    func testDidResolveDeepLinkTracksDirectLink() {
+        guard let result = makeDeepLinkResult(deferred: false),
+              let clickEvent = result.deepLink?.clickEvent, !clickEvent.isEmpty else {
+            return XCTFail("Expected the SDK to populate `clickEvent` from the OneLink parameters")
+        }
+
+        instance.didResolveDeepLink(result)
+
+        XCTAssertEqual(instance.trackedTitle, "app_open_attribution")
+        XCTAssertEqual(instance.trackedData as NSDictionary?, clickEvent as NSDictionary)
+    }
+
+    /// SDK 7's callback also fires for deferred links, where `onAppOpenAttribution` never did.
+    /// `onConversionDataSuccess` already reports that install as `conversion_data_received`, so
+    /// tracking it here would double-report the same install.
+    func testDidResolveDeepLinkSkipsDeferredLink() {
+        guard let result = makeDeepLinkResult(deferred: true) else { return }
+
+        instance.didResolveDeepLink(result)
+
+        XCTAssertNil(instance.trackedTitle)
+    }
+
+    /// `DeepLinkResult` and `DeepLink` declare `init`/`new` as `NS_UNAVAILABLE` and expose readonly
+    /// properties only, so both are built through the SDK's own internal constructors reached via
+    /// the ObjC runtime: `+[AppsFlyerDeepLink withOneLink:]` for a direct link,
+    /// `+[AppsFlyerDeepLink withParameters:]` for a deferred one — that one is the deferred
+    /// constructor proper, returning `nil` unless the parameters carry `found: true`, which is also
+    /// what it derives `isDeferred` from. `-[AppsFlyerDeepLinkResult initWithDeepLink:error:]` wraps
+    /// the link. Deliberate but fragile, like the `sdkConfig` reads in
+    /// `AppsFlyerInstanceInitializeTests`: each step fails the test with an explanatory message
+    /// instead of crashing if AppsFlyer renames these internals, and the state it produced
+    /// (`isDeferred`, `status`) is asserted, so a test can never pass through the wrong branch.
+    /// Verified against 7.0.2.
+    private func makeDeepLinkResult(deferred: Bool,
+                                    file: StaticString = #filePath,
+                                    line: UInt = #line) -> DeepLinkResult? {
+        var parameters: [String: Any] = [
+            "campaign": "spring_sale",
+            "media_source": "test_source",
+            "deep_link_value": "product_42",
+            "af_sub1": "sub1_value"
+        ]
+        if deferred {
+            parameters["found"] = true
+        }
+        let constructor = deferred ? "withParameters:" : "withOneLink:"
+        guard let deepLink = (DeepLink.self as AnyObject)
+            .perform(NSSelectorFromString(constructor), with: parameters)?
+            .takeUnretainedValue() as? DeepLink else {
+            XCTFail("Could not build a `DeepLink` through `\(constructor)`. "
+                    + "AppsFlyer SDK internals changed.", file: file, line: line)
+            return nil
+        }
+        guard deepLink.isDeferred == deferred else {
+            XCTFail("`\(constructor)` no longer produces isDeferred == \(deferred). "
+                    + "AppsFlyer SDK internals changed.", file: file, line: line)
+            return nil
+        }
+        guard let allocated = (DeepLinkResult.self as AnyObject)
+            .perform(NSSelectorFromString("alloc"))?
+            .takeUnretainedValue(),
+              let result = (allocated as AnyObject)
+                .perform(NSSelectorFromString("initWithDeepLink:error:"), with: deepLink, with: nil)?
+                .takeUnretainedValue() as? DeepLinkResult else {
+            XCTFail("Could not build a `DeepLinkResult` through `initWithDeepLink:error:`. "
+                    + "AppsFlyer SDK internals changed.", file: file, line: line)
+            return nil
+        }
+        guard result.status == .found else {
+            XCTFail("Expected a resolved deep link to carry `.found`, got \(result.status).",
+                    file: file, line: line)
+            return nil
+        }
+        return result
+    }
 }
 
 // MARK: - Spy
