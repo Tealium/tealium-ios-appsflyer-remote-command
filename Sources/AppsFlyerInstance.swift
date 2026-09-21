@@ -56,7 +56,8 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
 
     /// Registers as `AppsFlyerLibDelegate` and `AppsFlyerDeepLinkDelegate`, tracked through `tealium`.
     /// `AppsFlyerLib.shared()` is a singleton — a second instance created with this initializer
-    /// silently steals both delegate slots from the first.
+    /// silently steals both delegate slots from the first. Create it on the main thread: the first
+    /// `AppsFlyerLib.shared()` reads `UIApplication.applicationState`.
     ///
     /// `tealium` is non-optional because this initializer exists only to track attribution: with
     /// nothing to track to, it would claim both delegate slots — displacing whatever the host app
@@ -71,10 +72,6 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         self.logger = logger
         super.init()
         self.tealium = tealium
-
-        // The SDK singleton's `init` reads `UIApplication.applicationState`, so create it on the main
-        // thread here rather than from the first command on `TealiumQueues.backgroundSerialQueue`.
-        TealiumQueues.secureMainThreadExecution { _ = AppsFlyerLib.shared() }
         AppsFlyerLib.shared().delegate = self
         AppsFlyerLib.shared().deepLinkDelegate = self
     }
@@ -102,16 +99,18 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         }
         let appsFlyer = AppsFlyerLib.shared()
         // `isSessionReady()` is the only readiness signal SDK 7 exposes — credentials being set is
-        // not one, since the session no longer starts on its own. It turns true once a session-ready
-        // listener has fired in this foreground cycle, which covers a host app that owns the SDK's
-        // single listener slot, and a host that registers a listener after the `initialize` command
-        // already claimed that slot. The `initialize` path itself publishes from its own listener
-        // block instead, right after `start()`.
+        // not one, since the session no longer starts on its own. It turns true once a registered
+        // session-ready listener has fired in this foreground cycle: ours from `initialize`, or the
+        // host app's when it owns the SDK (`set_default_session_listener: false`, or no `initialize`
+        // mapped). A host that calls `start()` without registering a listener never makes it true, so
+        // the commands queued here would never run — hence the log below.
         //
         // A host that must gate `start` on ATT consent collected inside its listener block starts
         // later than the listener fires, so commands released here can still miss that session.
         if appsFlyer.isSessionReady() {
             _onReady.publish(appsFlyer)
+        } else {
+            logger.debug("Command queued until the AppsFlyer session is ready. An app that initializes AppsFlyer itself must register a session-ready listener, or queued commands never run.")
         }
     }
 
@@ -198,28 +197,37 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         // right after registering) makes it wait on the listener's own readiness checks too.
         //
         // Two things the SDK expects from the host app, which a RemoteCommand cannot do for it:
-        // - Universal Links: the SDK only waits for a cold-launch link to resolve before firing this
-        //   listener if `AppsFlyerLib.shared().handleLaunchOptions(_:)` was called from
+        // - Universal Links: the SDK waits for a cold-launch link to resolve before firing this
+        //   listener (fixed 5 s timeout in 7.0.2, unrelated to `deepLinkTimeout`) only if
+        //   `AppsFlyerLib.shared().handleLaunchOptions(_:)` was called from
         //   `application(_:didFinishLaunchingWithOptions:)`, and only the host has `launchOptions`.
-        // - ATT consent before `start`: a host that must collect consent first registers its own
-        //   listener and starts inside it. `onReady` supports that path, and the check below leaves
-        //   that listener in place.
+        // - ATT consent before `start`: the host sets `set_default_session_listener` to `false`,
+        //   registers its own listener and starts inside it. `onReady` still releases queued commands
+        //   once that listener has fired. The host then also calls `initialize(devKey:appId:)` itself
+        //   before registering, because `registerSessionReadyListener` asserts that the credentials
+        //   are already set and this command runs later.
         //
-        // One slot only: a second registration replaces the block in it, and the replaced block never
-        // runs again. Readiness already reported means a listener — the host app's, or ours from an
-        // earlier `initialize` this foreground cycle — already fired, so taking the slot would
-        // silently kill its per-foreground work — an ATT-gated `start`, say. Leave it alone and only
-        // release the queued commands; `start` stays with that listener.
+        // The SDK keeps one listener: a second registration replaces the block, and the replaced block
+        // never runs again. `isSessionReady()` is true only after a registered listener fired in this
+        // foreground cycle, so a true value here means a listener — the host's, or ours from an earlier
+        // `initialize` — already owns `start`. Registering now would replace it and would not fire
+        // until the next foreground anyway, so only release the queued commands.
         if appsFlyer.isSessionReady() {
             logger.warning("Session already ready in this foreground cycle. Keeping the registered session-ready listener, which owns start, and releasing queued commands.")
             _onReady.publish(appsFlyer)
             return
         }
-        // What the check above cannot cover: a listener the host registered whose readiness is still
-        // pending — a cold-launch Universal Link resolving, bounded by `deepLinkTimeout` — has not
-        // fired yet, so the registration below replaces it before it ever ran. The SDK exposes no way
-        // to tell an occupied slot from a free one, so this is logged rather than detected.
-        logger.info("Registering the session-ready listener. The AppsFlyer SDK keeps only one, so a listener the app registered itself is replaced by this.")
+        let registersListener = settings?[AppsFlyerConstants.Settings.setDefaultSessionListener] as? Bool ?? true
+        guard registersListener else {
+            logger.info("set_default_session_listener is false: the app owns registerSessionReadyListener and start. Commands wait until isSessionReady() turns true.")
+            return
+        }
+        // The check above does not protect a host listener on a cold launch: `initialize` mapped to
+        // `launch` runs before the first `didBecomeActive`, when nothing has fired yet, so a listener
+        // the host registered in `didFinishLaunching` is replaced here. The SDK exposes no way to tell
+        // an occupied slot from a free one, so this is logged, not detected. Hosts that need their own
+        // listener set `set_default_session_listener` to `false`.
+        logger.info("Registering the session-ready listener. The AppsFlyer SDK keeps only one, so a listener the app registered itself is replaced by this. Set set_default_session_listener to false to keep your own.")
         // `registerSessionReadyListener` reads `UIApplication.applicationState` synchronously, so it has to
         // run on the main thread; commands arrive here on `TealiumQueues.backgroundSerialQueue`.
         TealiumQueues.secureMainThreadExecution {
@@ -336,11 +344,10 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     /// matches Android's usage: call it only to manually resume after `disabletracking`/`stoptracking`.
     public func start() {
         let appsFlyer = AppsFlyerLib.shared()
-        // The AppsFlyer SDK's own `start()` does not check `isStopped` — the check sits further down,
-        // in the request executor shared by every SDK request, so only the outgoing HTTP request is
-        // refused. Everything upstream still runs: the remote-config check, SKAdNetwork work, and the
-        // session-timestamp write that makes the next real `start` land inside
-        // `minTimeBetweenSessions` and be skipped. Verified against 7.0.2 with the SDK's debug log.
+        // The SDK's `start()` does not check `isStopped`; only the shared request executor does, so just
+        // the HTTP request is refused. Everything before it still runs: the remote-config check,
+        // SKAdNetwork registration, and the session-timestamp write that makes the next real `start`
+        // inside `minTimeBetweenSessions` be skipped. Verified on 7.0.2 with the SDK debug log.
         // Warned, not errored: the command is mapped correctly, only its order in the mapping is wrong.
         guard !appsFlyer.isStopped else {
             logger.warning("start has no effect while tracking is stopped. Map disabletracking with stop_tracking: false ahead of it to resume.")

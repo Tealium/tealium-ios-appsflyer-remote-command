@@ -105,10 +105,12 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         XCTAssertEqual(AppsFlyerLib.shared().minTimeBetweenSessions, 60)
     }
 
-    /// The SDK property is `UInt`, so converting a negative value would trap.
+    /// The SDK property is `UInt`, so converting a negative value would trap. The SDK default is
+    /// 5 s, so this asserts the value is left alone rather than asserting it is `0`.
     func testInitializeIgnoresNegativeMinTimeBetweenSessions() {
+        let before = AppsFlyerLib.shared().minTimeBetweenSessions
         instance.initialize(appId: "test_app_id", appDevKey: "test_dev_key", settings: ["time_between_sessions": -1])
-        XCTAssertEqual(AppsFlyerLib.shared().minTimeBetweenSessions, 0)
+        XCTAssertEqual(AppsFlyerLib.shared().minTimeBetweenSessions, before)
     }
 
     func testInitializeIgnoresNegativeDeepLinkTimeout() {
@@ -297,6 +299,70 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         XCTAssertEqual(spyLogHandler.messages(for: .warning), [])
     }
 
+    /// `set_default_session_listener: false` leaves the SDK's single listener slot free for the host
+    /// app to register itself, so `initialize` must not claim it.
+    func testInitializeWithoutDefaultSessionListenerDoesNotRegisterListener() {
+        let registrations = stubbingSessionReady(false) {
+            countingListenerRegistrations {
+                instance.initialize(appId: "test_app_id", appDevKey: "test_dev_key",
+                                     settings: ["set_default_session_listener": false])
+            }
+        }
+
+        XCTAssertEqual(registrations, 0, "Expected initialize not to register a session-ready listener")
+        XCTAssertEqual(spyLogHandler.messages(for: .warning), [])
+    }
+
+    /// Pins the default — `set_default_session_listener` unset but `settings` non-nil — to the same
+    /// behaviour as `settings: nil`, exercised above by `testInitializeRegistersListenerWhenSessionNotReady`.
+    func testInitializeRegistersListenerByDefault() {
+        let registrations = stubbingSessionReady(false) {
+            countingListenerRegistrations {
+                instance.initialize(appId: "test_app_id", appDevKey: "test_dev_key", settings: ["debug": false])
+            }
+        }
+
+        XCTAssertEqual(registrations, 1)
+        XCTAssertEqual(spyLogHandler.messages(for: .warning), [])
+    }
+
+    /// The listener the SDK calls every foreground: start the session unless tracking is stopped, then
+    /// release the queued commands on `TealiumQueues.backgroundSerialQueue`.
+    func testSessionReadyListenerStartsAndReleasesCommands() {
+        var released = false
+        let listener = stubbingSessionReady(false) {
+            capturingListenerRegistration {
+                instance.onReady { _ in released = true }
+                instance.initialize(appId: "test_app_id", appDevKey: "test_dev_key", settings: nil)
+            }
+        }
+        guard let listener else { return XCTFail("Expected initialize to register a session-ready listener") }
+
+        let sdkStartCalls = countingSDKStartCalls { listener() }
+
+        XCTAssertEqual(sdkStartCalls, 1)
+        waitForBackgroundSerialQueue()
+        XCTAssertTrue(released)
+    }
+
+    func testSessionReadyListenerSkipsStartWhileTrackingStopped() {
+        AppsFlyerLib.shared().isStopped = true
+        var released = false
+        let listener = stubbingSessionReady(false) {
+            capturingListenerRegistration {
+                instance.onReady { _ in released = true }
+                instance.initialize(appId: "test_app_id", appDevKey: "test_dev_key", settings: nil)
+            }
+        }
+        guard let listener else { return XCTFail("Expected initialize to register a session-ready listener") }
+
+        let sdkStartCalls = countingSDKStartCalls { listener() }
+
+        XCTAssertEqual(sdkStartCalls, 0, "Expected `start` not to reach the SDK while tracking is stopped")
+        waitForBackgroundSerialQueue()
+        XCTAssertTrue(released, "Expected queued commands to be released even though the session did not start")
+    }
+
     /// `registerSessionReadyListener` reads `UIApplication.applicationState`, so it must reach the SDK
     /// on the main thread even though commands run on `TealiumQueues.backgroundSerialQueue`.
     func testInitializeRegistersListenerOnMainThreadWhenCalledOffMain() {
@@ -370,5 +436,33 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
     }
 
     private static var listenerRegistrationCount = 0
+
+    /// Swaps `AppsFlyerLib.registerSessionReadyListener:` for a block that keeps the listener passed
+    /// to it, so a test can fire it by hand instead of waiting for a real foreground cycle.
+    private func capturingListenerRegistration(_ body: () -> Void) -> (() -> Void)? {
+        guard let method = class_getInstanceMethod(AppsFlyerLib.self,
+                                                   NSSelectorFromString("registerSessionReadyListener:")) else {
+            XCTFail("AppsFlyerLib.registerSessionReadyListener: not found")
+            return nil
+        }
+        Self.capturedListener = nil
+        let original = method_getImplementation(method)
+        let capture: @convention(block) (AnyObject, @escaping @convention(block) () -> Void) -> Void = { _, listener in
+            Self.capturedListener = listener
+        }
+        method_setImplementation(method, imp_implementationWithBlock(capture))
+        defer { method_setImplementation(method, original) }
+        body()
+        return Self.capturedListener
+    }
+
+    private static var capturedListener: (() -> Void)?
+
+    /// `_onReady` publishes on `TealiumQueues.backgroundSerialQueue`, so wait for that queue to drain.
+    private func waitForBackgroundSerialQueue() {
+        let drained = expectation(description: "backgroundSerialQueue drained")
+        TealiumQueues.backgroundSerialQueue.async { drained.fulfill() }
+        wait(for: [drained], timeout: 2)
+    }
 
 }
