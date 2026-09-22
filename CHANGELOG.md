@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update AppsFlyer iOS SDK to `>= 7.0.2, < 8.0` (SPM, CocoaPods) and `>= 7.0.2` (Carthage)
 - Upgrade TealiumSwift dependency to `~> 2.19`
+- **Breaking:** `TealiumAppsFlyer.xcframework` (release zip, Carthage) is now a static framework and no longer bundles its own copy of AppsFlyerLib, which duplicated every AppsFlyer class when the app also linked the SDK.
 - **Breaking:** AppsFlyer SDK 7 replaces automatic session start with an explicit readiness model. `initialize` now owns the SDK's single session-ready listener and calls `start` inside it (skipped while tracking is stopped), replacing any listener the app registered itself. Apps that need their own listener set `start_automatically_on_session_ready` to `false`
 - **Breaking:** `setphonenumber` now also requires `country_code`, matching AppsFlyer SDK 7's `setUserPhone(countryCode:phoneNumber:)`. A tag mapping only `phone_number` now fails validation
 - **Breaking:** `disabletracking` now requires `stop_tracking` instead of defaulting to `false`, which resumed tracking whenever the parameter was unmapped

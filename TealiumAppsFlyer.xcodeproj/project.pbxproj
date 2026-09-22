@@ -453,6 +453,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MACH_O_TYPE = staticlib;
 				OTHER_SWIFT_FLAGS = "-module-interface-preserve-types-as-written";
 				PRODUCT_BUNDLE_IDENTIFIER = com.tealium.TealiumAppsFlyer;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
@@ -484,6 +485,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MACH_O_TYPE = staticlib;
 				OTHER_SWIFT_FLAGS = "-module-interface-preserve-types-as-written";
 				PRODUCT_BUNDLE_IDENTIFIER = com.tealium.TealiumAppsFlyer;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
