@@ -73,17 +73,9 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         self.tealium = tealium
         // The first `AppsFlyerLib.shared()` reads `UIApplication.applicationState`, so the singleton is
         // created on the main thread here as in `init(logger:)`, whatever thread the host calls this from.
-        // Uses `sync` rather than `TealiumQueues.secureMainThreadExecution`'s `async`, so the delegates
-        // are guaranteed to be in place before this initializer returns — a caller may invoke SDK setup
-        // on the returned instance immediately, and that must never race the delegate assignment.
-        let assignDelegates = {
+        TealiumQueues.secureMainThreadExecution {
             AppsFlyerLib.shared().delegate = self
             AppsFlyerLib.shared().deepLinkDelegate = self
-        }
-        if Thread.isMainThread {
-            assignDelegates()
-        } else {
-            DispatchQueue.main.sync(execute: assignDelegates)
         }
     }
 
@@ -359,7 +351,12 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     /// only to manually resume after `disabletracking`/`stoptracking`, mapped behind `disabletracking`
     /// with `stop_tracking: false`.
     public func start() {
-        AppsFlyerLib.shared().start()
+        // Same main-queue hop as the delegate assignment in `init(tealium:logger:)`, so FIFO
+        // ordering on `DispatchQueue.main` guarantees this runs after that assignment, even
+        // when a caller invokes `start()` immediately after constructing the instance off-main.
+        TealiumQueues.secureMainThreadExecution {
+            AppsFlyerLib.shared().start()
+        }
     }
 
     /// Gated on `onReady` because the SDK discards deep links received before `start()`,
