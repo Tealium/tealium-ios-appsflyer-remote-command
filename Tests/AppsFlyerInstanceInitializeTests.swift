@@ -239,23 +239,18 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         XCTAssertEqual(spyLogHandler.messages(for: .warning), [])
     }
 
-    /// Swaps `AppsFlyerLib.start()` for a counter while `body` runs, so a forwarded call can be
-    /// observed without the SDK opening a real session.
-    private func countingSDKStartCalls(_ body: () -> Void) -> Int {
-        guard let method = class_getInstanceMethod(AppsFlyerLib.self, NSSelectorFromString("start")) else {
-            XCTFail("AppsFlyerLib.start() not found")
-            return -1
-        }
-        Self.sdkStartCallCount = 0
-        let original = method_getImplementation(method)
-        let counter: @convention(block) (AnyObject) -> Void = { _ in Self.sdkStartCallCount += 1 }
-        method_setImplementation(method, imp_implementationWithBlock(counter))
-        defer { method_setImplementation(method, original) }
-        body()
-        return Self.sdkStartCallCount
-    }
+    /// `start()` must mirror the session-ready listener's own `isStopped` guard: the SDK's `start()`
+    /// ignores it, so a tag that still maps `start` per foreground (3.x style) would otherwise call
+    /// it for a user who has opted out through `disabletracking`/`stoptracking`.
+    func testStartSkipsSDKStartWhileTrackingStopped() {
+        AppsFlyerLib.shared().isStopped = true
+        let skippedStartCalls = countingSDKStartCalls { instance.start() }
+        XCTAssertEqual(skippedStartCalls, 0, "Expected `start` not to reach the SDK while tracking is stopped")
 
-    private static var sdkStartCallCount = 0
+        AppsFlyerLib.shared().isStopped = false
+        let resumedStartCalls = countingSDKStartCalls { instance.start() }
+        XCTAssertEqual(resumedStartCalls, 1, "Expected `start` to reach the SDK once tracking resumes")
+    }
 
     /// SDK 7 keeps a single session-ready listener slot and a second registration replaces what is in
     /// it, so `initialize` has to leave a host app's own listener alone — commands still have to be
@@ -393,19 +388,6 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         method_setImplementation(method, original)
     }
 
-    /// Real readiness needs a foreground cycle and a live session, so the getter is stubbed instead.
-    private func stubbingSessionReady<T>(_ ready: Bool, _ body: () -> T) -> T {
-        guard let method = class_getInstanceMethod(AppsFlyerLib.self, NSSelectorFromString("isSessionReady")) else {
-            XCTFail("AppsFlyerLib.isSessionReady() not found")
-            return body()
-        }
-        let original = method_getImplementation(method)
-        let stub: @convention(block) (AnyObject) -> Bool = { _ in ready }
-        method_setImplementation(method, imp_implementationWithBlock(stub))
-        defer { method_setImplementation(method, original) }
-        return body()
-    }
-
     /// Counts registrations while `body` runs, without installing a listener that would later fire
     /// `start()` into an unrelated test.
     private func countingListenerRegistrations(_ body: () -> Void) -> Int {
@@ -425,27 +407,6 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
 
     private static var listenerRegistrationCount = 0
 
-    /// Swaps `AppsFlyerLib.registerSessionReadyListener:` for a block that keeps the listener passed
-    /// to it, so a test can fire it by hand instead of waiting for a real foreground cycle.
-    private func capturingListenerRegistration(_ body: () -> Void) -> (() -> Void)? {
-        guard let method = class_getInstanceMethod(AppsFlyerLib.self,
-                                                   NSSelectorFromString("registerSessionReadyListener:")) else {
-            XCTFail("AppsFlyerLib.registerSessionReadyListener: not found")
-            return nil
-        }
-        Self.capturedListener = nil
-        let original = method_getImplementation(method)
-        let capture: @convention(block) (AnyObject, @escaping @convention(block) () -> Void) -> Void = { _, listener in
-            Self.capturedListener = listener
-        }
-        method_setImplementation(method, imp_implementationWithBlock(capture))
-        defer { method_setImplementation(method, original) }
-        body()
-        return Self.capturedListener
-    }
-
-    private static var capturedListener: (() -> Void)?
-
     /// `_onReady` publishes on `TealiumQueues.backgroundSerialQueue`, so wait for that queue to drain.
     private func waitForBackgroundSerialQueue() {
         let drained = expectation(description: "backgroundSerialQueue drained")
@@ -453,4 +414,56 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         wait(for: [drained], timeout: 2)
     }
 
+}
+
+// Shared method-swizzling helpers for stubbing `AppsFlyerLib.shared()`, so tests can exercise the
+// real `AppsFlyerInstance` initialize/start code paths without registering a listener with the real
+// SDK or waiting on it to call back.
+
+/// Real readiness needs a foreground cycle and a live session, so the getter is stubbed instead.
+func stubbingSessionReady<T>(_ ready: Bool, _ body: () -> T) -> T {
+    guard let method = class_getInstanceMethod(AppsFlyerLib.self, NSSelectorFromString("isSessionReady")) else {
+        XCTFail("AppsFlyerLib.isSessionReady() not found")
+        return body()
+    }
+    let original = method_getImplementation(method)
+    let stub: @convention(block) (AnyObject) -> Bool = { _ in ready }
+    method_setImplementation(method, imp_implementationWithBlock(stub))
+    defer { method_setImplementation(method, original) }
+    return body()
+}
+
+/// Swaps `AppsFlyerLib.registerSessionReadyListener:` for a block that keeps the listener passed
+/// to it, so a test can fire it by hand instead of waiting for a real foreground cycle.
+func capturingListenerRegistration(_ body: () -> Void) -> (() -> Void)? {
+    guard let method = class_getInstanceMethod(AppsFlyerLib.self,
+                                               NSSelectorFromString("registerSessionReadyListener:")) else {
+        XCTFail("AppsFlyerLib.registerSessionReadyListener: not found")
+        return nil
+    }
+    var capturedListener: (() -> Void)?
+    let original = method_getImplementation(method)
+    let capture: @convention(block) (AnyObject, @escaping @convention(block) () -> Void) -> Void = { _, listener in
+        capturedListener = listener
+    }
+    method_setImplementation(method, imp_implementationWithBlock(capture))
+    defer { method_setImplementation(method, original) }
+    body()
+    return capturedListener
+}
+
+/// Swaps `AppsFlyerLib.start()` for a counter while `body` runs, so a forwarded call can be
+/// observed without the SDK opening a real session.
+func countingSDKStartCalls(_ body: () -> Void) -> Int {
+    guard let method = class_getInstanceMethod(AppsFlyerLib.self, NSSelectorFromString("start")) else {
+        XCTFail("AppsFlyerLib.start() not found")
+        return -1
+    }
+    var count = 0
+    let original = method_getImplementation(method)
+    let counter: @convention(block) (AnyObject) -> Void = { _ in count += 1 }
+    method_setImplementation(method, imp_implementationWithBlock(counter))
+    defer { method_setImplementation(method, original) }
+    body()
+    return count
 }

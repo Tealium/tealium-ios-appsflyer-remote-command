@@ -542,6 +542,10 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertNil(appsFlyerInstance.lastUrls)
     }
 
+    /// Uses the real `AppsFlyerInstance` (not `MockAppsFlyerInstance`) to verify `onReady` is wired
+    /// through to the SDK's session-ready listener, but stubs the SDK itself: `isSessionReady()` and
+    /// `registerSessionReadyListener:` are swizzled so the listener block is captured and fired by
+    /// hand instead of registered with — and waited on from — the real SDK.
     func testOnReadyCalledAfterInitialize() {
         let onReadyCalled = expectation(description: "OnReady is called")
         let payload: [String: Any] = ["command_name": "initialize",
@@ -551,8 +555,20 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         appsFlyerCommand.onReady { _ in
             onReadyCalled.fulfill()
         }
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        waitForExpectations(timeout: 1.0)
+
+        let listener = stubbingSessionReady(false) {
+            capturingListenerRegistration {
+                appsFlyerCommand.processRemoteCommand(with: payload)
+            }
+        }
+        guard let listener else {
+            return XCTFail("Expected initialize to register a session-ready listener")
+        }
+
+        let sdkStartCalls = countingSDKStartCalls { listener() }
+
+        XCTAssertEqual(sdkStartCalls, 1)
+        waitForExpectations(timeout: 2.0)
     }
 
     func testSetPhoneNumber() {

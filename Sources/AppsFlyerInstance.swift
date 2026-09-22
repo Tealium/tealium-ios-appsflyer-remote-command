@@ -71,8 +71,9 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         self.logger = logger
         super.init()
         self.tealium = tealium
-        // The first `AppsFlyerLib.shared()` reads `UIApplication.applicationState`, so the singleton is
-        // created on the main thread here as in `init(logger:)`, whatever thread the host calls this from.
+        // Built on the main thread (the normal case), the singleton and delegates below are set up
+        // synchronously. Built off-main, the hop below is asynchronous — create this instance on the
+        // main thread so no command reaches `AppsFlyerLib.shared()` first.
         TealiumQueues.secureMainThreadExecution {
             AppsFlyerLib.shared().delegate = self
             AppsFlyerLib.shared().deepLinkDelegate = self
@@ -90,8 +91,9 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         self.logger = logger
         super.init()
 
-        // The SDK singleton's `init` reads `UIApplication.applicationState`, so create it on the main
-        // thread here rather than from the first command on `TealiumQueues.backgroundSerialQueue`.
+        // Built on the main thread (the normal case) the singleton below is created here
+        // synchronously. Built off-main, the hop is asynchronous — create this instance on the
+        // main thread so no command reaches `AppsFlyerLib.shared()` first.
         TealiumQueues.secureMainThreadExecution { _ = AppsFlyerLib.shared() }
     }
 
@@ -205,10 +207,11 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         //   `AppsFlyerLib.shared().handleLaunchOptions(_:)` was called from
         //   `application(_:didFinishLaunchingWithOptions:)`, and only the host has `launchOptions`.
         // - ATT consent before `start`: the host sets `start_automatically_on_session_ready` to `false`,
-        //   registers its own listener and starts inside it. `onReady` still releases queued commands
-        //   once that listener has fired. The host then also calls `initialize(devKey:appId:)` itself
-        //   before registering, because `registerSessionReadyListener` asserts that the credentials
-        //   are already set and this command runs later.
+        //   registers its own listener and starts inside it. `onReady` still releases queued commands,
+        //   but only when the next gated command re-checks `isSessionReady()` after that listener has
+        //   fired; nothing observes the transition itself. The host then also calls
+        //   `initialize(devKey:appId:)` itself before registering, because `registerSessionReadyListener`
+        //   asserts that the credentials are already set and this command runs later.
         //
         // The SDK keeps one listener: a second registration replaces the block, and the replaced block
         // never runs again. `isSessionReady()` is true only after a registered listener fired in this
@@ -225,7 +228,7 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         // registers its own listener and starts inside it; this command only configures the SDK.
         let startsAutomatically = settings?[AppsFlyerConstants.Settings.startAutomaticallyOnSessionReady] as? Bool ?? true
         guard startsAutomatically else {
-            logger.info("start_automatically_on_session_ready is false: the app registers its own session-ready listener and calls start. Commands wait until isSessionReady() turns true.")
+            logger.info("start_automatically_on_session_ready is false: the app registers its own session-ready listener and calls start. Queued commands are released by the next gated command that runs after isSessionReady() has turned true.")
             return
         }
         // The check above does not protect a host listener on a cold launch: `initialize` mapped to
@@ -349,13 +352,21 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     /// AppsFlyer SDK 7 re-invokes the session-ready listener registered in `initialize` on every
     /// foreground and `start` is called there, so this command is not needed per foreground. Use it
     /// only to manually resume after `disabletracking`/`stoptracking`, mapped behind `disabletracking`
-    /// with `stop_tracking: false`.
+    /// with `stop_tracking: false`. A tag that still maps `start` to run on every foreground (3.x
+    /// style) would otherwise call it for a user who has opted out.
     public func start() {
         // Same main-queue hop as the delegate assignment in `init(tealium:logger:)`, so FIFO
         // ordering on `DispatchQueue.main` guarantees this runs after that assignment, even
         // when a caller invokes `start()` immediately after constructing the instance off-main.
         TealiumQueues.secureMainThreadExecution {
-            AppsFlyerLib.shared().start()
+            // Mirrors the session-ready listener's own guard: the SDK's `start()` ignores
+            // `isStopped`, so an unconditional call here would keep tracking working for a user
+            // who opted out through `disabletracking`/`stoptracking`.
+            if AppsFlyerLib.shared().isStopped {
+                self.logger.debug("Session start skipped: tracking is stopped.")
+            } else {
+                AppsFlyerLib.shared().start()
+            }
         }
     }
 
