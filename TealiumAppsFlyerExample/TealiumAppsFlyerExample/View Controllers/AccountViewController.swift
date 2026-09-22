@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import AppsFlyerLib
 
 // Image Credit: https://www.flaticon.com/authors/freepik and
 // https://www.flaticon.com/authors/monkik 🙏
@@ -14,7 +15,13 @@ class AccountViewController: UIViewController {
 
     @IBOutlet weak var offersImage: UIImageView!
     @IBOutlet weak var groupNameTextField: UITextField!
-    
+    @IBOutlet weak var trackingSwitch: UISwitch!
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        trackingSwitch.isOn = !AppsFlyerLib.shared().isStopped
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         TealiumHelper.trackScreen(self, name: "account")
@@ -105,11 +112,13 @@ class AccountViewController: UIViewController {
     
     @IBAction func trackingToggleTapped(_ sender: UISwitch) {
         let isTrackingDisabled = !sender.isOn
-        
+
+        // Always the same event; appsflyer.json picks the command chain from the stop_tracking
+        // value (`disabletracking` vs `disabletracking,start`), instead of branching here.
         TealiumHelper.trackEvent(title: "disable_tracking", data: [
             AccountViewController.stopTracking: isTrackingDisabled
         ])
-        
+
         let message = isTrackingDisabled ? "AppsFlyer tracking has been disabled (privacy mode)" : "AppsFlyer tracking has been enabled"
         let ac = UIAlertController(title: "Tracking Status", message: message, preferredStyle: .alert)
         ac.addAction(UIAlertAction(title: "OK", style: .default))

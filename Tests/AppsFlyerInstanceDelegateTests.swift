@@ -23,11 +23,12 @@ class AppsFlyerInstanceDelegateTests: XCTestCase {
     var instance: SpyAppsFlyerInstance!
 
     override func setUp() {
-        instance = SpyAppsFlyerInstance(logger: RemoteCommandLogger())
+        instance = SpyAppsFlyerInstance(logger: RemoteCommandLogger(logLevel: .silent))
     }
 
     override func tearDown() {
         AppsFlyerLib.shared().delegate = nil
+        AppsFlyerLib.shared().deepLinkDelegate = nil
         super.tearDown()
     }
 
@@ -40,16 +41,16 @@ class AppsFlyerInstanceDelegateTests: XCTestCase {
         config.collectors = []
         config.dispatchers = []
         let tealium = Tealium(config: config)
-        let instance = AppsFlyerInstance(tealium: tealium)
+        let instance = AppsFlyerInstance(tealium: tealium, logLevel: .silent)
 
         XCTAssertTrue(AppsFlyerLib.shared().delegate === instance)
-        XCTAssertNil(AppsFlyerInstance(logger: RemoteCommandLogger()).tealium)
+        XCTAssertNil(AppsFlyerInstance(logger: RemoteCommandLogger(logLevel: .silent)).tealium)
     }
 
     /// Attribution tracking on the RemoteCommand path has no Tealium instance, so it must
     /// no-op rather than crash.
     func testTealiumTrackWithoutTealiumInstanceDoesNothing() {
-        AppsFlyerInstance(logger: RemoteCommandLogger())
+        AppsFlyerInstance(logger: RemoteCommandLogger(logLevel: .silent))
             .tealiumTrack(title: "conversion_data_received", data: ["af_status": "Organic"])
     }
 
@@ -145,31 +146,124 @@ class AppsFlyerInstanceDelegateTests: XCTestCase {
         XCTAssertEqual(instance.trackedData?["error_description"] as? String, error.localizedDescription)
     }
 
-    // MARK: - onAppOpenAttribution
+    // MARK: - didResolveDeepLink
 
-    func testAppOpenAttributionTracksWithData() {
-        let data: [AnyHashable: Any] = ["deep_link_value": "product123", "campaign": "promo"]
-        instance.onAppOpenAttribution(data)
+    /// A direct deep link is what the removed `onAppOpenAttribution` used to report, so it still
+    /// tracks `app_open_attribution`, forwarding the SDK's click event as the event data.
+    func testDidResolveDeepLinkTracksDirectLink() {
+        guard let result = makeDeepLinkResult(deferred: false),
+              let clickEvent = result.deepLink?.clickEvent, !clickEvent.isEmpty else {
+            return XCTFail("Expected the SDK to populate `clickEvent` from the OneLink parameters")
+        }
+
+        instance.didResolveDeepLink(result)
+
         XCTAssertEqual(instance.trackedTitle, "app_open_attribution")
-        XCTAssertEqual(instance.trackedData?["deep_link_value"] as? String, "product123")
+        XCTAssertEqual(instance.trackedData as NSDictionary?, clickEvent as NSDictionary)
     }
 
-    func testAppOpenAttributionTracksWithoutDataWhenCastFails() {
-        // Keys are NSNumber — cast to [String: Any] fails, fallback to nil data.
-        let data: [AnyHashable: Any] = [NSNumber(value: 1): "val"]
-        instance.onAppOpenAttribution(data)
-        XCTAssertEqual(instance.trackedTitle, "app_open_attribution")
-        XCTAssertNil(instance.trackedData)
+    /// SDK 7's callback also fires for deferred links, where `onAppOpenAttribution` never did.
+    /// `onConversionDataSuccess` already reports that install as `conversion_data_received`, so
+    /// tracking it here would double-report the same install.
+    func testDidResolveDeepLinkSkipsDeferredLink() {
+        guard let result = makeDeepLinkResult(deferred: true) else { return }
+
+        instance.didResolveDeepLink(result)
+
+        XCTAssertNil(instance.trackedTitle)
     }
 
-    // MARK: - onAppOpenAttributionFailure
+    /// The `.failure` branch builds its error payload from `DeepLinkResult.error` directly, unlike
+    /// the removed `onAppOpenAttributionFailure(_ error: Error)` which received the error as its
+    /// own parameter — this pins down that the new mapping (title, error_name, error_description)
+    /// still lands correctly.
+    func testDidResolveDeepLinkTracksFailure() {
+        guard let result = makeDeepLinkFailureResult(), let error = result.error else {
+            return XCTFail("Expected the SDK to populate `error` for a `.failure` result")
+        }
 
-    func testAppOpenAttributionFailureTracksErrorEvent() {
-        let error = NSError(domain: "test", code: 99, userInfo: [NSLocalizedDescriptionKey: "deep link error"])
-        instance.onAppOpenAttributionFailure(error)
+        instance.didResolveDeepLink(result)
+
         XCTAssertEqual(instance.trackedTitle, "appsflyer_error")
         XCTAssertEqual(instance.trackedData?["error_name"] as? String, "app_open_attribution_failure")
         XCTAssertEqual(instance.trackedData?["error_description"] as? String, error.localizedDescription)
+    }
+
+    /// `DeepLinkResult` and `DeepLink` declare `init`/`new` as `NS_UNAVAILABLE` and expose readonly
+    /// properties only, so both are built through the SDK's own internal constructors reached via
+    /// the ObjC runtime: `+[AppsFlyerDeepLink withOneLink:]` for a direct link,
+    /// `+[AppsFlyerDeepLink withParameters:]` for a deferred one — that one is the deferred
+    /// constructor proper, returning `nil` unless the parameters carry `found: true`, which is also
+    /// what it derives `isDeferred` from. `-[AppsFlyerDeepLinkResult initWithDeepLink:error:]` wraps
+    /// the link. Deliberate but fragile, like the `sdkConfig` reads in
+    /// `AppsFlyerInstanceInitializeTests`: each step fails the test with an explanatory message
+    /// instead of crashing if AppsFlyer renames these internals, and the state it produced
+    /// (`isDeferred`, `status`) is asserted, so a test can never pass through the wrong branch.
+    /// Verified against 7.0.2.
+    private func makeDeepLinkResult(deferred: Bool,
+                                    file: StaticString = #filePath,
+                                    line: UInt = #line) -> DeepLinkResult? {
+        var parameters: [String: Any] = [
+            "campaign": "spring_sale",
+            "media_source": "test_source",
+            "deep_link_value": "product_42",
+            "af_sub1": "sub1_value"
+        ]
+        if deferred {
+            parameters["found"] = true
+        }
+        let constructor = deferred ? "withParameters:" : "withOneLink:"
+        guard let deepLink = (DeepLink.self as AnyObject)
+            .perform(NSSelectorFromString(constructor), with: parameters)?
+            .takeUnretainedValue() as? DeepLink else {
+            XCTFail("Could not build a `DeepLink` through `\(constructor)`. "
+                    + "AppsFlyer SDK internals changed.", file: file, line: line)
+            return nil
+        }
+        guard deepLink.isDeferred == deferred else {
+            XCTFail("`\(constructor)` no longer produces isDeferred == \(deferred). "
+                    + "AppsFlyer SDK internals changed.", file: file, line: line)
+            return nil
+        }
+        guard let allocated = (DeepLinkResult.self as AnyObject)
+            .perform(NSSelectorFromString("alloc"))?
+            .takeUnretainedValue(),
+              let result = (allocated as AnyObject)
+                .perform(NSSelectorFromString("initWithDeepLink:error:"), with: deepLink, with: nil)?
+                .takeUnretainedValue() as? DeepLinkResult else {
+            XCTFail("Could not build a `DeepLinkResult` through `initWithDeepLink:error:`. "
+                    + "AppsFlyer SDK internals changed.", file: file, line: line)
+            return nil
+        }
+        guard result.status == .found else {
+            XCTFail("Expected a resolved deep link to carry `.found`, got \(result.status).",
+                    file: file, line: line)
+            return nil
+        }
+        return result
+    }
+
+    /// Same `initWithDeepLink:error:` internal constructor as `makeDeepLinkResult`, but with a
+    /// `nil` deep link and a real `NSError` — the SDK derives `.failure` from that combination.
+    private func makeDeepLinkFailureResult(file: StaticString = #filePath,
+                                            line: UInt = #line) -> DeepLinkResult? {
+        let error = NSError(domain: "test", code: 99, userInfo: [NSLocalizedDescriptionKey: "deep link resolution failed"])
+        guard let allocated = (DeepLinkResult.self as AnyObject)
+            .perform(NSSelectorFromString("alloc"))?
+            .takeUnretainedValue(),
+              let result = (allocated as AnyObject)
+                .perform(NSSelectorFromString("initWithDeepLink:error:"), with: nil, with: error)?
+                .takeUnretainedValue() as? DeepLinkResult else {
+            XCTFail("Could not build a `DeepLinkResult` through `initWithDeepLink:error:`. "
+                    + "AppsFlyer SDK internals changed.", file: file, line: line)
+            return nil
+        }
+        guard result.status == .failure else {
+            XCTFail("Expected an error deep link result to carry `.failure`, got \(result.status).",
+                    file: file, line: line)
+            return nil
+        }
+        return result
     }
 }
 
