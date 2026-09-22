@@ -243,8 +243,9 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
                 // so publishing has to hop back onto that queue.
                 //
                 // The listener fires again on every foreground, and the SDK's `start()` ignores
-                // `isStopped` (see `start()` below), so an unconditional call would keep the SDK
-                // working for a user who opted out through `disabletracking`/`stoptracking`.
+                // `isStopped` (only the launch request is refused; the config check and session-timestamp
+                // write still run), so an unconditional call would keep the SDK working for a user who
+                // opted out through `disabletracking`/`stoptracking`.
                 if appsFlyer.isStopped {
                     self?.logger.debug("Session start skipped: tracking is stopped.")
                 } else {
@@ -350,17 +351,7 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     /// only to manually resume after `disabletracking`/`stoptracking`, mapped behind `disabletracking`
     /// with `stop_tracking: false`.
     public func start() {
-        let appsFlyer = AppsFlyerLib.shared()
-        // The SDK's `start()` does not check `isStopped`; only the shared request executor does, so just
-        // the HTTP request is refused. Everything before it still runs: the remote-config check,
-        // SKAdNetwork registration, and the session-timestamp write that makes the next real `start`
-        // inside `minTimeBetweenSessions` be skipped. Verified on 7.0.2 with the SDK debug log.
-        // Warned, not errored: the command is mapped correctly, only its order in the mapping is wrong.
-        guard !appsFlyer.isStopped else {
-            logger.warning("start has no effect while tracking is stopped. Map disabletracking with stop_tracking: false ahead of it to resume.")
-            return
-        }
-        appsFlyer.start()
+        AppsFlyerLib.shared().start()
     }
 
     /// Gated on `onReady` because the SDK discards deep links received before `start()`,

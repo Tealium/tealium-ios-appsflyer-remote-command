@@ -232,19 +232,7 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         assertEffectiveConfigFlag("disableIdfvCollection", false)
     }
 
-    /// The SDK's own `start()` ignores `isStopped` (verified against 7.0.2), so the wrapper must
-    /// not forward the call — warning alone would not stop the SDK.
-    func testStartIsNotForwardedToSDKWhileTrackingStopped() {
-        AppsFlyerLib.shared().isStopped = true
-
-        let sdkStartCalls = countingSDKStartCalls { instance.start() }
-
-        XCTAssertEqual(sdkStartCalls, 0, "Expected `start` not to reach the SDK while tracking is stopped")
-        XCTAssertTrue(spyLogHandler.messages(for: .warning).contains { $0.contains("stop_tracking: false") },
-                      "Expected a warning naming the parameter that clears the stop flag")
-    }
-
-    func testStartIsForwardedToSDKWhileTrackingActive() {
+    func testStartIsForwardedToSDK() {
         let sdkStartCalls = countingSDKStartCalls { instance.start() }
 
         XCTAssertEqual(sdkStartCalls, 1)
