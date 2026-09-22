@@ -173,6 +173,22 @@ class AppsFlyerInstanceDelegateTests: XCTestCase {
         XCTAssertNil(instance.trackedTitle)
     }
 
+    /// The `.failure` branch builds its error payload from `DeepLinkResult.error` directly, unlike
+    /// the removed `onAppOpenAttributionFailure(_ error: Error)` which received the error as its
+    /// own parameter — this pins down that the new mapping (title, error_name, error_description)
+    /// still lands correctly.
+    func testDidResolveDeepLinkTracksFailure() {
+        guard let result = makeDeepLinkFailureResult(), let error = result.error else {
+            return XCTFail("Expected the SDK to populate `error` for a `.failure` result")
+        }
+
+        instance.didResolveDeepLink(result)
+
+        XCTAssertEqual(instance.trackedTitle, "appsflyer_error")
+        XCTAssertEqual(instance.trackedData?["error_name"] as? String, "app_open_attribution_failure")
+        XCTAssertEqual(instance.trackedData?["error_description"] as? String, error.localizedDescription)
+    }
+
     /// `DeepLinkResult` and `DeepLink` declare `init`/`new` as `NS_UNAVAILABLE` and expose readonly
     /// properties only, so both are built through the SDK's own internal constructors reached via
     /// the ObjC runtime: `+[AppsFlyerDeepLink withOneLink:]` for a direct link,
@@ -221,6 +237,29 @@ class AppsFlyerInstanceDelegateTests: XCTestCase {
         }
         guard result.status == .found else {
             XCTFail("Expected a resolved deep link to carry `.found`, got \(result.status).",
+                    file: file, line: line)
+            return nil
+        }
+        return result
+    }
+
+    /// Same `initWithDeepLink:error:` internal constructor as `makeDeepLinkResult`, but with a
+    /// `nil` deep link and a real `NSError` — the SDK derives `.failure` from that combination.
+    private func makeDeepLinkFailureResult(file: StaticString = #filePath,
+                                            line: UInt = #line) -> DeepLinkResult? {
+        let error = NSError(domain: "test", code: 99, userInfo: [NSLocalizedDescriptionKey: "deep link resolution failed"])
+        guard let allocated = (DeepLinkResult.self as AnyObject)
+            .perform(NSSelectorFromString("alloc"))?
+            .takeUnretainedValue(),
+              let result = (allocated as AnyObject)
+                .perform(NSSelectorFromString("initWithDeepLink:error:"), with: nil, with: error)?
+                .takeUnretainedValue() as? DeepLinkResult else {
+            XCTFail("Could not build a `DeepLinkResult` through `initWithDeepLink:error:`. "
+                    + "AppsFlyer SDK internals changed.", file: file, line: line)
+            return nil
+        }
+        guard result.status == .failure else {
+            XCTFail("Expected an error deep link result to carry `.failure`, got \(result.status).",
                     file: file, line: line)
             return nil
         }
