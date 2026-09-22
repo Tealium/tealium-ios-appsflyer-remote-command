@@ -119,7 +119,7 @@ public enum AppsFlyerConstants {
         static let deepLinkParameters = "deep_link_parameters"
         static let enableFacebookDeferredApplinks = "enable_facebook_deferred_applinks"
         static let disableIDFVCollection = "disable_idfv_collection"
-        static let setDefaultSessionListener = "set_default_session_listener"
+        static let startAutomaticallyOnSessionReady = "start_automatically_on_session_ready"
     }
 
     public enum Parameters {

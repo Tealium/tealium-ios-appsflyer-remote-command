@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [4.0.0]
 
 ### Added
-- `set_default_session_listener` setting, default `true`. When `false`, `initialize` configures the AppsFlyer SDK but registers no session-ready listener and does not call `start`; the app calls `initialize(devKey:appId:)`, registers its own listener and starts inside it (for example after ATT consent). Commands gated on `onReady` are released once `isSessionReady()` turns true
+- `start_automatically_on_session_ready` setting, default `true`. When `true`, `initialize` registers the AppsFlyer session-ready listener and calls `start` inside it, so the app must not register its own listener (or must not map `initialize`). When `false`, `initialize` configures the AppsFlyer SDK but registers no listener and does not call `start`; the app calls `initialize(devKey:appId:)`, registers its own listener and starts inside it (for example after ATT consent). Commands gated on `onReady` are released once `isSessionReady()` turns true
 - Session start command (`start`), for manually resuming a session after `disabletracking`/`stoptracking` — map it as `disabletracking,start` with `stop_tracking: false`. Skipped with a warning while tracking is stopped, since the AppsFlyer SDK's own `start()` does not check the flag. Not needed per foreground: the session-ready listener registered by `initialize` starts each session
 - Hashed-PII commands added in AppsFlyer SDK 7 — `setuseremail`, `setuserfirstname`, `setuserlastname`, `setuserfbloginid`, `clearuserpii` — with `email`, `first_name`, `last_name`, and `fb_login_id` parameters. The AppsFlyer SDK normalizes and SHA-256 hashes each value on-device before sending it, except `fb_login_id`, which AppsFlyer sends as an unhashed integer
 - App invite OneLink ID configuration (`setappinviteonelink` command)
@@ -36,9 +36,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Update AppsFlyer iOS SDK to `>= 7.0.2, < 8.0` in SPM and CocoaPods; Carthage pins `>= 7.0.2`, having no compound-range operator, so a future 8.x may need a follow-up release to cap it
-- Upgrade TealiumSwift dependency to `~> 2.18`
-- **Breaking:** AppsFlyer SDK 7 replaces automatic session start with an explicit readiness model. `initialize` registers a session-ready listener and calls `start` inside it, skipping `start` while tracking is stopped. The AppsFlyer SDK keeps one listener, so `initialize` replaces a listener the app registered in `didFinishLaunching`; on a cold launch it runs before the session is ready, so the `isSessionReady()` check cannot protect it. Apps that need their own listener set `set_default_session_listener` to `false`
-- `setHost` and `setPartnerData` call SDK 7's renamed methods with the new argument order/labels. No change to the `AppsFlyerCommand` signatures or the `sethost`/`setpartnerdata` command parameters
+- Upgrade TealiumSwift dependency to `~> 2.19`
+- **Breaking:** AppsFlyer SDK 7 replaces automatic session start with an explicit readiness model. `initialize` registers a session-ready listener and calls `start` inside it, skipping `start` while tracking is stopped. The AppsFlyer SDK keeps one listener, so `initialize` replaces a listener the app registered in `didFinishLaunching`; on a cold launch it runs before the session is ready, so the `isSessionReady()` check cannot protect it. Apps that need their own listener set `start_automatically_on_session_ready` to `false`
+- `setHost` and `setPartnerData` call AppsFlyer SDK 7's renamed methods with the new argument order/labels. No change to the `AppsFlyerCommand` signatures or the `sethost`/`setpartnerdata` command parameters
 - **Breaking:** `setphonenumber` now also requires `country_code`, matching AppsFlyer SDK 7's `setUserPhone(countryCode:phoneNumber:)`. A tag mapping only `phone_number` now fails validation instead of sending a number the AppsFlyer SDK can no longer accept alone
 - **Breaking:** `disabletracking` now requires `stop_tracking` instead of defaulting to `false`. The old default resumed tracking whenever the parameter was unmapped, which could re-enable it for a user who had opted out
 - **Breaking:** `AppsFlyerCommand` gained requirements for the new commands added in this release (including the hashed-PII ones), so existing conformances outside this library no longer compile
@@ -54,7 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 - **Breaking:** `setuseremails` command and its `customer_emails`/`email_hash_type` parameters. AppsFlyer SDK 7 removed the underlying `setUserEmails(_:withCryptType:)` API — hashing is no longer optional. Use `setuseremail` with the new `email` parameter instead; a tag still mapping `setuseremails` now falls through to the generic event-logging path instead of setting user emails, and both parameters ride along as that event's data — unmap them
-- **Breaking:** `wait_for_att_user_authorization_timeout_interval` setting. AppsFlyer SDK 7 deprecated `waitForATTUserAuthorization(timeoutInterval:)`; in 7.0.2 it is a no-op that no longer gates `start`, so collecting ATT consent before `start` is the host app's responsibility. An app that must collect consent first sets `set_default_session_listener` to `false` and registers its own listener; `onReady` still releases commands queued on that path. A tag still mapping this setting is silently ignored
+- **Breaking:** `wait_for_att_user_authorization_timeout_interval` setting. AppsFlyer SDK 7 deprecated `waitForATTUserAuthorization(timeoutInterval:)`; in 7.0.2 it is a no-op that no longer gates `start`, so collecting ATT consent before `start` is the host app's responsibility. An app that must collect consent first sets `start_automatically_on_session_ready` to `false` and registers its own listener; `onReady` still releases commands queued on that path. A tag still mapping this setting is silently ignored
 
 ## [3.0.0] - 2024-03-15
 

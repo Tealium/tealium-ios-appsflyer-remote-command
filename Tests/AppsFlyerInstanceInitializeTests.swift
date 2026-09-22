@@ -299,13 +299,13 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         XCTAssertEqual(spyLogHandler.messages(for: .warning), [])
     }
 
-    /// `set_default_session_listener: false` leaves the SDK's single listener slot free for the host
+    /// `start_automatically_on_session_ready: false` leaves the SDK's single listener slot free for the host
     /// app to register itself, so `initialize` must not claim it.
-    func testInitializeWithoutDefaultSessionListenerDoesNotRegisterListener() {
+    func testInitializeWithoutAutomaticStartDoesNotRegisterListener() {
         let registrations = stubbingSessionReady(false) {
             countingListenerRegistrations {
                 instance.initialize(appId: "test_app_id", appDevKey: "test_dev_key",
-                                     settings: ["set_default_session_listener": false])
+                                     settings: ["start_automatically_on_session_ready": false])
             }
         }
 
@@ -313,7 +313,7 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         XCTAssertEqual(spyLogHandler.messages(for: .warning), [])
     }
 
-    /// Pins the default — `set_default_session_listener` unset but `settings` non-nil — to the same
+    /// Pins the default — `start_automatically_on_session_ready` unset but `settings` non-nil — to the same
     /// behaviour as `settings: nil`, exercised above by `testInitializeRegistersListenerWhenSessionNotReady`.
     func testInitializeRegistersListenerByDefault() {
         let registrations = stubbingSessionReady(false) {

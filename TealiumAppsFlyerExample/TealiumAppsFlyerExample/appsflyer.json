@@ -5,7 +5,7 @@
         "settings": {
             "custom_data": {"custom_key": "custom_value"},
             "debug": true,
-            "set_default_session_listener": true,
+            "start_automatically_on_session_ready": true,
             "disable_ad_tracking": false,
             "disable_apple_ad_tracking": false,
             "disable_apple_ads_attribution": false,
