@@ -73,9 +73,17 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         self.tealium = tealium
         // The first `AppsFlyerLib.shared()` reads `UIApplication.applicationState`, so the singleton is
         // created on the main thread here as in `init(logger:)`, whatever thread the host calls this from.
-        TealiumQueues.secureMainThreadExecution {
+        // Uses `sync` rather than `TealiumQueues.secureMainThreadExecution`'s `async`, so the delegates
+        // are guaranteed to be in place before this initializer returns — a caller may invoke SDK setup
+        // on the returned instance immediately, and that must never race the delegate assignment.
+        let assignDelegates = {
             AppsFlyerLib.shared().delegate = self
             AppsFlyerLib.shared().deepLinkDelegate = self
+        }
+        if Thread.isMainThread {
+            assignDelegates()
+        } else {
+            DispatchQueue.main.sync(execute: assignDelegates)
         }
     }
 
