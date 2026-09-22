@@ -56,8 +56,7 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
 
     /// Registers as `AppsFlyerLibDelegate` and `AppsFlyerDeepLinkDelegate`, tracked through `tealium`.
     /// `AppsFlyerLib.shared()` is a singleton — a second instance created with this initializer
-    /// silently steals both delegate slots from the first. Create it on the main thread: the first
-    /// `AppsFlyerLib.shared()` reads `UIApplication.applicationState`.
+    /// silently steals both delegate slots from the first.
     ///
     /// `tealium` is non-optional because this initializer exists only to track attribution: with
     /// nothing to track to, it would claim both delegate slots — displacing whatever the host app
@@ -72,8 +71,12 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         self.logger = logger
         super.init()
         self.tealium = tealium
-        AppsFlyerLib.shared().delegate = self
-        AppsFlyerLib.shared().deepLinkDelegate = self
+        // The first `AppsFlyerLib.shared()` reads `UIApplication.applicationState`, so the singleton is
+        // created on the main thread here as in `init(logger:)`, whatever thread the host calls this from.
+        TealiumQueues.secureMainThreadExecution {
+            AppsFlyerLib.shared().delegate = self
+            AppsFlyerLib.shared().deepLinkDelegate = self
+        }
     }
 
 
