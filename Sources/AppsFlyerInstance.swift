@@ -16,6 +16,7 @@ import TealiumRemoteCommands
 #endif
 
 public protocol AppsFlyerCommand {
+    var logger: RemoteCommandLogger { get }
     func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void)
     func start()
     func initialize(appId: String, appDevKey: String, settings: [String: Any]?)
@@ -42,16 +43,24 @@ public protocol AppsFlyerCommand {
     func setAppInviteOneLink(_ oneLinkId: String)
 }
 
+extension AppsFlyerLib {
+    var _isInitialized: Bool {
+        appleAppID.isEmpty || appsFlyerDevKey.isEmpty
+    }
+}
+
 /// All public methods are expected to be called on the `TealiumQueues.backgroundSerialQueue`.
 public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
 
     weak var tealium: Tealium?
+    /// Always used from the main thread
     private let _onReady = TealiumReplaySubject<AppsFlyerLib>(cacheSize: 1)
-    private let logger: RemoteCommandLogger
+    public let logger: RemoteCommandLogger
+    private let sessionMode: AppsFlyerSessionMode
 
     /// Sets no delegate, so attribution callbacks do not fire. Use `init(tealium:)` to track them.
-    public override convenience init() {
-        self.init(logger: RemoteCommandLogger(logLevel: .silent))
+    public convenience init(sessionMode: AppsFlyerSessionMode) {
+        self.init(sessionMode: sessionMode, logger: RemoteCommandLogger(logLevel: .silent))
     }
 
     /// Registers as `AppsFlyerLibDelegate` and `AppsFlyerDeepLinkDelegate` and tracks attribution
@@ -60,187 +69,146 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     /// non-optional because without it this initializer would only displace the host app's
     /// delegates and discard every callback; use `AppsFlyerInstance()` for no attribution tracking.
     public convenience init(tealium: Tealium,
-                             logLevel: RemoteCommandLogLevel) {
-        self.init(tealium: tealium, logger: RemoteCommandLogger(logLevel: logLevel))
+                            sessionMode: AppsFlyerSessionMode,
+                            logLevel: RemoteCommandLogLevel) {
+        self.init(tealium: tealium, sessionMode: sessionMode,  logger: RemoteCommandLogger(logLevel: logLevel))
     }
 
-    init(tealium: Tealium, logger: RemoteCommandLogger) {
+    init(tealium: Tealium? = nil, sessionMode: AppsFlyerSessionMode, logger: RemoteCommandLogger) {
         self.logger = logger
+        self.sessionMode = sessionMode
         super.init()
         self.tealium = tealium
         // Off the main thread this hop is asynchronous, so create the instance on the main thread
         // or a command may reach `AppsFlyerLib.shared()` before the delegates are set.
         TealiumQueues.secureMainThreadExecution {
-            AppsFlyerLib.shared().delegate = self
-            AppsFlyerLib.shared().deepLinkDelegate = self
+            // We need to create the appsFlyer variable anyway because on first usage it must be created from the main thread.
+            let appsFlyer = AppsFlyerLib.shared()
+            if let tealium {
+                appsFlyer.delegate = self
+                appsFlyer.deepLinkDelegate = self
+            }
         }
-    }
-
-
-    /// Used by `AppsFlyerRemoteCommand` when no instance is supplied, sharing its logger. Sets no
-    /// delegate: a `RemoteCommand` has no access to its Tealium instance, so it cannot track
-    /// attribution. Pass `AppsFlyerInstance(tealium:logLevel:)` to
-    /// `AppsFlyerRemoteCommand.init(appsFlyerInstance:)` to enable it.
-    init(logger: RemoteCommandLogger) {
-        self.logger = logger
-        super.init()
-
-        // Same main-thread requirement as `init(tealium:logger:)`.
-        TealiumQueues.secureMainThreadExecution { _ = AppsFlyerLib.shared() }
     }
 
     /// Runs `onReady` once the AppsFlyer session is ready, or at once if it already is. Commands that
     /// log to the SDK are gated on this because the SDK holds events logged before a successful
     /// `start()` and replays them only on its next init, so they would miss this session.
     public func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {
-        defer { _onReady.subscribeOnce(onReady) }
-        guard _onReady.last() == nil else {
-            return
-        }
-        let appsFlyer = AppsFlyerLib.shared()
-        // `isSessionReady()` is SDK 7's only readiness signal; credentials being set is not one, since
-        // the session no longer starts on its own. It turns true once a registered session-ready
-        // listener has fired in this foreground cycle (ours from `initialize`, or the host's). A host
-        // that calls `start()` without registering a listener never makes it true, hence the log.
-        // A host that gates `start` on ATT consent inside its listener starts after the listener has
-        // fired, so commands released here can still miss that session.
-        if appsFlyer.isSessionReady() {
-            _onReady.publish(appsFlyer)
-        } else {
-            logger.debug("Command queued until the AppsFlyer session is ready. An app that initializes AppsFlyer itself must register a session-ready listener, or queued commands never run.")
+        TealiumQueues.secureMainThreadExecution { [self] in
+            defer { _onReady.subscribeOnce(onReady) }
+            guard _onReady.last() == nil else {
+                return
+            }
+            let appsFlyer = AppsFlyerLib.shared()
+            if appsFlyer._isInitialized {
+                logger.debug("Command queued until the AppsFlyer is initialized.")
+            } else {
+                markReady(appsFlyer: appsFlyer)
+            }
         }
     }
 
     public func initialize(appId: String, appDevKey: String, settings: [String: Any]?) {
-        let appsFlyer = AppsFlyerLib.shared()
-        // SDK 7: isDebug must be set before any other SDK call, or earlier calls log nothing.
-        if let debug = settings?[AppsFlyerConstants.Settings.debug] as? Bool {
-            appsFlyer.isDebug = debug
-        }
-        // enableFacebookDeferredApplinks must be called before credentials are set and before start().
-        if let enableFacebookDeferredApplinks = settings?[AppsFlyerConstants.Settings.enableFacebookDeferredApplinks] as? Bool {
-            if enableFacebookDeferredApplinks {
-                if let facebookAppLinkUtilityClass = NSClassFromString("FBSDKAppLinkUtility") {
-                    appsFlyer.enableFacebookDeferredApplinks(with: facebookAppLinkUtilityClass)
+        TealiumQueues.secureMainThreadExecution { [self] in
+            let appsFlyer = AppsFlyerLib.shared()
+            // SDK 7: isDebug must be set before any other SDK call, or earlier calls log nothing.
+            if let debug = settings?[AppsFlyerConstants.Settings.debug] as? Bool {
+                appsFlyer.isDebug = debug
+            }
+            // enableFacebookDeferredApplinks must be called before credentials are set and before start().
+            if let enableFacebookDeferredApplinks = settings?[AppsFlyerConstants.Settings.enableFacebookDeferredApplinks] as? Bool {
+                if enableFacebookDeferredApplinks {
+                    if let facebookAppLinkUtilityClass = NSClassFromString("FBSDKAppLinkUtility") {
+                        appsFlyer.enableFacebookDeferredApplinks(with: facebookAppLinkUtilityClass)
+                    } else {
+                        logger.error("Facebook Deferred AppLinks requested but Facebook SDK not found. Please ensure Facebook SDK is integrated in your app.")
+                    }
                 } else {
-                    logger.error("Facebook Deferred AppLinks requested but Facebook SDK not found. Please ensure Facebook SDK is integrated in your app.")
+                    // Pass nil to disable — mirrors Android's enableFacebookDeferredApplinks(false).
+                    appsFlyer.enableFacebookDeferredApplinks(with: nil)
                 }
+            }
+            if appId.isEmpty || appDevKey.isEmpty {
+                logger.error("\(AppsFlyerConstants.Configuration.appId) and \(AppsFlyerConstants.Configuration.appDevKey) cannot be empty.")
             } else {
-                // Pass nil to disable — mirrors Android's enableFacebookDeferredApplinks(false).
-                appsFlyer.enableFacebookDeferredApplinks(with: nil)
+                if appsFlyer._isInitialized {
+                    logger.warning("AppsFlyer already initilized when command initialize is called. Going to initialize again with configured appId and appDevKey. Initialize should only be called once.")
+                }
+                appsFlyer.initialize(devKey: appDevKey, appId: appId)
             }
-        }
-
-        appsFlyer.initialize(devKey: appDevKey, appId: appId)
-        if let settings = settings {
-            let disableAdTracking = (settings[AppsFlyerConstants.Settings.disableAdTracking]
-                ?? settings[AppsFlyerConstants.Settings.disableAdvertisingIdentifiersAlias]) as? Bool
-            if let disableAdTracking = disableAdTracking {
-                appsFlyer.disableAdvertisingIdentifier = disableAdTracking
-                appsFlyer.disableIDFVCollection = disableAdTracking
-            }
-            if let disableAppleAdTracking = settings[AppsFlyerConstants.Settings.disableAppleAdTracking] as? Bool {
-                appsFlyer.disableSKAdNetwork = disableAppleAdTracking
-            }
-            // Guarded because `UInt(negative)` traps.
-            if let minTimeBetweenSessions = settings[AppsFlyerConstants.Settings.minTimeBetweenSessions] as? Int,
-               minTimeBetweenSessions >= 0 {
-                appsFlyer.minTimeBetweenSessions = UInt(minTimeBetweenSessions)
-            }
-            if let anonymizeUser = settings[AppsFlyerConstants.Settings.anonymizeUser] as? Bool {
-                appsFlyer.anonymizeUser = anonymizeUser
-            }
-            if let shouldCollectDeviceName = settings[AppsFlyerConstants.Settings.collectDeviceName] as? Bool {
-                appsFlyer.shouldCollectDeviceName = shouldCollectDeviceName
-            }
-            if let customData = settings[AppsFlyerConstants.Settings.customData] as? [AnyHashable: Any] {
-                appsFlyer.customData = customData
-            }
-            if let disableAppleAdsAttribution = settings[AppsFlyerConstants.Settings.disableAppleAdsAttribution] as? Bool {
-                appsFlyer.disableAppleAdsAttribution = disableAppleAdsAttribution
-            }
-            if let enableTCFDataCollection = settings[AppsFlyerConstants.Settings.enableTCFDataCollection] as? Bool {
-                appsFlyer.enableTCFDataCollection(enableTCFDataCollection)
-            }
-            if let deepLinkTimeout = settings[AppsFlyerConstants.Settings.deepLinkTimeout] as? Int,
-               deepLinkTimeout >= 0 {
-                appsFlyer.deepLinkTimeout = UInt(deepLinkTimeout)
-            }
-            if let oneLinkCustomDomains = settings[AppsFlyerConstants.Settings.oneLinkCustomDomains] as? [String] {
-                appsFlyer.oneLinkCustomDomains = oneLinkCustomDomains
-            }
-            if let facebookDeferredAppLink = settings[AppsFlyerConstants.Settings.facebookDeferredAppLink] as? String,
-               let facebookDeferredAppLinkURL = URL(string: facebookDeferredAppLink) {
-                appsFlyer.facebookDeferredAppLink = facebookDeferredAppLinkURL
-            }
-            if let pushNotificationDeepLinkPath = settings[AppsFlyerConstants.Settings.pushNotificationDeepLinkPath] as? [String] {
-                appsFlyer.addPushNotificationDeepLinkPath(pushNotificationDeepLinkPath)
-            }
-            if let deepLinkParameters = settings[AppsFlyerConstants.Settings.deepLinkParameters] as? [[String: Any]] {
-                for parameter in deepLinkParameters {
-                    if let contains = parameter[AppsFlyerConstants.Parameters.deepLinkContains] as? String,
-                       let parameters = parameter[AppsFlyerConstants.Parameters.deepLinkParameters] as? [String: String] {
-                        appsFlyer.appendParametersToDeepLinkingURL(contains: contains, parameters: parameters)
+            if let settings = settings {
+                let disableAdTracking = (settings[AppsFlyerConstants.Settings.disableAdTracking]
+                                         ?? settings[AppsFlyerConstants.Settings.disableAdvertisingIdentifiersAlias]) as? Bool
+                if let disableAdTracking = disableAdTracking {
+                    appsFlyer.disableAdvertisingIdentifier = disableAdTracking
+                    appsFlyer.disableIDFVCollection = disableAdTracking
+                }
+                if let disableAppleAdTracking = settings[AppsFlyerConstants.Settings.disableAppleAdTracking] as? Bool {
+                    appsFlyer.disableSKAdNetwork = disableAppleAdTracking
+                }
+                // Guarded because `UInt(negative)` traps.
+                if let minTimeBetweenSessions = settings[AppsFlyerConstants.Settings.minTimeBetweenSessions] as? Int,
+                   minTimeBetweenSessions >= 0 {
+                    appsFlyer.minTimeBetweenSessions = UInt(minTimeBetweenSessions)
+                }
+                if let anonymizeUser = settings[AppsFlyerConstants.Settings.anonymizeUser] as? Bool {
+                    appsFlyer.anonymizeUser = anonymizeUser
+                }
+                if let shouldCollectDeviceName = settings[AppsFlyerConstants.Settings.collectDeviceName] as? Bool {
+                    appsFlyer.shouldCollectDeviceName = shouldCollectDeviceName
+                }
+                if let customData = settings[AppsFlyerConstants.Settings.customData] as? [AnyHashable: Any] {
+                    appsFlyer.customData = customData
+                }
+                if let disableAppleAdsAttribution = settings[AppsFlyerConstants.Settings.disableAppleAdsAttribution] as? Bool {
+                    appsFlyer.disableAppleAdsAttribution = disableAppleAdsAttribution
+                }
+                if let enableTCFDataCollection = settings[AppsFlyerConstants.Settings.enableTCFDataCollection] as? Bool {
+                    appsFlyer.enableTCFDataCollection(enableTCFDataCollection)
+                }
+                if let deepLinkTimeout = settings[AppsFlyerConstants.Settings.deepLinkTimeout] as? Int,
+                   deepLinkTimeout >= 0 {
+                    appsFlyer.deepLinkTimeout = UInt(deepLinkTimeout)
+                }
+                if let oneLinkCustomDomains = settings[AppsFlyerConstants.Settings.oneLinkCustomDomains] as? [String] {
+                    appsFlyer.oneLinkCustomDomains = oneLinkCustomDomains
+                }
+                if let facebookDeferredAppLink = settings[AppsFlyerConstants.Settings.facebookDeferredAppLink] as? String,
+                   let facebookDeferredAppLinkURL = URL(string: facebookDeferredAppLink) {
+                    appsFlyer.facebookDeferredAppLink = facebookDeferredAppLinkURL
+                }
+                if let pushNotificationDeepLinkPath = settings[AppsFlyerConstants.Settings.pushNotificationDeepLinkPath] as? [String] {
+                    appsFlyer.addPushNotificationDeepLinkPath(pushNotificationDeepLinkPath)
+                }
+                if let deepLinkParameters = settings[AppsFlyerConstants.Settings.deepLinkParameters] as? [[String: Any]] {
+                    for parameter in deepLinkParameters {
+                        if let contains = parameter[AppsFlyerConstants.Parameters.deepLinkContains] as? String,
+                           let parameters = parameter[AppsFlyerConstants.Parameters.deepLinkParameters] as? [String: String] {
+                            appsFlyer.appendParametersToDeepLinkingURL(contains: contains, parameters: parameters)
+                        }
                     }
                 }
-            }
-            // Applied after disable_ad_tracking so it can override the IDFV portion independently.
-            if let disableIDFVCollection = settings[AppsFlyerConstants.Settings.disableIDFVCollection] as? Bool {
-                appsFlyer.disableIDFVCollection = disableIDFVCollection
-            }
-        }
-        // SDK 7: the listener re-fires every foreground, so `start` belongs inside it, replacing the
-        // old per-`applicationDidBecomeActive` call. `onReady` is published inside the block so it
-        // also waits on the listener's own readiness checks.
-        //
-        // Two things only the host app can do, so this command does not: call
-        // `AppsFlyerLib.shared().handleLaunchOptions(_:)` from `didFinishLaunchingWithOptions`, without
-        // which the SDK does not wait for a cold-launch Universal Link before firing the listener; and
-        // gate `start` on ATT consent, by setting `start_automatically_on_session_ready` to `false`,
-        // calling `initialize(devKey:appId:)` itself (`registerSessionReadyListener` asserts credentials)
-        // and starting inside its own listener.
-        //
-        // The SDK keeps one listener and a second registration replaces the block for good.
-        // `isSessionReady()` is true only after a registered listener fired this foreground cycle, so a
-        // listener (the host's, or ours from an earlier `initialize`) already owns `start`. Only
-        // release the queued commands.
-        if appsFlyer.isSessionReady() {
-            logger.warning("Session already ready in this foreground cycle. Keeping the registered session-ready listener, which owns start, and releasing queued commands.")
-            _onReady.publish(appsFlyer)
-            return
-        }
-        // `true` (default): this command owns the SDK's single session-ready listener and `start`, so the
-        // app must not register a listener of its own. `false`: the app calls `initialize(devKey:appId:)`,
-        // registers its own listener and starts inside it; this command only configures the SDK.
-        let startsAutomatically = settings?[AppsFlyerConstants.Settings.startAutomaticallyOnSessionReady] as? Bool ?? true
-        guard startsAutomatically else {
-            logger.info("start_automatically_on_session_ready is false: not registering a session-ready listener or calling start; the app does both.")
-            return
-        }
-        // On a cold launch nothing has fired yet, so the check above cannot detect a listener the host
-        // registered in `didFinishLaunching`; the SDK exposes no way to tell an occupied slot from a
-        // free one. Logged, not detected.
-        logger.info("Registering the AppsFlyer session-ready listener; this replaces any listener the app registered itself. Set start_automatically_on_session_ready to false to keep your own.")
-        // `registerSessionReadyListener` reads `UIApplication.applicationState` synchronously, so it has to
-        // run on the main thread; commands arrive here on `TealiumQueues.backgroundSerialQueue`.
-        TealiumQueues.secureMainThreadExecution {
-            appsFlyer.registerSessionReadyListener { [weak self] in
-                // The SDK fires this on the main queue; `_onReady` subscribers are added on
-                // `TealiumQueues.backgroundSerialQueue` and `TealiumObservable` is not synchronized,
-                // so publishing hops back to that queue.
-                //
-                // The SDK's `start()` does not honour `isStopped` (it still runs its config check and
-                // writes the session timestamp), so guard it here for users who opted out.
-                if appsFlyer.isStopped {
-                    self?.logger.debug("Session start skipped: tracking is stopped.")
-                } else {
-                    appsFlyer.start()
-                }
-                TealiumQueues.backgroundSerialQueue.async {
-                    self?._onReady.publish(appsFlyer)
+                // Applied after disable_ad_tracking so it can override the IDFV portion independently.
+                if let disableIDFVCollection = settings[AppsFlyerConstants.Settings.disableIDFVCollection] as? Bool {
+                    appsFlyer.disableIDFVCollection = disableIDFVCollection
                 }
             }
+            markReady(appsFlyer: appsFlyer)
         }
+    }
+
+    private func markReady(appsFlyer: AppsFlyerLib) {
+        // onReady is published before registerSessionReadyListener,
+        // so that you can inject some additional settings before registering.
+        _onReady.publish(appsFlyer)
+        guard sessionMode == .automatic else { return }
+        guard !appsFlyer.isSessionReady() else {
+            logger.error("The AppsFlyerInstance.sessionMode is automatic, but the AppsFlyer session is already ready. You must set sessionMode to appManaged to control the AppsFlyer session. We will skip registering the listener and the automatic start.")
+            return
+        }
+        logger.info("Registering the AppsFlyer session-ready listener; this replaces any listener the app registered itself. Set sessionMode to appManaged to keep your own.")
+        appsFlyer.registerSessionReadyListener { appsFlyer.start() }
     }
 
     public func logEvent(_ eventName: String, values: [String: Any]) {

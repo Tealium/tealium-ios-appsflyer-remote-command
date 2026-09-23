@@ -10,7 +10,7 @@ import Foundation
 
 /// Centralized logging utility for Remote Command.
 /// Log verbosity is controlled via the `logLevel` parameter passed to `AppsFlyerRemoteCommand`.
-struct RemoteCommandLogger {
+public struct RemoteCommandLogger {
     let logLevel: RemoteCommandLogLevel
     private let handler: LogHandler
 

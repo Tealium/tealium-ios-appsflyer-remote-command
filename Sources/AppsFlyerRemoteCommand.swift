@@ -15,6 +15,36 @@ import TealiumCore
 import TealiumRemoteCommands
 #endif
 
+/// Who owns the SDK's single session-ready listener and `start`.
+public enum AppsFlyerSessionMode {
+    /// When initialized, the Remote Command additionally registers the listener, which calls `start()`.
+    /// The app must not register a listener of its own.
+    case automatic
+    /// When initialized, the Remote Command does not register a listener and never calls `start()`.
+    /// The app must register its own listener and call `AppsFlyerLib.shared().start()` in it.
+    ///
+    /// When session registration and start is `appManaged` you can register immediately after initializing,
+    /// if you also initialize manually.
+    ///
+    /// ```swift
+    /// let command = AppsFlyerRemoteCommand(sessionMode: .appManaged)
+    /// let appsFlyerLib = AppsFlyerLib.shared()
+    /// appsFlyerLib.initialize(devKey: appDevKey, appId: appId)
+    /// appsFlyerLib.registerSessionReadyListener { appsFlyerLib.start() }
+    /// ```
+    ///
+    /// If you `initialize` with a remote command instead, make sure to register for session ready only after `onReady` has completed.
+    /// ```swift
+    ///  let command = AppsFlyerRemoteCommand(sessionMode: .appManaged)
+    ///  command.onReady { appsFlyerLib in
+    ///     // This code will only run after the `initialize` command has run
+    ///     appsFlyerLib.registerSessionReadyListener { appsFlyerLib.start() }
+    ///  }
+    /// ```
+    case appManaged
+}
+
+
 public class AppsFlyerRemoteCommand: RemoteCommand {
 
     let appsFlyerInstance: AppsFlyerCommand
@@ -24,12 +54,57 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
         return AppsFlyerConstants.version
     }
 
-    /// Host apps call this from wherever they happen to be — typically `AppDelegate`, on the main
-    /// thread — so hop onto the queue `AppsFlyerInstance` expects.
+    /// Host apps call this from wherever they happen to be if they want to wait for the `initialize` command to happen before manually working with the AppsFlyer SDK.
+    ///
+    /// If you initialize the `AppsFlyerLib` manually, you don't need to use this method, but make sure not to trigger the `initialize` command.
+    ///
+    /// ```swift
+    /// let command = AppsFlyerRemoteCommand(sessionMode: .appManaged)
+    /// let appsFlyerLib = AppsFlyerLib.shared()
+    /// appsFlyerLib.initialize(devKey: appDevKey, appId: appId)
+    /// appsFlyerLib.registerSessionReadyListener { appsFlyerLib.start() }
+    /// ```
+    ///
+    /// If you `initialize` with a remote command instead, make sure to register for session ready only after `onReady` has completed.
+    /// ```swift
+    ///  let command = AppsFlyerRemoteCommand(sessionMode: .appManaged)
+    ///  command.onReady { appsFlyerLib in
+    ///     // This code will only run after the `initialize` command has run
+    ///     appsFlyerLib.registerSessionReadyListener { appsFlyerLib.start() }
+    ///  }
+    /// ```
+    ///
+    /// If you  have `automatic` session mode, both if you initialize manually or with a remote command,
+    /// you should NOT call AppsFlyerLib's `registerSessionReadyListener`, or that might replace our listener,
+    /// but you can still use this method to make sure to call some other methods that need to be called after initialize.
+    ///
+    /// ```swift
+    ///  // This will register for session ready and start on initialize.
+    ///  let command = AppsFlyerRemoteCommand(sessionMode: .automatic)
+    ///  command.onReady { appsFlyerLib in
+    ///     // This code will only run after the `initialize` command has run
+    ///     appsFlyerLib.logEvent(eventName, withValues: values)
+    ///  }
+    /// ```
+    ///
+    /// Note that `logEvent` in the example above is just an example of a method that needs to be called after initialize.
+    /// You should usually use a command to log events.
+    ///
     public func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {
-        TealiumQueues.backgroundSerialQueue.async {
-            self.appsFlyerInstance.onReady(onReady)
-        }
+        self.appsFlyerInstance.onReady(onReady)
+    }
+
+    /// Constructs a RemoteCommand that integrates with the AppsFlyer SDK.
+    /// - Parameters:
+    ///   - sessionMode: The session mode that defines who is required to `AppsFlyerLib.registerForSessionReady` and calling `AppsFlyerLib.start` in it.
+    ///   - type: The RemoteCommand type (webview or JSON).
+    ///   - logLevel: Controls RC log verbosity. Defaults to `.error` (errors only).
+    convenience public init(sessionMode: AppsFlyerSessionMode,
+                            type: RemoteCommandType = .webview,
+                            logLevel: RemoteCommandLogLevel = .error) {
+        self.init(appsFlyerInstance: AppsFlyerInstance(sessionMode: sessionMode,
+                                                       logger: RemoteCommandLogger(logLevel: logLevel)),
+                  type: type)
     }
 
     /// Constructs a RemoteCommand that integrates with the AppsFlyer SDK.
@@ -39,12 +114,10 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     ///     (onConversionDataSuccess etc.). Defaults to a logger-only instance with
     ///     no attribution tracking.
     ///   - type: The RemoteCommand type (webview or JSON).
-    ///   - logLevel: Controls RC log verbosity. Defaults to `.error` (errors only).
-    public init(appsFlyerInstance: AppsFlyerCommand? = nil,
-                type: RemoteCommandType = .webview,
-                logLevel: RemoteCommandLogLevel = .error) {
-        self.logger = RemoteCommandLogger(logLevel: logLevel)
-        self.appsFlyerInstance = appsFlyerInstance ?? AppsFlyerInstance(logger: logger)
+    public init(appsFlyerInstance: AppsFlyerCommand,
+                type: RemoteCommandType = .webview,) {
+        self.logger = appsFlyerInstance.logger
+        self.appsFlyerInstance = appsFlyerInstance
         weak var weakSelf: AppsFlyerRemoteCommand?
         super.init(commandId: AppsFlyerConstants.commandId,
                    description: AppsFlyerConstants.description,
