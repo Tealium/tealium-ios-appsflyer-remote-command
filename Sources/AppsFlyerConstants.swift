@@ -80,7 +80,6 @@ public enum AppsFlyerConstants {
         case setPartnerData = "setpartnerdata"
         case setSharingFilterForPartners = "setsharingfilterforpartners"
         case handleOpen = "handleopen"
-        case start = "start"
         case setCurrentDeviceLanguage = "setcurrentdevicelanguage"
         case setAppInviteOneLink = "setappinviteonelink"
 

@@ -18,7 +18,6 @@ import TealiumRemoteCommands
 public protocol AppsFlyerCommand {
     var logger: RemoteCommandLogger { get }
     func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void)
-    func start()
     func initialize(appId: String, appDevKey: String, settings: [String: Any]?)
     func logEvent(_ eventName: String, values: [String: Any])
     func logLocation(longitude: Double, latitude: Double)
@@ -44,8 +43,9 @@ public protocol AppsFlyerCommand {
 }
 
 extension AppsFlyerLib {
-    var _isInitialized: Bool {
-        appleAppID.isEmpty || appsFlyerDevKey.isEmpty
+    /// True once `initialize(devKey:appId:)` has set both credentials, by our `initialize` command or by the app.
+    var hasCredentials: Bool {
+        !appleAppID.isEmpty && !appsFlyerDevKey.isEmpty
     }
 }
 
@@ -56,9 +56,12 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     /// Always used from the main thread
     private let _onReady = TealiumReplaySubject<AppsFlyerLib>(cacheSize: 1)
     public let logger: RemoteCommandLogger
-    private let sessionMode: AppsFlyerSessionMode
+    let sessionMode: AppsFlyerSessionMode
 
-    /// Sets no delegate, so attribution callbacks do not fire. Use `init(tealium:)` to track them.
+    /// Sets no delegate, so attribution callbacks do not fire, and logs nothing. Use
+    /// `init(tealium:sessionMode:logLevel:)` to track attribution, or
+    /// `AppsFlyerRemoteCommand(sessionMode:type:logLevel:)` if you don't need your own instance.
+    /// - Parameter sessionMode: Who registers the session-ready listener and calls `start()`.
     public convenience init(sessionMode: AppsFlyerSessionMode) {
         self.init(sessionMode: sessionMode, logger: RemoteCommandLogger(logLevel: .silent))
     }
@@ -67,13 +70,21 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     /// through `tealium`. `AppsFlyerLib.shared()` is a singleton with one slot per delegate, so a
     /// second instance built this way silently takes both slots from the first. `tealium` is
     /// non-optional because without it this initializer would only displace the host app's
-    /// delegates and discard every callback; use `AppsFlyerInstance()` for no attribution tracking.
+    /// delegates and discard every callback; use `AppsFlyerInstance(sessionMode:)` for no attribution
+    /// tracking. Pass the result to `AppsFlyerRemoteCommand(appsFlyerInstance:type:)`, which reuses
+    /// this instance's logger.
+    /// - Parameters:
+    ///   - tealium: The Tealium instance attribution events are tracked through.
+    ///   - sessionMode: Who registers the session-ready listener and calls `start()`.
+    ///   - logLevel: Log verbosity for this instance and the remote command built on it.
     public convenience init(tealium: Tealium,
                             sessionMode: AppsFlyerSessionMode,
                             logLevel: RemoteCommandLogLevel) {
-        self.init(tealium: tealium, sessionMode: sessionMode,  logger: RemoteCommandLogger(logLevel: logLevel))
+        self.init(tealium: tealium, sessionMode: sessionMode, logger: RemoteCommandLogger(logLevel: logLevel))
     }
 
+    /// Designated initializer. If the app already called `AppsFlyerLib.shared().initialize(devKey:appId:)`,
+    /// `onReady` is released here and, in `.automatic`, the session-ready listener is registered.
     init(tealium: Tealium? = nil, sessionMode: AppsFlyerSessionMode, logger: RemoteCommandLogger) {
         self.logger = logger
         self.sessionMode = sessionMode
@@ -84,16 +95,21 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         TealiumQueues.secureMainThreadExecution {
             // We need to create the appsFlyer variable anyway because on first usage it must be created from the main thread.
             let appsFlyer = AppsFlyerLib.shared()
-            if let tealium {
+            if tealium != nil {
                 appsFlyer.delegate = self
                 appsFlyer.deepLinkDelegate = self
+            }
+            // The app may have initialized AppsFlyer before building this instance.
+            if appsFlyer.hasCredentials {
+                self.markReady(appsFlyer: appsFlyer)
             }
         }
     }
 
-    /// Runs `onReady` once the AppsFlyer session is ready, or at once if it already is. Commands that
-    /// log to the SDK are gated on this because the SDK holds events logged before a successful
-    /// `start()` and replays them only on its next init, so they would miss this session.
+    /// Runs `onReady` on the main thread once AppsFlyer has credentials (`initialize` was called, by
+    /// our `initialize` command or by the app), or at once if it already has. This is not "session
+    /// started". Commands that log to the SDK are gated on this because the SDK needs credentials to
+    /// build a request. SDK 7.0.2 accepts `logEvent` between `initialize` and `start()` but only caches it.
     public func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {
         TealiumQueues.secureMainThreadExecution { [self] in
             defer { _onReady.subscribeOnce(onReady) }
@@ -101,8 +117,8 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
                 return
             }
             let appsFlyer = AppsFlyerLib.shared()
-            if appsFlyer._isInitialized {
-                logger.debug("Command queued until the AppsFlyer is initialized.")
+            if !appsFlyer.hasCredentials {
+                logger.debug("Command queued until AppsFlyer is initialized.")
             } else {
                 markReady(appsFlyer: appsFlyer)
             }
@@ -132,8 +148,8 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
             if appId.isEmpty || appDevKey.isEmpty {
                 logger.error("\(AppsFlyerConstants.Configuration.appId) and \(AppsFlyerConstants.Configuration.appDevKey) cannot be empty.")
             } else {
-                if appsFlyer._isInitialized {
-                    logger.warning("AppsFlyer already initilized when command initialize is called. Going to initialize again with configured appId and appDevKey. Initialize should only be called once.")
+                if appsFlyer.hasCredentials {
+                    logger.warning("AppsFlyer already initialized when command initialize is called. Going to initialize again with configured appId and appDevKey. Initialize should only be called once.")
                 }
                 appsFlyer.initialize(devKey: appDevKey, appId: appId)
             }
@@ -194,7 +210,10 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
                     appsFlyer.disableIDFVCollection = disableIDFVCollection
                 }
             }
-            markReady(appsFlyer: appsFlyer)
+            // Empty credentials were rejected above; unless the app set its own, keep commands queued.
+            if appsFlyer.hasCredentials {
+                markReady(appsFlyer: appsFlyer)
+            }
         }
     }
 
@@ -293,24 +312,9 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         AppsFlyerLib.shared().setSharingFilterForPartners(sharingFilter)
     }
 
-    /// Not needed per foreground: the session-ready listener registered in `initialize` calls `start`
-    /// there. Use it only to resume after `disabletracking`/`stoptracking`, mapped as
-    /// `disabletracking,start` with `stop_tracking: false`.
-    public func start() {
-        // Same main-queue hop as the delegate assignment in `init(tealium:logger:)`, so FIFO ordering
-        // on `DispatchQueue.main` runs this after it even when called right after off-main construction.
-        TealiumQueues.secureMainThreadExecution {
-            // Same `isStopped` guard as the session-ready listener in `initialize`.
-            if AppsFlyerLib.shared().isStopped {
-                self.logger.debug("Session start skipped: tracking is stopped.")
-            } else {
-                AppsFlyerLib.shared().start()
-            }
-        }
-    }
-
-    /// Gated on `onReady` because the SDK discards deep links received before `start()`,
-    /// which is what happens on a cold start without the gate.
+    /// Gated on `onReady` (credentials), not on `start()`: on the SDK 7.0.2 simulator a URI-scheme link
+    /// passed after `initialize` and before `start()` reached `didResolveDeepLink` as `.found`. Whether a
+    /// OneLink URL, which needs a network round trip, resolves before `start()` is unverified.
     public func handleOpen(url: URL, sourceApplication: String?, annotation: Any?) {
         onReady { appsFlyer in
             appsFlyer.handleOpen(url, sourceApplication: sourceApplication, withAnnotation: annotation)

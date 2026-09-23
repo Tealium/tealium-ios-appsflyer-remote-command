@@ -19,10 +19,13 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
     var appsFlyerCommand: AppsFlyerRemoteCommand!
 
     override func setUp() {
-        appsFlyerCommand = AppsFlyerRemoteCommand(appsFlyerInstance: appsFlyerInstance, logLevel: .silent)
+        appsFlyerCommand = AppsFlyerRemoteCommand(appsFlyerInstance: appsFlyerInstance)
     }
 
-    override func tearDown() { }
+    override func tearDown() {
+        // A real `.automatic` instance may have registered a listener with the SDK.
+        AppsFlyerLib.shared().unregisterSessionReadyListener()
+    }
 
     func testGetEventNameCaseInsensitive() {
         let result1 = appsFlyerCommand.getEventName(command: "PURCHASE")
@@ -177,23 +180,6 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertEqual(appsFlyerInstance.lastAppId, "test")
         XCTAssertEqual(appsFlyerInstance.lastAppDevKey, "test")
         XCTAssertNil(appsFlyerInstance.lastSettings)
-    }
-
-    /// `AppsFlyerInstance.initialize` starts the first session itself, so the command must not
-    /// issue a `start` of its own — a second one would be a separate session request.
-    func testInitializeDoesNotIssueSeparateStart() {
-        let payload: [String: Any] = ["command_name": "initialize",
-                                      "app_id": "test_id",
-                                      "app_dev_key": "test_key"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(appsFlyerInstance.initWithoutSettingsCount, 1)
-        XCTAssertEqual(appsFlyerInstance.startCount, 0)
-    }
-
-    func testStartCommand() {
-        let payload: [String: Any] = ["command_name": "start"]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(appsFlyerInstance.startCount, 1)
     }
 
     func testInitWithoutConfigNotRun() {
@@ -543,24 +529,28 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
     }
 
     /// Uses the real `AppsFlyerInstance` (not `MockAppsFlyerInstance`) to verify `onReady` is wired
-    /// through to the SDK's session-ready listener, but stubs the SDK itself: `isSessionReady()` and
-    /// `registerSessionReadyListener:` are swizzled so the listener block is captured and fired by
-    /// hand instead of registered with — and waited on from — the real SDK.
+    /// through to `initialize` and the session-ready listener, but stubs the SDK itself: the credential
+    /// getters, `isSessionReady()` and `registerSessionReadyListener:` are swizzled so the listener
+    /// block is captured and fired by hand instead of registered with the real SDK.
     func testOnReadyCalledAfterInitialize() {
-        let onReadyCalled = expectation(description: "OnReady is called")
+        var onReadyCalled = false
         let payload: [String: Any] = ["command_name": "initialize",
                                       "app_id": "test",
                                       "app_dev_key": "test"]
-        appsFlyerCommand = AppsFlyerRemoteCommand(logLevel: .silent)
-        appsFlyerCommand.onReady { _ in
-            onReadyCalled.fulfill()
+        stubbingCredentials(false) {
+            appsFlyerCommand = AppsFlyerRemoteCommand(sessionMode: .automatic, logLevel: .silent)
+            appsFlyerCommand.onReady { _ in
+                onReadyCalled = true
+            }
         }
+        XCTAssertFalse(onReadyCalled, "Expected onReady to wait for initialize")
 
         let listener = stubbingSessionReady(false) {
             capturingListenerRegistration {
                 appsFlyerCommand.processRemoteCommand(with: payload)
             }
         }
+        XCTAssertTrue(onReadyCalled)
         guard let listener else {
             return XCTFail("Expected initialize to register a session-ready listener")
         }
@@ -568,7 +558,28 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         let sdkStartCalls = countingSDKStartCalls { listener() }
 
         XCTAssertEqual(sdkStartCalls, 1)
-        waitForExpectations(timeout: 2.0)
+    }
+
+    func testSessionModeInitGivesInstanceTheLogLevelAndMode() {
+        let command = AppsFlyerRemoteCommand(sessionMode: .appManaged, logLevel: .debug)
+        guard let instance = command.appsFlyerInstance as? AppsFlyerInstance else {
+            return XCTFail("Expected an AppsFlyerInstance")
+        }
+        XCTAssertEqual(instance.logger.logLevel, .debug)
+        XCTAssertEqual(instance.sessionMode, .appManaged)
+        XCTAssertNil(instance.tealium)
+    }
+
+    func testAppsFlyerInstanceInitReusesInstanceLogger() {
+        let spy = MockLogHandler()
+        let instance = AppsFlyerInstance(sessionMode: .appManaged,
+                                         logger: RemoteCommandLogger(logLevel: .debug, handler: spy))
+        let command = AppsFlyerRemoteCommand(appsFlyerInstance: instance)
+
+        command.processRemoteCommand(with: ["command_name": "setcurrencycode"])
+
+        XCTAssertTrue(spy.messages(for: .error).contains { $0.contains("setcurrencycode") },
+                      "Expected the command to log through the instance's logger")
     }
 
     func testSetPhoneNumber() {
@@ -872,7 +883,7 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
     func testHandleOpenNotRunWhenURLInitReturnsNil() {
         for urlString in ["http://exa mple.com", ""] {
             appsFlyerInstance = MockAppsFlyerInstance()
-            appsFlyerCommand = AppsFlyerRemoteCommand(appsFlyerInstance: appsFlyerInstance, logLevel: .silent)
+            appsFlyerCommand = AppsFlyerRemoteCommand(appsFlyerInstance: appsFlyerInstance)
 
             appsFlyerCommand.processRemoteCommand(with: [
                 "command_name": "handleopen",
@@ -906,7 +917,7 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
 
         for (index, testURL) in testURLs.enumerated() {
             appsFlyerInstance = MockAppsFlyerInstance()
-            appsFlyerCommand = AppsFlyerRemoteCommand(appsFlyerInstance: appsFlyerInstance, logLevel: .silent)
+            appsFlyerCommand = AppsFlyerRemoteCommand(appsFlyerInstance: appsFlyerInstance)
 
             let payload: [String: Any] = [
                 "command_name": "handleopen",
@@ -997,10 +1008,12 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertNil(appsFlyerInstance.lastOneLinkId)
     }
 
-    /// 3.0.0 exposed `AppsFlyerInstance()` and integrators passed it in like this, so the
-    /// parameterless initializer has to keep compiling.
-    func testParameterlessInstanceInitRemainsAvailable() {
-        let command = AppsFlyerRemoteCommand(appsFlyerInstance: AppsFlyerInstance(), logLevel: .silent)
+    /// Replaces 3.x's `AppsFlyerInstance()`: logs nothing and tracks no attribution.
+    func testSessionModeOnlyInstanceInit() {
+        let instance = AppsFlyerInstance(sessionMode: .appManaged)
+        XCTAssertEqual(instance.logger.logLevel, .silent)
+        XCTAssertNil(instance.tealium)
+        let command = AppsFlyerRemoteCommand(appsFlyerInstance: instance)
         XCTAssertEqual(command.version, AppsFlyerConstants.version)
     }
 
