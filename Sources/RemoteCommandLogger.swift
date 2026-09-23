@@ -9,12 +9,18 @@
 import Foundation
 
 /// Centralized logging utility for Remote Command.
-/// Log verbosity is controlled via the `logLevel` parameter passed to `AppsFlyerRemoteCommand`.
-struct RemoteCommandLogger {
+/// Log verbosity is set by the `logLevel` passed to `AppsFlyerRemoteCommand(sessionMode:type:logLevel:)`
+/// or `AppsFlyerInstance(tealium:sessionMode:logLevel:)`. Public so custom `AppsFlyerCommand`
+/// conformers can supply one.
+public struct RemoteCommandLogger {
     let logLevel: RemoteCommandLogLevel
     private let handler: LogHandler
 
-    init(logLevel: RemoteCommandLogLevel, handler: LogHandler = OSLogHandler()) {
+    public init(logLevel: RemoteCommandLogLevel) {
+        self.init(logLevel: logLevel, handler: OSLogHandler())
+    }
+
+    init(logLevel: RemoteCommandLogLevel, handler: LogHandler) {
         self.logLevel = logLevel
         self.handler = handler
     }

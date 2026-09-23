@@ -11,6 +11,7 @@ import Foundation
 import AppsFlyerLib
 
 class MockAppsFlyerInstance: AppsFlyerCommand {
+    let logger = RemoteCommandLogger(logLevel: .silent)
     var initWithoutSettingsCount = 0
     var initWithSettingsCount = 0
     var logEventCount = 0
@@ -35,7 +36,6 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     var setConsentDataCount = 0
     var setPartnerDataCount = 0
     var setSharingFilterForPartnersCount = 0
-    var startCount = 0
     var handleOpenWithSourceAppCount = 0
     var setAppInviteOneLinkCount = 0
     var lastOneLinkId: String?
@@ -166,10 +166,6 @@ class MockAppsFlyerInstance: AppsFlyerCommand {
     func setCurrentDeviceLanguage(_ language: String) {
         setCurrentDeviceLanguageCount += 1
         lastDeviceLanguage = language
-    }
-
-    func start() {
-        startCount += 1
     }
 
     func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {
