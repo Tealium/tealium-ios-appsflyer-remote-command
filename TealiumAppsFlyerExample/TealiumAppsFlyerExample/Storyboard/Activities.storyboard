@@ -153,6 +153,7 @@
                     <connections>
                         <outlet property="groupNameTextField" destination="emq-Vy-yzm" id="2Fj-So-W2S"/>
                         <outlet property="offersImage" destination="foc-y9-JaI" id="EIf-u3-jwK"/>
+                        <outlet property="trackingSwitch" destination="tracking-switch" id="tracking-switch-outlet"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="rM1-Cf-Q6W" userLabel="First Responder" sceneMemberID="firstResponder"/>

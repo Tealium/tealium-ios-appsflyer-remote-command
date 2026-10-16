@@ -9,6 +9,7 @@
 import UIKit
 import UserNotifications
 import TealiumSwift
+import AppsFlyerLib
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -17,6 +18,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     let tealiumHelper = TealiumHelper.shared
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        // AppsFlyer SDK 7 only waits for a cold-launch Universal Link to resolve before firing the
+        // session-ready listener if it is given `launchOptions` here. The RemoteCommand cannot do
+        // this itself — it has no access to them — so a host app supporting Universal Links has to.
+        // Must run before the `initialize` command registers the listener.
+        AppsFlyerLib.shared().handleLaunchOptions(launchOptions)
         notificationRegistration(application)
         return true
     }
@@ -25,10 +31,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         tealiumHelper.appsFlyerRemoteCommand.onReady { appsFlyer in
             appsFlyer.registerUninstall(deviceToken)
         }
-    }
-
-    func applicationDidBecomeActive(_ application: UIApplication) {
-        TealiumHelper.trackEvent(title: "wake", data: nil)
     }
 
 }

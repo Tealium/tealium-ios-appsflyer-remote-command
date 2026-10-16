@@ -20,6 +20,11 @@ class AppsFlyerConstantsTests: XCTestCase {
         XCTAssertEqual(AppsFlyerConstants.CommandNames.fromString("initialize"), .initialize)
         XCTAssertEqual(AppsFlyerConstants.CommandNames.fromString("tracklocation"), .trackLocation)
         XCTAssertEqual(AppsFlyerConstants.CommandNames.fromString("logadrevenue"), .logAdRevenue)
+        XCTAssertEqual(AppsFlyerConstants.CommandNames.fromString("setuseremail"), .setUserEmail)
+        XCTAssertEqual(AppsFlyerConstants.CommandNames.fromString("setuserfirstname"), .setUserFirstName)
+        XCTAssertEqual(AppsFlyerConstants.CommandNames.fromString("setuserlastname"), .setUserLastName)
+        XCTAssertEqual(AppsFlyerConstants.CommandNames.fromString("setuserfbloginid"), .setUserFbLoginId)
+        XCTAssertEqual(AppsFlyerConstants.CommandNames.fromString("clearuserpii"), .clearUserPii)
     }
 
     func testFromStringIsCaseInsensitive() {
@@ -57,7 +62,6 @@ class AppsFlyerConstantsTests: XCTestCase {
     func testValidValuesAreSorted() {
         XCTAssertEqual(MediationNetworkType.validValues, MediationNetworkType.validValues.sorted())
         XCTAssertEqual(MediationNetworkType.validValues.count, MediationNetworkType.stringMap.count)
-        XCTAssertEqual(EmailCryptType.validValues, [0, 3])
     }
 
     // MARK: - Payload parameter reading
@@ -85,16 +89,6 @@ class AppsFlyerConstantsTests: XCTestCase {
         XCTAssertThrowsError(try ["af_lat": "33"].requireDouble("af_lat")) { error in
             XCTAssertEqual((error as? AppsFlyerCommandError)?.message,
                            "Unsupported type for 'af_lat'. Supported types: Double or Int.")
-        }
-    }
-
-    func testRequireStringArrayAllowingSingleValueAcceptsBothShapes() throws {
-        XCTAssertEqual(try ["emails": ["a@b.com"]].requireStringArrayAllowingSingleValue("emails"), ["a@b.com"])
-        XCTAssertEqual(try ["emails": "a@b.com"].requireStringArrayAllowingSingleValue("emails"), ["a@b.com"])
-
-        XCTAssertThrowsError(try ["emails": 42].requireStringArrayAllowingSingleValue("emails")) { error in
-            XCTAssertEqual((error as? AppsFlyerCommandError)?.message,
-                           "Unsupported type for 'emails'. Supported types: [String] or String.")
         }
     }
 

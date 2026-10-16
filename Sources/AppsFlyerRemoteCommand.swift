@@ -15,6 +15,51 @@ import TealiumCore
 import TealiumRemoteCommands
 #endif
 
+/// Who owns the SDK's single session-ready listener and `start`.
+///
+/// A required constructor argument, not a remote setting: it has to match what the app code does.
+///
+/// "Initialized" means AppsFlyer has credentials, set either by the `initialize` command or by the
+/// app calling `AppsFlyerLib.shared().initialize(devKey:appId:)` itself. When the app does so before
+/// building the `AppsFlyerInstance`/`AppsFlyerRemoteCommand`, the instance detects it at construction,
+/// releases `onReady` and, in `.automatic`, registers the listener right away.
+public enum AppsFlyerSessionMode {
+    /// When initialized, the Remote Command additionally registers the listener, which calls `start()`.
+    /// The app must not register a listener of its own. If the session is already ready when the
+    /// Remote Command gets there, it logs an error and registers nothing.
+    case automatic
+    /// When initialized, the Remote Command does not register a listener and never calls `start()`.
+    /// The app must register its own listener and call `AppsFlyerLib.shared().start()` in it.
+    ///
+    /// When session registration and start is `appManaged` you can register immediately after initializing,
+    /// if you also initialize manually.
+    ///
+    /// ```swift
+    /// let command = AppsFlyerRemoteCommand(sessionMode: .appManaged)
+    /// let appsFlyerLib = AppsFlyerLib.shared()
+    /// appsFlyerLib.initialize(devKey: appDevKey, appId: appId)
+    /// appsFlyerLib.registerSessionReadyListener { appsFlyerLib.start() }
+    /// ```
+    ///
+    /// If you `initialize` with a remote command instead, make sure to register for session ready only after `onReady` has completed.
+    /// ```swift
+    ///  let command = AppsFlyerRemoteCommand(sessionMode: .appManaged)
+    ///  command.onReady { appsFlyerLib in
+    ///     // This code will only run after the `initialize` command has run
+    ///     appsFlyerLib.registerSessionReadyListener { appsFlyerLib.start() }
+    ///  }
+    /// ```
+    ///
+    /// To gate `start` on App Tracking Transparency consent:
+    /// ```swift
+    /// appsFlyerLib.registerSessionReadyListener {
+    ///     ATTrackingManager.requestTrackingAuthorization { _ in AppsFlyerLib.shared().start() }
+    /// }
+    /// ```
+    case appManaged
+}
+
+
 public class AppsFlyerRemoteCommand: RemoteCommand {
 
     let appsFlyerInstance: AppsFlyerCommand
@@ -24,28 +69,75 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
         return AppsFlyerConstants.version
     }
 
-    /// Host apps call this from wherever they happen to be — typically `AppDelegate`, on the main
-    /// thread — so hop onto the queue `AppsFlyerInstance` expects.
+    /// Host apps call this from wherever they happen to be if they want to wait for the `initialize` command to happen before manually working with the AppsFlyer SDK.
+    /// `onReady` runs on the main thread, at once if AppsFlyer is already initialized (by the command
+    /// or by the app), otherwise in FIFO order once it is. It does not mean the session has started.
+    ///
+    /// If you initialize the `AppsFlyerLib` manually, you don't need to use this method, but make sure not to trigger the `initialize` command.
+    ///
+    /// ```swift
+    /// let command = AppsFlyerRemoteCommand(sessionMode: .appManaged)
+    /// let appsFlyerLib = AppsFlyerLib.shared()
+    /// appsFlyerLib.initialize(devKey: appDevKey, appId: appId)
+    /// appsFlyerLib.registerSessionReadyListener { appsFlyerLib.start() }
+    /// ```
+    ///
+    /// If you `initialize` with a remote command instead, make sure to register for session ready only after `onReady` has completed.
+    /// ```swift
+    ///  let command = AppsFlyerRemoteCommand(sessionMode: .appManaged)
+    ///  command.onReady { appsFlyerLib in
+    ///     // This code will only run after the `initialize` command has run
+    ///     appsFlyerLib.registerSessionReadyListener { appsFlyerLib.start() }
+    ///  }
+    /// ```
+    ///
+    /// If you  have `automatic` session mode, both if you initialize manually or with a remote command,
+    /// you should NOT call AppsFlyerLib's `registerSessionReadyListener`, or that might replace our listener,
+    /// but you can still use this method to make sure to call some other methods that need to be called after initialize.
+    ///
+    /// ```swift
+    ///  // This will register for session ready and start on initialize.
+    ///  let command = AppsFlyerRemoteCommand(sessionMode: .automatic)
+    ///  command.onReady { appsFlyerLib in
+    ///     // This code will only run after the `initialize` command has run
+    ///     appsFlyerLib.logEvent(eventName, withValues: values)
+    ///  }
+    /// ```
+    ///
+    /// Note that `logEvent` in the example above is just an example of a method that needs to be called after initialize.
+    /// You should usually use a command to log events.
+    ///
     public func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {
-        TealiumQueues.backgroundSerialQueue.async {
-            self.appsFlyerInstance.onReady(onReady)
-        }
+        self.appsFlyerInstance.onReady(onReady)
     }
 
-    /// Constructs a RemoteCommand that integrates with the AppsFlyer SDK.
+    /// Constructs a RemoteCommand with its own `AppsFlyerInstance`, which sets no AppsFlyer delegate,
+    /// so attribution callbacks are not tracked. Use `init(appsFlyerInstance:type:)` with
+    /// `AppsFlyerInstance(tealium:sessionMode:logLevel:)` to track them.
     /// - Parameters:
-    ///   - appsFlyerInstance: Optional `AppsFlyerCommand` implementation. Pass an
-    ///     `AppsFlyerInstance(tealium:)` here to enable attribution callback tracking
-    ///     (onConversionDataSuccess etc.). Defaults to a logger-only instance with
-    ///     no attribution tracking.
+    ///   - sessionMode: Who registers the SDK's session-ready listener (`AppsFlyerLib.registerSessionReadyListener`)
+    ///     and calls `AppsFlyerLib.start` in it.
     ///   - type: The RemoteCommand type (webview or JSON).
-    ///   - logLevel: Controls RC log verbosity. Defaults to `.silent` (no output).
-    public init(appsFlyerInstance: AppsFlyerCommand? = nil,
-                type: RemoteCommandType = .webview,
-                logLevel: RemoteCommandLogLevel = .silent) {
-        let logger = RemoteCommandLogger(logLevel: logLevel)
-        self.logger = logger
-        self.appsFlyerInstance = appsFlyerInstance ?? AppsFlyerInstance(logger: logger)
+    ///   - logLevel: Log verbosity of the command and its instance. Defaults to `.error` (errors only).
+    convenience public init(sessionMode: AppsFlyerSessionMode,
+                            type: RemoteCommandType = .webview,
+                            logLevel: RemoteCommandLogLevel = .error) {
+        self.init(appsFlyerInstance: AppsFlyerInstance(sessionMode: sessionMode,
+                                                       logger: RemoteCommandLogger(logLevel: logLevel)),
+                  type: type)
+    }
+
+    /// Constructs a RemoteCommand around an existing `AppsFlyerCommand`. Pass
+    /// `AppsFlyerInstance(tealium:sessionMode:logLevel:)` to track attribution callbacks
+    /// (`onConversionDataSuccess` etc.). The session mode and log level are the instance's: the
+    /// command logs through `appsFlyerInstance.logger`.
+    /// - Parameters:
+    ///   - appsFlyerInstance: The `AppsFlyerCommand` the commands are dispatched to.
+    ///   - type: The RemoteCommand type (webview or JSON).
+    public init(appsFlyerInstance: AppsFlyerCommand,
+                type: RemoteCommandType = .webview) {
+        self.logger = appsFlyerInstance.logger
+        self.appsFlyerInstance = appsFlyerInstance
         weak var weakSelf: AppsFlyerRemoteCommand?
         super.init(commandId: AppsFlyerConstants.commandId,
                    description: AppsFlyerConstants.description,
@@ -90,8 +182,16 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     try executeTrackLocation(payload)
                 case .setHost:
                     try executeSetHost(payload)
-                case .setUserEmails:
-                    try executeSetUserEmails(payload)
+                case .setUserEmail:
+                    try executeSetUserEmail(payload)
+                case .setUserFirstName:
+                    try executeSetUserFirstName(payload)
+                case .setUserLastName:
+                    try executeSetUserLastName(payload)
+                case .setUserFbLoginId:
+                    try executeSetUserFbLoginId(payload)
+                case .clearUserPii:
+                    appsFlyerInstance.clearUserPii()
                 case .setCurrencyCode:
                     try executeSetCurrencyCode(payload)
                 case .setCustomerId:
@@ -114,8 +214,6 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     executeSetSharingFilterForPartners(payload)
                 case .handleOpen:
                     try executeHandleOpen(payload)
-                case .start:
-                    appsFlyerInstance.start()
                 case .setCurrentDeviceLanguage:
                     try executeSetCurrentDeviceLanguage(payload)
                 case .setAppInviteOneLink:
@@ -167,17 +265,24 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
         appsFlyerInstance.setHost(host, with: hostPrefix)
     }
 
-    private func executeSetUserEmails(_ payload: [String: Any]) throws {
-        let emails = try payload.requireStringArrayAllowingSingleValue(AppsFlyerConstants.Parameters.emails)
-        let cryptTypeInt = try payload.requireParameter(AppsFlyerConstants.Parameters.cryptType, as: Int.self)
-        guard let cryptType = EmailCryptType(rawInt: cryptTypeInt) else {
-            throw AppsFlyerCommandError.invalidParameterValue(
-                parameter: AppsFlyerConstants.Parameters.cryptType,
-                value: "\(cryptTypeInt)",
-                allowedValues: EmailCryptType.validValues.map { "\($0)" }
-            )
-        }
-        appsFlyerInstance.setUserEmails(emails: emails, with: cryptType)
+    private func executeSetUserEmail(_ payload: [String: Any]) throws {
+        let email = try payload.requireParameter(AppsFlyerConstants.Parameters.email, as: String.self)
+        appsFlyerInstance.setUserEmail(email)
+    }
+
+    private func executeSetUserFirstName(_ payload: [String: Any]) throws {
+        let firstName = try payload.requireParameter(AppsFlyerConstants.Parameters.firstName, as: String.self)
+        appsFlyerInstance.setUserFirstName(firstName)
+    }
+
+    private func executeSetUserLastName(_ payload: [String: Any]) throws {
+        let lastName = try payload.requireParameter(AppsFlyerConstants.Parameters.lastName, as: String.self)
+        appsFlyerInstance.setUserLastName(lastName)
+    }
+
+    private func executeSetUserFbLoginId(_ payload: [String: Any]) throws {
+        let fbLoginId = try payload.requireInt64(AppsFlyerConstants.Parameters.fbLoginId)
+        appsFlyerInstance.setUserFbLoginId(fbLoginId)
     }
 
     private func executeSetCurrencyCode(_ payload: [String: Any]) throws {
@@ -211,8 +316,9 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     }
 
     private func executeSetPhoneNumber(_ payload: [String: Any]) throws {
+        let countryCode = try payload.requireParameter(AppsFlyerConstants.Parameters.countryCode, as: String.self)
         let phoneNumber = try payload.requireParameter(AppsFlyerConstants.Parameters.phoneNumber, as: String.self)
-        appsFlyerInstance.setPhoneNumber(phoneNumber)
+        appsFlyerInstance.setUserPhone(countryCode: countryCode, phoneNumber: phoneNumber)
     }
 
     private func executeLogAdRevenue(_ payload: [String: Any]) throws {
@@ -241,7 +347,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
 
     /// AppsFlyer documents the call order as initialize, `setConsentData()`, then `start()`:
     /// https://dev.appsflyer.com/hc/docs/ios-send-consent-for-dma-compliance
-    /// Not gated on `onReady`, which fires after `start()` and would invert that order.
+    /// Not gated on `onReady`, so consent mapped before `initialize` still reaches the SDK before `start()`.
     ///
     /// `is_user_subject_to_gdpr` is required, the three consent details are optional, and fields
     /// left unmapped are omitted from the `consent_data` the SDK sends rather than defaulted.
@@ -351,23 +457,26 @@ extension Dictionary where Key == String, Value == Any {
         return double
     }
 
-    /// Customers map data layer primitives, so a mapped variable holding one email arrives as a
-    /// bare `String` while the SDK takes an array — both shapes resolve to an array here, as the
-    /// released 3.0.0 also did. Parameters the SDK never accepted as a single value use
-    /// `requireParameter(_:as:)` instead.
-    func requireStringArrayAllowingSingleValue(_ parameter: String) throws -> [String] {
+    /// `setUserFbLoginId` takes an `Int64`. A JSON payload brings `NSNumber`, which bridges to both,
+    /// while a Swift-built payload brings a native `Int` — so the `Int` fallback is needed, as in
+    /// `requireDouble` above. The `String` fallback covers webview data layer values, which arrive
+    /// as strings even for numeric UDO variables.
+    func requireInt64(_ parameter: String) throws -> Int64 {
         guard let value = self[parameter] else {
             throw AppsFlyerCommandError.missingParameter(parameter)
         }
-        guard let strings = value as? [String] ?? (value as? String).map({ [$0] }) else {
+        guard let int64 = value as? Int64
+                ?? (value as? Int).map(Int64.init)
+                ?? (value as? String).flatMap(Int64.init) else {
             throw AppsFlyerCommandError.invalidParameterType(parameter: parameter,
-                                                             expectedTypes: "[String] or String")
+                                                             expectedTypes: "Int64, Int or numeric String")
         }
-        return strings
+        return int64
     }
 
     private static let allExcludedKeys: Set<String> = {
-        let excludedKeys: Set<String> = ["method", AppsFlyerConstants.commandName, AppsFlyerConstants.Settings.debug]
+        let excludedKeys: Set<String> = ["method", AppsFlyerConstants.commandName,
+                                         AppsFlyerConstants.Settings.debug]
         let configurationKeys = Set(AppsFlyerConstants.Configuration.allCases.map { $0.rawValue })
         return excludedKeys.union(configurationKeys)
     }()

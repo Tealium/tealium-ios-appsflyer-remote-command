@@ -16,10 +16,6 @@ class RemoteCommandLoggerTests: XCTestCase {
     var mock = MockLogHandler()
     lazy var logger: RemoteCommandLogger = .init(logLevel: logLevel, handler: mock)
 
-    func testDefaultLogLevelIsSilent() {
-        XCTAssertEqual(RemoteCommandLogger().logLevel, .silent)
-    }
-
     func testDebugLevelLogsEveryMessage() {
         logLevel = .debug
 
