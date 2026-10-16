@@ -5,7 +5,6 @@
         "settings": {
             "custom_data": {"custom_key": "custom_value"},
             "debug": true,
-            "start_automatically_on_session_ready": true,
             "disable_ad_tracking": false,
             "disable_apple_ad_tracking": false,
             "disable_apple_ads_attribution": false,
@@ -132,8 +131,7 @@
         "track_location": "tracklocation",
         "set_host": "sethost",
         "set_currency": "setcurrencycode",
-        "disable_tracking,stop_tracking:true": "disabletracking",
-        "disable_tracking,stop_tracking:false": "disabletracking,start",
+        "disable_tracking": "disabletracking",
         "anonymize_user": "anonymizeuser",
         "resolve_deep_links": "resolvedeeplinkurls",
         "set_phone_number": "setphonenumber",

@@ -8,12 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [4.0.0]
 
 ### Added
-- `start_automatically_on_session_ready` setting, default `true`. When `true`, `initialize` registers the AppsFlyer session-ready listener and calls `start` inside it, so the app must not register its own listener. When `false`, `initialize` only configures the AppsFlyer SDK; the app calls `initialize(devKey:appId:)`, registers its own listener and starts inside it (for example after ATT consent). On that path, commands gated on `onReady` run once a gated command is invoked after `isSessionReady()` has turned true
-- Session start command (`start`), for manually resuming a session after `disabletracking`/`stoptracking` — map it as `disabletracking,start` with `stop_tracking: false`. Not needed per foreground: the session-ready listener registered by `initialize` starts each session
+- `AppsFlyerSessionMode`, a required constructor argument that decides who owns AppsFlyer SDK 7's single session-ready listener and `start`. `.automatic`: once AppsFlyer is initialized, the RemoteCommand registers the listener and calls `start` inside it, so the app must not register its own; if the session is already ready at that point it logs an error and registers nothing. `.appManaged`: the RemoteCommand never registers a listener or calls `start`; the app registers its own listener and starts inside it (for example after ATT consent). It is deliberately not a remote setting, because it has to match the app code. "Initialized" covers both the `initialize` command and an app calling `AppsFlyerLib.shared().initialize(devKey:appId:)` itself, which is also detected when the instance is constructed
 - Hashed-PII commands added in AppsFlyer SDK 7 — `setuseremail`, `setuserfirstname`, `setuserlastname`, `setuserfbloginid`, `clearuserpii` — with `email`, `first_name`, `last_name`, and `fb_login_id` parameters. The AppsFlyer SDK normalizes and SHA-256 hashes each value on-device before sending it, except `fb_login_id`, which AppsFlyer sends as an unhashed integer
 - App invite OneLink ID configuration (`setappinviteonelink` command)
 - User anonymization support (`anonymizeuser` command)
-- Deep link handling via `handleopen` command, driven by Tealium's automatic deep link tracking (`url`, `source_application`, `annotation` parameters). Requires `config.sendDeepLinkEvent = true`, as the `deep_link` event is opt-in
+- Deep link handling via `handleopen` command, driven by Tealium's automatic deep link tracking (`url`, `source_application`, `annotation` parameters). Requires `config.sendDeepLinkEvent = true`, as the `deep_link` event is opt-in. Gated on `onReady`, so links arriving on a cold start are not dropped before AppsFlyer is initialized. On AppsFlyer SDK 7.0.2 a URI-scheme link handled after initialize and before `start` still resolves through `didResolveDeepLink`; OneLink URLs before `start` are unverified. Host apps supporting Universal Links must also call `AppsFlyerLib.shared().handleLaunchOptions(_:)` in `application(_:didFinishLaunchingWithOptions:)`; a RemoteCommand has no access to `launchOptions`
 - Ad revenue logging (`logadrevenue` command) with support for multiple ad networks
 - GDPR/DMA consent data management (`setconsentdata` command). `is_user_subject_to_gdpr` is required; the three consent details are optional and, per AppsFlyer, must be left unmapped when GDPR does not apply. To include consent in the first session, map it ahead of initialize in the same command list: `"launch": "setconsentdata,initialize"`
 - Partner data management (`setpartnerdata` command)
@@ -29,20 +28,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `fb_login_id` is accepted as a numeric string, not only a number, since webview data layer values arrive as strings
 
 ### Fixed
-- Deep links arriving on a cold start are no longer lost — `handleOpen` is gated on `onReady`, which publishes once the session-ready listener fires. Host apps supporting Universal Links must also call `AppsFlyerLib.shared().handleLaunchOptions(_:)` in `application(_:didFinishLaunchingWithOptions:)`; a RemoteCommand has no access to `launchOptions`
 - `isDebug` is set before any other SDK call during `initialize`, as AppsFlyer SDK 7 requires for debug logging to cover initialization
-- `onReady` waits for `isSessionReady()` instead of treating credentials as readiness. An app that initializes AppsFlyer itself must register a session-ready listener, otherwise `isSessionReady()` never turns true and gated commands never run; commands waiting for readiness are logged at `.debug`
 
 ### Changed
 - Update AppsFlyer iOS SDK to `>= 7.0.2, < 8.0` (SPM, CocoaPods) and `>= 7.0.2` (Carthage)
 - Upgrade TealiumSwift dependency to `~> 2.19`
 - **Breaking:** `TealiumAppsFlyer.xcframework` (release zip, Carthage) is now a static framework and no longer bundles its own copy of AppsFlyerLib, which duplicated every AppsFlyer class when the app also linked the SDK.
-- **Breaking:** AppsFlyer SDK 7 replaces automatic session start with an explicit readiness model. `initialize` now owns the SDK's single session-ready listener and calls `start` inside it (skipped while tracking is stopped), replacing any listener the app registered itself. Apps that need their own listener set `start_automatically_on_session_ready` to `false`
+- **Breaking:** Previously (AppsFlyer SDK 6.x / 3.0.0) the app had to call `AppsFlyerLib.shared().start()` itself in `applicationDidBecomeActive` on every foreground; the RemoteCommand never called `start`. With AppsFlyer SDK 7, `start` must instead be called inside the SDK's session-ready listener, and who registers that listener and calls `start` in it is chosen with `AppsFlyerSessionMode` (see Added): in `.automatic` the RemoteCommand registers the listener and calls `start`, so apps must remove their own `applicationDidBecomeActive` call to `start`; in `.appManaged` the app registers its own listener and calls `start` inside it
+- **Breaking:** `onReady` means "AppsFlyer is initialized" (credentials set, by the `initialize` command or by the app), and its callbacks run on the main thread. Commands that log to the SDK (`logEvent`, `logLocation`, `logAdRevenue`, `handleOpen`) are gated on it and queue until then. On AppsFlyer SDK 7.0.2, events logged after initialize and before `start` are cached by the SDK rather than sent; whether that `start` sends them in the same session is unverified
 - **Breaking:** `setphonenumber` now also requires `country_code`, matching AppsFlyer SDK 7's `setUserPhone(countryCode:phoneNumber:)`. A tag mapping only `phone_number` now fails validation
 - **Breaking:** `disabletracking` now requires `stop_tracking` instead of defaulting to `false`, which resumed tracking whenever the parameter was unmapped
 - **Breaking:** `AppsFlyerCommand` changed: `setUserEmails(emails:with:)` is removed, `setPhoneNumber(_:)` is now `setUserPhone(countryCode:phoneNumber:)`, and the new commands added in this release (including the hashed-PII ones) are new requirements, so existing conformances outside this library no longer compile
-- **Breaking:** `AppsFlyerInstance.init(tealium:)` is now `init(tealium:logLevel:)`. Existing call sites no longer compile — pass `.silent` to keep 3.0.0's behaviour. The parameterless `AppsFlyerInstance()` initializer is unaffected
-- `AppsFlyerRemoteCommand.init`'s `logLevel` now defaults to `.error` instead of `.silent`
+- **Breaking:** initializers now require a `sessionMode`, and the log level is passed once, to whichever object creates the logger:
+  - `AppsFlyerInstance()` is now `AppsFlyerInstance(sessionMode:)` (logs nothing, tracks no attribution)
+  - `AppsFlyerInstance.init(tealium:)` is now `init(tealium:sessionMode:logLevel:)`. Pass `.silent` to disable logging
+  - `AppsFlyerRemoteCommand(type:)` is now `AppsFlyerRemoteCommand(sessionMode:type:logLevel:)`; `logLevel` defaults to `.error`
+  - `AppsFlyerRemoteCommand.init(appsFlyerInstance:type:)`: `appsFlyerInstance` no longer has a default value; the command logs through the instance's `logger`
+- `RemoteCommandLogger` and its `init(logLevel:)` are now public, so custom `AppsFlyerCommand` conformers can supply one
 - App-open attribution is now delivered through `AppsFlyerDeepLinkDelegate.didResolveDeepLink`, replacing the removed `onAppOpenAttribution`/`onAppOpenAttributionFailure` callbacks. Event names and data shape are unchanged. Deferred links do not track `app_open_attribution`; `onConversionDataSuccess` already reports that install as `conversion_data_received`
 - Refactor `AppsFlyerConstants` `Configuration` to `String`-based `CaseIterable` enum for improved type safety
 - Standardize parameter names and command structures across all classes
@@ -53,7 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 - **Breaking:** `setuseremails` command and its `customer_emails`/`email_hash_type` parameters; AppsFlyer SDK 7 removed `setUserEmails(_:withCryptType:)`. Use `setuseremail` with the `email` parameter instead. A tag still mapping `setuseremails` now logs a generic event named after the command, with both parameters as its data — unmap them
-- **Breaking:** `wait_for_att_user_authorization_timeout_interval` setting. AppsFlyer SDK 7 deprecated `waitForATTUserAuthorization(timeoutInterval:)` and it no longer gates `start`. Apps that must collect ATT consent first set `start_automatically_on_session_ready` to `false` and start inside their own listener. A tag still mapping this setting is silently ignored
+- **Breaking:** `wait_for_att_user_authorization_timeout_interval` setting. AppsFlyer SDK 7 deprecated `waitForATTUserAuthorization(timeoutInterval:)` and it no longer gates `start`. Apps that must collect ATT consent first use `AppsFlyerSessionMode.appManaged` and start inside their own listener. A tag still mapping this setting is silently ignored
 
 ## [3.0.0] - 2024-03-15
 

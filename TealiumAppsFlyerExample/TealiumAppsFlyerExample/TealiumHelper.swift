@@ -26,9 +26,11 @@ class TealiumHelper {
 
     var tealium: Tealium?
 
-    // JSON Remote Command
-    let appsFlyerRemoteCommand = AppsFlyerRemoteCommand(type: .local(file: "appsflyer"),
-                                                       logLevel: .debug)
+    // JSON Remote Command. `.automatic`: the `initialize` command registers the session-ready
+    // listener and calls `start()` in it, so this app registers no listener of its own.
+    let appsFlyerRemoteCommand = AppsFlyerRemoteCommand(sessionMode: .automatic,
+                                                        type: .local(file: "appsflyer"),
+                                                        logLevel: .debug)
 
     private init() {
         config.shouldUseRemotePublishSettings = false

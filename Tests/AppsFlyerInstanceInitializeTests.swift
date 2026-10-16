@@ -19,8 +19,8 @@ import TealiumCore
 /// `AppsFlyerLib.shared()` singleton. Mock-based coverage in
 /// `AppsFlyerRemoteCommandTests` only verifies the payload-to-command
 /// dispatch — these tests verify the settings-to-SDK property mapping,
-/// the Facebook Deferred AppLinks fallback and the `isStopped` handling
-/// that live inside the real implementation.
+/// the Facebook Deferred AppLinks fallback, and the `onReady`/session-mode
+/// behaviour that live inside the real implementation.
 class AppsFlyerInstanceInitializeTests: XCTestCase {
 
     var spyLogHandler: MockLogHandler!
@@ -30,7 +30,18 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         super.setUp()
         spyLogHandler = MockLogHandler()
         let logger = RemoteCommandLogger(logLevel: .debug, handler: spyLogHandler)
-        instance = AppsFlyerInstance(logger: logger)
+        // Built without credentials, so construction never marks the instance ready, whichever
+        // test last left real credentials on the singleton.
+        instance = stubbingCredentials(false) { AppsFlyerInstance(sessionMode: .automatic, logger: logger) }
+    }
+
+    /// The real `isSessionReady()` depends on whatever the singleton went through earlier in the
+    /// process, and a real `registerSessionReadyListener` could fire `start()` later, so every test
+    /// runs with the session not ready and registrations swallowed. Tests that care nest their own stub.
+    override func invokeTest() {
+        stubbingSessionReady(false) {
+            _ = countingListenerRegistrations { super.invokeTest() }
+        }
     }
 
     /// Resets shared singleton state in tearDown, not setUp, so a class that runs after this one
@@ -232,32 +243,110 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         assertEffectiveConfigFlag("disableIdfvCollection", false)
     }
 
-    func testStartIsForwardedToSDK() {
-        let sdkStartCalls = countingSDKStartCalls { instance.start() }
+    // MARK: - onReady
 
-        XCTAssertEqual(sdkStartCalls, 1)
-        XCTAssertEqual(spyLogHandler.messages(for: .warning), [])
+    func testOnReadyQueuedUntilInitializeThenReleasedOnceInFIFOOrderOnMain() {
+        var released: [Int] = []
+        var allOnMain = true
+        stubbingCredentials(false) {
+            for index in 0..<3 {
+                instance.onReady { _ in
+                    allOnMain = allOnMain && Thread.isMainThread
+                    released.append(index)
+                }
+            }
+        }
+        XCTAssertEqual(released, [], "Expected onReady to queue while AppsFlyer has no credentials")
+        XCTAssertTrue(spyLogHandler.messages(for: .debug).contains { $0.contains("queued") })
+
+        stubbingSessionReady(false) {
+            _ = countingListenerRegistrations {
+                instance.initialize(appId: "test_app_id", appDevKey: "test_dev_key", settings: nil)
+                instance.initialize(appId: "test_app_id", appDevKey: "test_dev_key", settings: nil)
+            }
+        }
+
+        XCTAssertEqual(released, [0, 1, 2], "Expected queued blocks released exactly once, in FIFO order")
+        XCTAssertTrue(allOnMain, "Expected onReady blocks to run on the main thread")
     }
 
-    /// `start()` must mirror the session-ready listener's own `isStopped` guard: the SDK's `start()`
-    /// ignores it, so a tag that still maps `start` per foreground (3.x style) would otherwise call
-    /// it for a user who has opted out through `disabletracking`/`stoptracking`.
-    func testStartSkipsSDKStartWhileTrackingStopped() {
-        AppsFlyerLib.shared().isStopped = true
-        let skippedStartCalls = countingSDKStartCalls { instance.start() }
-        XCTAssertEqual(skippedStartCalls, 0, "Expected `start` not to reach the SDK while tracking is stopped")
-
-        AppsFlyerLib.shared().isStopped = false
-        let resumedStartCalls = countingSDKStartCalls { instance.start() }
-        XCTAssertEqual(resumedStartCalls, 1, "Expected `start` to reach the SDK once tracking resumes")
+    func testOnReadyRunsImmediatelyOnceCredentialsExist() {
+        let instance = makeInstance(.appManaged)
+        var ran = false
+        stubbingCredentials(true) {
+            instance.onReady { _ in ran = true }
+        }
+        XCTAssertTrue(ran)
     }
 
-    /// SDK 7 keeps a single session-ready listener slot and a second registration replaces what is in
-    /// it, so `initialize` has to leave a host app's own listener alone — commands still have to be
-    /// released, otherwise everything mapped after `initialize` would queue forever.
-    func testInitializeKeepsAlreadyRegisteredListenerAndStillReleasesCommands() {
+    /// Covers an app that calls `AppsFlyerLib.shared().initialize(devKey:appId:)` after building the
+    /// instance and never maps the `initialize` command.
+    func testOnReadyReleasedWhenAppInitializedAfterConstruction() {
+        let registrations = stubbingSessionReady(false) {
+            countingListenerRegistrations {
+                stubbingCredentials(true) {
+                    var ran = false
+                    instance.onReady { _ in ran = true }
+                    XCTAssertTrue(ran)
+                }
+            }
+        }
+        XCTAssertEqual(registrations, 1, "Expected .automatic to register the listener once credentials are found")
+    }
+
+    // MARK: - Credentials at construction
+
+    func testCredentialsAtConstructionMarkReady() {
+        var instance: AppsFlyerInstance!
+        let registrations = stubbingSessionReady(false) {
+            countingListenerRegistrations {
+                stubbingCredentials(true) { instance = makeInstance(.automatic) }
+            }
+        }
+        XCTAssertEqual(registrations, 1, "Expected .automatic to register the listener at construction")
+
+        var ran = false
+        stubbingCredentials(false) {
+            instance.onReady { _ in ran = true }
+        }
+        XCTAssertTrue(ran, "Expected onReady to have been published at construction")
+    }
+
+    func testNoCredentialsAtConstructionDoesNotMarkReady() {
+        var instance: AppsFlyerInstance!
+        let registrations = stubbingSessionReady(false) {
+            countingListenerRegistrations {
+                stubbingCredentials(false) { instance = makeInstance(.automatic) }
+            }
+        }
+        XCTAssertEqual(registrations, 0)
+
+        var ran = false
+        stubbingCredentials(false) {
+            instance.onReady { _ in ran = true }
+        }
+        XCTAssertFalse(ran)
+    }
+
+    // MARK: - Session modes
+
+    func testAutomaticRegistersListenerOnInitializeAndListenerCallsStart() {
+        let listener = stubbingSessionReady(false) {
+            capturingListenerRegistration {
+                instance.initialize(appId: "test_app_id", appDevKey: "test_dev_key", settings: nil)
+            }
+        }
+        guard let listener else { return XCTFail("Expected initialize to register a session-ready listener") }
+
+        XCTAssertEqual(countingSDKStartCalls { listener() }, 1)
+    }
+
+    /// The SDK keeps a single listener slot; a ready session means someone else owns it.
+    func testAutomaticSkipsRegistrationWhenSessionAlreadyReady() {
         var released = false
-        instance.onReady { _ in released = true }
+        stubbingCredentials(false) {
+            instance.onReady { _ in released = true }
+        }
 
         let registrations = stubbingSessionReady(true) {
             countingListenerRegistrations {
@@ -267,83 +356,84 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
 
         XCTAssertEqual(registrations, 0, "Expected the existing session-ready listener to be left in place")
         XCTAssertTrue(released, "Expected queued commands to be released without our own listener")
-        XCTAssertTrue(spyLogHandler.messages(for: .warning).contains { $0.contains("session-ready listener") },
-                      "Expected a warning explaining why no listener was registered")
+        XCTAssertTrue(spyLogHandler.messages(for: .error).contains { $0.contains("already ready") })
     }
 
-    func testInitializeRegistersListenerWhenSessionNotReady() {
-        let registrations = stubbingSessionReady(false) {
-            countingListenerRegistrations {
+    func testAppManagedNeverRegistersOrStarts() {
+        let instance = makeInstance(.appManaged)
+        var registrations = -1
+        let sdkStartCalls = countingSDKStartCalls {
+            registrations = stubbingSessionReady(false) {
+                countingListenerRegistrations {
+                    instance.initialize(appId: "test_app_id", appDevKey: "test_dev_key", settings: nil)
+                    instance.onReady { _ in }
+                }
+            }
+        }
+        XCTAssertEqual(registrations, 0)
+        XCTAssertEqual(sdkStartCalls, 0)
+    }
+
+    /// `onReady` subscribers run before the listener is registered, so an app can adjust the SDK first.
+    func testOnReadyPublishedBeforeListenerRegistration() {
+        var order: [String] = []
+        stubbingCredentials(false) {
+            instance.onReady { _ in order.append("onReady") }
+        }
+        stubbingSessionReady(false) {
+            recordingListenerRegistrations({ order.append("register") }) {
                 instance.initialize(appId: "test_app_id", appDevKey: "test_dev_key", settings: nil)
             }
         }
+        XCTAssertEqual(order, ["onReady", "register"])
+    }
 
-        XCTAssertEqual(registrations, 1)
+    // MARK: - Credentials validation
+
+    func testInitializeWithEmptyCredentialsLogsErrorAndSkipsSDKInitialize() {
+        for (appId, devKey) in [("", "test_dev_key"), ("test_app_id", ""), ("", "")] {
+            spyLogHandler = MockLogHandler()
+            let label = "appId: \(appId.debugDescription) devKey: \(devKey.debugDescription)"
+            let instance = stubbingCredentials(false) { makeInstance(.automatic) }
+            var released = false
+            var sdkInitializeCalls = -1
+            let registrations = stubbingSessionReady(false) {
+                countingListenerRegistrations {
+                    stubbingCredentials(false) {
+                        instance.onReady { _ in released = true }
+                        sdkInitializeCalls = countingSDKInitializeCalls {
+                            instance.initialize(appId: appId, appDevKey: devKey, settings: nil)
+                        }
+                    }
+                }
+            }
+            XCTAssertEqual(sdkInitializeCalls, 0, label)
+            XCTAssertEqual(registrations, 0, label)
+            XCTAssertFalse(released, label)
+            XCTAssertTrue(spyLogHandler.messages(for: .error).contains { $0.contains("cannot be empty") }, label)
+        }
+    }
+
+    func testInitializeWarnsWhenAlreadyInitialized() {
+        stubbingSessionReady(false) {
+            _ = countingListenerRegistrations {
+                stubbingCredentials(true) {
+                    instance.initialize(appId: "test_app_id", appDevKey: "test_dev_key", settings: nil)
+                }
+            }
+        }
+        XCTAssertTrue(spyLogHandler.messages(for: .warning).contains { $0.contains("already initialized") })
+    }
+
+    func testInitializeDoesNotWarnWithoutPriorCredentials() {
+        stubbingSessionReady(false) {
+            _ = countingListenerRegistrations {
+                stubbingCredentials(false) {
+                    instance.initialize(appId: "test_app_id", appDevKey: "test_dev_key", settings: nil)
+                }
+            }
+        }
         XCTAssertEqual(spyLogHandler.messages(for: .warning), [])
-    }
-
-    /// `start_automatically_on_session_ready: false` leaves the SDK's single listener slot free for the host
-    /// app to register itself, so `initialize` must not claim it.
-    func testInitializeWithoutAutomaticStartDoesNotRegisterListener() {
-        let registrations = stubbingSessionReady(false) {
-            countingListenerRegistrations {
-                instance.initialize(appId: "test_app_id", appDevKey: "test_dev_key",
-                                     settings: ["start_automatically_on_session_ready": false])
-            }
-        }
-
-        XCTAssertEqual(registrations, 0, "Expected initialize not to register a session-ready listener")
-        XCTAssertEqual(spyLogHandler.messages(for: .warning), [])
-    }
-
-    /// Pins the default — `start_automatically_on_session_ready` unset but `settings` non-nil — to the same
-    /// behaviour as `settings: nil`, exercised above by `testInitializeRegistersListenerWhenSessionNotReady`.
-    func testInitializeRegistersListenerByDefault() {
-        let registrations = stubbingSessionReady(false) {
-            countingListenerRegistrations {
-                instance.initialize(appId: "test_app_id", appDevKey: "test_dev_key", settings: ["debug": false])
-            }
-        }
-
-        XCTAssertEqual(registrations, 1)
-        XCTAssertEqual(spyLogHandler.messages(for: .warning), [])
-    }
-
-    /// The listener the SDK calls every foreground: start the session unless tracking is stopped, then
-    /// release the queued commands on `TealiumQueues.backgroundSerialQueue`.
-    func testSessionReadyListenerStartsAndReleasesCommands() {
-        var released = false
-        let listener = stubbingSessionReady(false) {
-            capturingListenerRegistration {
-                instance.onReady { _ in released = true }
-                instance.initialize(appId: "test_app_id", appDevKey: "test_dev_key", settings: nil)
-            }
-        }
-        guard let listener else { return XCTFail("Expected initialize to register a session-ready listener") }
-
-        let sdkStartCalls = countingSDKStartCalls { listener() }
-
-        XCTAssertEqual(sdkStartCalls, 1)
-        waitForBackgroundSerialQueue()
-        XCTAssertTrue(released)
-    }
-
-    func testSessionReadyListenerSkipsStartWhileTrackingStopped() {
-        AppsFlyerLib.shared().isStopped = true
-        var released = false
-        let listener = stubbingSessionReady(false) {
-            capturingListenerRegistration {
-                instance.onReady { _ in released = true }
-                instance.initialize(appId: "test_app_id", appDevKey: "test_dev_key", settings: nil)
-            }
-        }
-        guard let listener else { return XCTFail("Expected initialize to register a session-ready listener") }
-
-        let sdkStartCalls = countingSDKStartCalls { listener() }
-
-        XCTAssertEqual(sdkStartCalls, 0, "Expected `start` not to reach the SDK while tracking is stopped")
-        waitForBackgroundSerialQueue()
-        XCTAssertTrue(released, "Expected queued commands to be released even though the session did not start")
     }
 
     /// `registerSessionReadyListener` reads `UIApplication.applicationState`, so it must reach the SDK
@@ -362,6 +452,24 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         }
 
         XCTAssertTrue(calledOnMainThread, "Expected registerSessionReadyListener to reach the SDK on the main thread")
+    }
+
+    private func makeInstance(_ sessionMode: AppsFlyerSessionMode) -> AppsFlyerInstance {
+        AppsFlyerInstance(sessionMode: sessionMode,
+                          logger: RemoteCommandLogger(logLevel: .debug, handler: spyLogHandler))
+    }
+
+    /// Calls `onRegister` for each registration while `body` runs, without installing a real listener.
+    private func recordingListenerRegistrations(_ onRegister: @escaping () -> Void, _ body: () -> Void) {
+        guard let method = class_getInstanceMethod(AppsFlyerLib.self,
+                                                   NSSelectorFromString("registerSessionReadyListener:")) else {
+            return XCTFail("AppsFlyerLib.registerSessionReadyListener: not found")
+        }
+        let original = method_getImplementation(method)
+        let recorder: @convention(block) (AnyObject, Any?) -> Void = { _, _ in onRegister() }
+        method_setImplementation(method, imp_implementationWithBlock(recorder))
+        defer { method_setImplementation(method, original) }
+        body()
     }
 
     /// Swaps `AppsFlyerLib.registerSessionReadyListener:` for a block that records
@@ -407,12 +515,6 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
 
     private static var listenerRegistrationCount = 0
 
-    /// `_onReady` publishes on `TealiumQueues.backgroundSerialQueue`, so wait for that queue to drain.
-    private func waitForBackgroundSerialQueue() {
-        let drained = expectation(description: "backgroundSerialQueue drained")
-        TealiumQueues.backgroundSerialQueue.async { drained.fulfill() }
-        wait(for: [drained], timeout: 2)
-    }
 
 }
 
@@ -462,6 +564,42 @@ func countingSDKStartCalls(_ body: () -> Void) -> Int {
     var count = 0
     let original = method_getImplementation(method)
     let counter: @convention(block) (AnyObject) -> Void = { _ in count += 1 }
+    method_setImplementation(method, imp_implementationWithBlock(counter))
+    defer { method_setImplementation(method, original) }
+    body()
+    return count
+}
+
+/// Swaps the `appleAppID`/`appsFlyerDevKey` getters while `body` runs. The SDK has no way to clear
+/// credentials once set, so tests that need "not initialized" stub them instead.
+func stubbingCredentials<T>(_ present: Bool, _ body: () -> T) -> T {
+    guard let appId = class_getInstanceMethod(AppsFlyerLib.self, NSSelectorFromString("appleAppID")),
+          let devKey = class_getInstanceMethod(AppsFlyerLib.self, NSSelectorFromString("appsFlyerDevKey")) else {
+        XCTFail("AppsFlyerLib credential getters not found")
+        return body()
+    }
+    let originalAppId = method_getImplementation(appId)
+    let originalDevKey = method_getImplementation(devKey)
+    let appIdStub: @convention(block) (AnyObject) -> NSString = { _ in present ? "stub_app_id" : "" }
+    let devKeyStub: @convention(block) (AnyObject) -> NSString = { _ in present ? "stub_dev_key" : "" }
+    method_setImplementation(appId, imp_implementationWithBlock(appIdStub))
+    method_setImplementation(devKey, imp_implementationWithBlock(devKeyStub))
+    defer {
+        method_setImplementation(appId, originalAppId)
+        method_setImplementation(devKey, originalDevKey)
+    }
+    return body()
+}
+
+/// Swaps `AppsFlyerLib.initialize(devKey:appId:)` for a counter while `body` runs.
+func countingSDKInitializeCalls(_ body: () -> Void) -> Int {
+    guard let method = class_getInstanceMethod(AppsFlyerLib.self, NSSelectorFromString("initWithDevKey:appleAppId:")) else {
+        XCTFail("AppsFlyerLib.initialize(devKey:appId:) not found")
+        return -1
+    }
+    var count = 0
+    let original = method_getImplementation(method)
+    let counter: @convention(block) (AnyObject, NSString, NSString) -> Void = { _, _, _ in count += 1 }
     method_setImplementation(method, imp_implementationWithBlock(counter))
     defer { method_setImplementation(method, original) }
     body()

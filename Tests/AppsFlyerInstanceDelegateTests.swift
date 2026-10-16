@@ -23,7 +23,7 @@ class AppsFlyerInstanceDelegateTests: XCTestCase {
     var instance: SpyAppsFlyerInstance!
 
     override func setUp() {
-        instance = SpyAppsFlyerInstance(logger: RemoteCommandLogger(logLevel: .silent))
+        instance = SpyAppsFlyerInstance(sessionMode: .appManaged, logger: RemoteCommandLogger(logLevel: .silent))
     }
 
     override func tearDown() {
@@ -41,16 +41,16 @@ class AppsFlyerInstanceDelegateTests: XCTestCase {
         config.collectors = []
         config.dispatchers = []
         let tealium = Tealium(config: config)
-        let instance = AppsFlyerInstance(tealium: tealium, logLevel: .silent)
+        let instance = AppsFlyerInstance(tealium: tealium, sessionMode: .appManaged, logLevel: .silent)
 
         XCTAssertTrue(AppsFlyerLib.shared().delegate === instance)
-        XCTAssertNil(AppsFlyerInstance(logger: RemoteCommandLogger(logLevel: .silent)).tealium)
+        XCTAssertNil(AppsFlyerInstance(sessionMode: .appManaged, logger: RemoteCommandLogger(logLevel: .silent)).tealium)
     }
 
     /// Attribution tracking on the RemoteCommand path has no Tealium instance, so it must
     /// no-op rather than crash.
     func testTealiumTrackWithoutTealiumInstanceDoesNothing() {
-        AppsFlyerInstance(logger: RemoteCommandLogger(logLevel: .silent))
+        AppsFlyerInstance(sessionMode: .appManaged, logger: RemoteCommandLogger(logLevel: .silent))
             .tealiumTrack(title: "conversion_data_received", data: ["af_status": "Organic"])
     }
 

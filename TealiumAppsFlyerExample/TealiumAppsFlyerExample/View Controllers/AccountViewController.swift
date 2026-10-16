@@ -112,9 +112,6 @@ class AccountViewController: UIViewController {
     
     @IBAction func trackingToggleTapped(_ sender: UISwitch) {
         let isTrackingDisabled = !sender.isOn
-
-        // Always the same event; appsflyer.json picks the command chain from the stop_tracking
-        // value (`disabletracking` vs `disabletracking,start`), instead of branching here.
         TealiumHelper.trackEvent(title: "disable_tracking", data: [
             AccountViewController.stopTracking: isTrackingDisabled
         ])
