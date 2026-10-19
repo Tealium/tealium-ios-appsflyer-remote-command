@@ -341,6 +341,22 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         XCTAssertEqual(countingSDKStartCalls { listener() }, 1)
     }
 
+    /// The listener fires on every foreground, so it must not start a session for a user who opted
+    /// out through `disabletracking` after it was registered.
+    func testAutomaticListenerSkipsStartWhileTrackingStopped() {
+        let listener = stubbingSessionReady(false) {
+            capturingListenerRegistration {
+                instance.initialize(appId: "test_app_id", appDevKey: "test_dev_key", settings: nil)
+            }
+        }
+        guard let listener else { return XCTFail("Expected initialize to register a session-ready listener") }
+
+        AppsFlyerLib.shared().isStopped = true
+        defer { AppsFlyerLib.shared().isStopped = false }
+
+        XCTAssertEqual(countingSDKStartCalls { listener() }, 0)
+    }
+
     /// The SDK keeps a single listener slot; a ready session means someone else owns it.
     func testAutomaticSkipsRegistrationWhenSessionAlreadyReady() {
         var released = false

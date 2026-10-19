@@ -35,13 +35,18 @@ let trackingCommand = AppsFlyerRemoteCommand(appsFlyerInstance: instance, type: 
 
 ### `.appManaged` examples
 
+The listener fires on every foreground. Skip `start()` while `isStopped` is true: on AppsFlyer SDK 7.0.2 it still sends a SKAN report and records the session, so a user who opts back in is reported as a relaunch instead of an install.
+
 If the app initializes AppsFlyer itself, it can register right away. Don't also map the `initialize` command.
 
 ```swift
 let command = AppsFlyerRemoteCommand(sessionMode: .appManaged)
 let appsFlyerLib = AppsFlyerLib.shared()
 appsFlyerLib.initialize(devKey: appDevKey, appId: appId)
-appsFlyerLib.registerSessionReadyListener { appsFlyerLib.start() }
+appsFlyerLib.registerSessionReadyListener {
+    guard !appsFlyerLib.isStopped else { return }
+    appsFlyerLib.start()
+}
 ```
 
 If the `initialize` command initializes AppsFlyer, register only once `onReady` has run.
@@ -50,7 +55,10 @@ If the `initialize` command initializes AppsFlyer, register only once `onReady` 
 let command = AppsFlyerRemoteCommand(sessionMode: .appManaged)
 command.onReady { appsFlyerLib in
     // Runs only after the `initialize` command has run
-    appsFlyerLib.registerSessionReadyListener { appsFlyerLib.start() }
+    appsFlyerLib.registerSessionReadyListener {
+        guard !appsFlyerLib.isStopped else { return }
+        appsFlyerLib.start()
+    }
 }
 ```
 
@@ -58,7 +66,10 @@ To start only after App Tracking Transparency consent:
 
 ```swift
 appsFlyerLib.registerSessionReadyListener {
-    ATTrackingManager.requestTrackingAuthorization { _ in AppsFlyerLib.shared().start() }
+    ATTrackingManager.requestTrackingAuthorization { _ in
+        guard !AppsFlyerLib.shared().isStopped else { return }
+        AppsFlyerLib.shared().start()
+    }
 }
 ```
 

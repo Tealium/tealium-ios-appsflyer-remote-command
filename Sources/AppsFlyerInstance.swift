@@ -227,7 +227,16 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
             return
         }
         logger.info("Registering the AppsFlyer session-ready listener; this replaces any listener the app registered itself. Set sessionMode to appManaged to keep your own.")
-        appsFlyer.registerSessionReadyListener { appsFlyer.start() }
+        appsFlyer.registerSessionReadyListener { [weak self] in
+            // The SDK's `start()` does not fully honour `isStopped` (verified on SDK 7.0.2): it still sends a
+            // SKAN report and records the session, so a user who opts back in is reported as a relaunch, not
+            // an install. Skip it for users who opted out through `disabletracking`.
+            guard !appsFlyer.isStopped else {
+                self?.logger.debug("Session start skipped: tracking is stopped.")
+                return
+            }
+            appsFlyer.start()
+        }
     }
 
     public func logEvent(_ eventName: String, values: [String: Any]) {

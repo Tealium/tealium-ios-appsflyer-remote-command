@@ -31,6 +31,9 @@ public enum AppsFlyerSessionMode {
     /// When initialized, the Remote Command does not register a listener and never calls `start()`.
     /// The app must register its own listener and call `AppsFlyerLib.shared().start()` in it.
     ///
+    /// Skip `start()` while `isStopped` is true: on SDK 7.0.2 it still sends a SKAN report and records
+    /// the session, so a user who opts back in is reported as a relaunch instead of an install.
+    ///
     /// When session registration and start is `appManaged` you can register immediately after initializing,
     /// if you also initialize manually.
     ///
@@ -38,7 +41,10 @@ public enum AppsFlyerSessionMode {
     /// let command = AppsFlyerRemoteCommand(sessionMode: .appManaged)
     /// let appsFlyerLib = AppsFlyerLib.shared()
     /// appsFlyerLib.initialize(devKey: appDevKey, appId: appId)
-    /// appsFlyerLib.registerSessionReadyListener { appsFlyerLib.start() }
+    /// appsFlyerLib.registerSessionReadyListener {
+    ///     guard !appsFlyerLib.isStopped else { return }
+    ///     appsFlyerLib.start()
+    /// }
     /// ```
     ///
     /// If you `initialize` with a remote command instead, make sure to register for session ready only after `onReady` has completed.
@@ -46,14 +52,20 @@ public enum AppsFlyerSessionMode {
     ///  let command = AppsFlyerRemoteCommand(sessionMode: .appManaged)
     ///  command.onReady { appsFlyerLib in
     ///     // This code will only run after the `initialize` command has run
-    ///     appsFlyerLib.registerSessionReadyListener { appsFlyerLib.start() }
+    ///     appsFlyerLib.registerSessionReadyListener {
+    ///         guard !appsFlyerLib.isStopped else { return }
+    ///         appsFlyerLib.start()
+    ///     }
     ///  }
     /// ```
     ///
     /// To gate `start` on App Tracking Transparency consent:
     /// ```swift
     /// appsFlyerLib.registerSessionReadyListener {
-    ///     ATTrackingManager.requestTrackingAuthorization { _ in AppsFlyerLib.shared().start() }
+    ///     ATTrackingManager.requestTrackingAuthorization { _ in
+    ///         guard !AppsFlyerLib.shared().isStopped else { return }
+    ///         AppsFlyerLib.shared().start()
+    ///     }
     /// }
     /// ```
     case appManaged
@@ -79,7 +91,10 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     /// let command = AppsFlyerRemoteCommand(sessionMode: .appManaged)
     /// let appsFlyerLib = AppsFlyerLib.shared()
     /// appsFlyerLib.initialize(devKey: appDevKey, appId: appId)
-    /// appsFlyerLib.registerSessionReadyListener { appsFlyerLib.start() }
+    /// appsFlyerLib.registerSessionReadyListener {
+    ///     guard !appsFlyerLib.isStopped else { return }
+    ///     appsFlyerLib.start()
+    /// }
     /// ```
     ///
     /// If you `initialize` with a remote command instead, make sure to register for session ready only after `onReady` has completed.
@@ -87,7 +102,10 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     ///  let command = AppsFlyerRemoteCommand(sessionMode: .appManaged)
     ///  command.onReady { appsFlyerLib in
     ///     // This code will only run after the `initialize` command has run
-    ///     appsFlyerLib.registerSessionReadyListener { appsFlyerLib.start() }
+    ///     appsFlyerLib.registerSessionReadyListener {
+    ///         guard !appsFlyerLib.isStopped else { return }
+    ///         appsFlyerLib.start()
+    ///     }
     ///  }
     /// ```
     ///
