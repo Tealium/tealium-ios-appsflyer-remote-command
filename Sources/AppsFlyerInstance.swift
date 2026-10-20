@@ -109,7 +109,8 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     /// Runs `onReady` on the main thread once AppsFlyer has credentials (`initialize` was called, by
     /// our `initialize` command or by the app), or at once if it already has. This is not "session
     /// started". Commands that log to the SDK are gated on this because the SDK needs credentials to
-    /// build a request. SDK 7.0.2 accepts `logEvent` between `initialize` and `start()` but only caches it.
+    /// build a request. SDK 7.0.2 accepts `logEvent` between `initialize` and `start()`, caches it and
+    /// sends it right after `start()`, in the same session.
     public func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {
         TealiumQueues.secureMainThreadExecution { [self] in
             defer { _onReady.subscribeOnce(onReady) }
@@ -228,9 +229,9 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         }
         logger.info("Registering the AppsFlyer session-ready listener; this replaces any listener the app registered itself. Set sessionMode to appManaged to keep your own.")
         appsFlyer.registerSessionReadyListener { [weak self] in
-            // The SDK's `start()` does not fully honour `isStopped` (verified on SDK 7.0.2): it still sends a
-            // SKAN report and records the session, so a user who opts back in is reported as a relaunch, not
-            // an install. Skip it for users who opted out through `disabletracking`.
+            // SDK 7.0.2's `start()` does not fully honour `isStopped`: it still sends a SKAN report and
+            // records the session, so a user who opts back in is reported as a relaunch, not an install.
+            // Skip it for users who opted out through `disabletracking`.
             guard !appsFlyer.isStopped else {
                 self?.logger.debug("Session start skipped: tracking is stopped.")
                 return
@@ -321,9 +322,8 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         AppsFlyerLib.shared().setSharingFilterForPartners(sharingFilter)
     }
 
-    /// Gated on `onReady` (credentials), not on `start()`: on the SDK 7.0.2 simulator a URI-scheme link
-    /// passed after `initialize` and before `start()` reached `didResolveDeepLink` as `.found`. Whether a
-    /// OneLink URL, which needs a network round trip, resolves before `start()` is unverified.
+    /// Gated on `onReady` (credentials), not on `start()`: SDK 7.0.2 handles a link received before
+    /// `start()` exactly as one received after it.
     public func handleOpen(url: URL, sourceApplication: String?, annotation: Any?) {
         onReady { appsFlyer in
             appsFlyer.handleOpen(url, sourceApplication: sourceApplication, withAnnotation: annotation)
