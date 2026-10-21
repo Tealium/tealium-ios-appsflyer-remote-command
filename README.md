@@ -16,6 +16,8 @@ AppsFlyer SDK 7 keeps a single session-ready listener, and `AppsFlyerLib.shared(
 | `.automatic` | The RemoteCommand, once AppsFlyer is initialized. The app must not register its own listener, or it replaces ours. If the session is already ready, the RemoteCommand logs an error and registers nothing. | The RemoteCommand's listener |
 | `.appManaged` | The app | The app, inside its listener |
 
+In `.automatic`, apply a stored opt-out before `initialize`: AppsFlyer does not keep `isStopped` across launches.
+
 "Initialized" means AppsFlyer has credentials: either the `initialize` command ran, or the app called `AppsFlyerLib.shared().initialize(devKey:appId:)` itself. If the app does that before building the `AppsFlyerInstance`/`AppsFlyerRemoteCommand`, the instance detects it at construction and, in `.automatic`, registers the listener right away.
 
 `onReady` means AppsFlyer is initialized, not that the session has started. Its callbacks run on the main thread, at once if AppsFlyer is already initialized, otherwise in the order they were queued once it is.
