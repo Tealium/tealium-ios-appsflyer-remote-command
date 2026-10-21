@@ -31,9 +31,6 @@ public enum AppsFlyerSessionMode {
     /// When initialized, the Remote Command does not register a listener and never calls `start()`.
     /// The app must register its own listener and call `AppsFlyerLib.shared().start()` in it.
     ///
-    /// Skip `start()` while `isStopped` is true: on SDK 7.0.2 it still sends a SKAN report and records
-    /// the session, so a user who opts back in is reported as a relaunch instead of an install.
-    ///
     /// When session registration and start is `appManaged` you can register immediately after initializing,
     /// if you also initialize manually.
     ///
@@ -41,10 +38,7 @@ public enum AppsFlyerSessionMode {
     /// let command = AppsFlyerRemoteCommand(sessionMode: .appManaged)
     /// let appsFlyerLib = AppsFlyerLib.shared()
     /// appsFlyerLib.initialize(devKey: appDevKey, appId: appId)
-    /// appsFlyerLib.registerSessionReadyListener {
-    ///     guard !appsFlyerLib.isStopped else { return }
-    ///     appsFlyerLib.start()
-    /// }
+    /// appsFlyerLib.registerSessionReadyListener { appsFlyerLib.start() }
     /// ```
     ///
     /// If you `initialize` with a remote command instead, make sure to register for session ready only after `onReady` has completed.
@@ -52,25 +46,18 @@ public enum AppsFlyerSessionMode {
     ///  let command = AppsFlyerRemoteCommand(sessionMode: .appManaged)
     ///  command.onReady { appsFlyerLib in
     ///     // This code will only run after the `initialize` command has run
-    ///     appsFlyerLib.registerSessionReadyListener {
-    ///         guard !appsFlyerLib.isStopped else { return }
-    ///         appsFlyerLib.start()
-    ///     }
+    ///     appsFlyerLib.registerSessionReadyListener { appsFlyerLib.start() }
     ///  }
     /// ```
     ///
     /// To gate `start` on App Tracking Transparency consent:
     /// ```swift
     /// appsFlyerLib.registerSessionReadyListener {
-    ///     ATTrackingManager.requestTrackingAuthorization { _ in
-    ///         guard !AppsFlyerLib.shared().isStopped else { return }
-    ///         AppsFlyerLib.shared().start()
-    ///     }
+    ///     ATTrackingManager.requestTrackingAuthorization { _ in AppsFlyerLib.shared().start() }
     /// }
     /// ```
     case appManaged
 }
-
 
 public class AppsFlyerRemoteCommand: RemoteCommand {
 
@@ -91,10 +78,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     /// let command = AppsFlyerRemoteCommand(sessionMode: .appManaged)
     /// let appsFlyerLib = AppsFlyerLib.shared()
     /// appsFlyerLib.initialize(devKey: appDevKey, appId: appId)
-    /// appsFlyerLib.registerSessionReadyListener {
-    ///     guard !appsFlyerLib.isStopped else { return }
-    ///     appsFlyerLib.start()
-    /// }
+    /// appsFlyerLib.registerSessionReadyListener { appsFlyerLib.start() }
     /// ```
     ///
     /// If you `initialize` with a remote command instead, make sure to register for session ready only after `onReady` has completed.
@@ -102,14 +86,11 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     ///  let command = AppsFlyerRemoteCommand(sessionMode: .appManaged)
     ///  command.onReady { appsFlyerLib in
     ///     // This code will only run after the `initialize` command has run
-    ///     appsFlyerLib.registerSessionReadyListener {
-    ///         guard !appsFlyerLib.isStopped else { return }
-    ///         appsFlyerLib.start()
-    ///     }
+    ///     appsFlyerLib.registerSessionReadyListener { appsFlyerLib.start() }
     ///  }
     /// ```
     ///
-    /// If you  have `automatic` session mode, both if you initialize manually or with a remote command,
+    /// If you have `automatic` session mode, both if you initialize manually or with a remote command,
     /// you should NOT call AppsFlyerLib's `registerSessionReadyListener`, or that might replace our listener,
     /// but you can still use this method to make sure to call some other methods that need to be called after initialize.
     ///
@@ -334,8 +315,8 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     }
 
     private func executeSetPhoneNumber(_ payload: [String: Any]) throws {
-        let countryCode = try payload.requireParameter(AppsFlyerConstants.Parameters.countryCode, as: String.self)
-        let phoneNumber = try payload.requireParameter(AppsFlyerConstants.Parameters.phoneNumber, as: String.self)
+        let countryCode = try payload.requireStringOrNumber(AppsFlyerConstants.Parameters.countryCode)
+        let phoneNumber = try payload.requireStringOrNumber(AppsFlyerConstants.Parameters.phoneNumber)
         appsFlyerInstance.setUserPhone(countryCode: countryCode, phoneNumber: phoneNumber)
     }
 
@@ -490,6 +471,22 @@ extension Dictionary where Key == String, Value == Any {
                                                              expectedTypes: "Int64, Int or numeric String")
         }
         return int64
+    }
+
+    /// `setUserPhone` takes both values as `String`, but a tag can map them from numeric UDO variables
+    /// (`country_code: 1`). A JSON payload brings `NSNumber`, which bridges to `Int`, while a Swift-built
+    /// payload brings a native `Int` or `Int64` — so each is accepted and converted with `String(...)`.
+    func requireStringOrNumber(_ parameter: String) throws -> String {
+        guard let value = self[parameter] else {
+            throw AppsFlyerCommandError.missingParameter(parameter)
+        }
+        guard let string = value as? String
+                ?? (value as? Int).map(String.init)
+                ?? (value as? Int64).map(String.init) else {
+            throw AppsFlyerCommandError.invalidParameterType(parameter: parameter,
+                                                             expectedTypes: "String, Int or Int64")
+        }
+        return string
     }
 
     private static let allExcludedKeys: Set<String> = {

@@ -35,9 +35,9 @@ let instance = AppsFlyerInstance(tealium: tealium, sessionMode: .automatic, logL
 let trackingCommand = AppsFlyerRemoteCommand(appsFlyerInstance: instance, type: .webview)
 ```
 
-### `.appManaged` examples
+`AppsFlyerInstance(tealium:sessionMode:logLevel:)` sets both `AppsFlyerLib.shared().delegate` and `deepLinkDelegate`, and the SDK has a single slot for each. An app with its own deep link handling should set its `deepLinkDelegate` after creating the instance and forward the results to `instance.didResolveDeepLink(_:)`, otherwise `app_open_attribution` is not tracked.
 
-The listener fires on every foreground. Skip `start()` while `isStopped` is true: on AppsFlyer SDK 7.0.2 it still sends a SKAN report and records the session, so a user who opts back in is reported as a relaunch instead of an install.
+### `.appManaged` examples
 
 If the app initializes AppsFlyer itself, it can register right away. Don't also map the `initialize` command.
 
@@ -45,10 +45,7 @@ If the app initializes AppsFlyer itself, it can register right away. Don't also 
 let command = AppsFlyerRemoteCommand(sessionMode: .appManaged)
 let appsFlyerLib = AppsFlyerLib.shared()
 appsFlyerLib.initialize(devKey: appDevKey, appId: appId)
-appsFlyerLib.registerSessionReadyListener {
-    guard !appsFlyerLib.isStopped else { return }
-    appsFlyerLib.start()
-}
+appsFlyerLib.registerSessionReadyListener { appsFlyerLib.start() }
 ```
 
 If the `initialize` command initializes AppsFlyer, register only once `onReady` has run.
@@ -57,10 +54,7 @@ If the `initialize` command initializes AppsFlyer, register only once `onReady` 
 let command = AppsFlyerRemoteCommand(sessionMode: .appManaged)
 command.onReady { appsFlyerLib in
     // Runs only after the `initialize` command has run
-    appsFlyerLib.registerSessionReadyListener {
-        guard !appsFlyerLib.isStopped else { return }
-        appsFlyerLib.start()
-    }
+    appsFlyerLib.registerSessionReadyListener { appsFlyerLib.start() }
 }
 ```
 
@@ -68,10 +62,7 @@ To start only after App Tracking Transparency consent:
 
 ```swift
 appsFlyerLib.registerSessionReadyListener {
-    ATTrackingManager.requestTrackingAuthorization { _ in
-        guard !AppsFlyerLib.shared().isStopped else { return }
-        AppsFlyerLib.shared().start()
-    }
+    ATTrackingManager.requestTrackingAuthorization { _ in AppsFlyerLib.shared().start() }
 }
 ```
 

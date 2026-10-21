@@ -58,12 +58,12 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     public let logger: RemoteCommandLogger
     let sessionMode: AppsFlyerSessionMode
 
-    /// Sets no delegate, so attribution callbacks do not fire, and logs nothing. Use
+    /// Sets no delegate, so attribution callbacks do not fire, and logs errors only. Use
     /// `init(tealium:sessionMode:logLevel:)` to track attribution, or
     /// `AppsFlyerRemoteCommand(sessionMode:type:logLevel:)` if you don't need your own instance.
     /// - Parameter sessionMode: Who registers the session-ready listener and calls `start()`.
     public convenience init(sessionMode: AppsFlyerSessionMode) {
-        self.init(sessionMode: sessionMode, logger: RemoteCommandLogger(logLevel: .silent))
+        self.init(sessionMode: sessionMode, logger: RemoteCommandLogger(logLevel: .error))
     }
 
     /// Registers as `AppsFlyerLibDelegate` and `AppsFlyerDeepLinkDelegate` and tracks attribution
@@ -228,16 +228,7 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
             return
         }
         logger.info("Registering the AppsFlyer session-ready listener; this replaces any listener the app registered itself. Set sessionMode to appManaged to keep your own.")
-        appsFlyer.registerSessionReadyListener { [weak self] in
-            // SDK 7.0.2's `start()` does not fully honour `isStopped`: it still sends a SKAN report and
-            // records the session, so a user who opts back in is reported as a relaunch, not an install.
-            // Skip it for users who opted out through `disabletracking`.
-            guard !appsFlyer.isStopped else {
-                self?.logger.debug("Session start skipped: tracking is stopped.")
-                return
-            }
-            appsFlyer.start()
-        }
+        appsFlyer.registerSessionReadyListener { appsFlyer.start() }
     }
 
     public func logEvent(_ eventName: String, values: [String: Any]) {
