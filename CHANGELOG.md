@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Commands: `setappinviteonelink`, `anonymizeuser`, `logadrevenue`, `setpartnerdata`, `setsharingfilterforpartners`, `setphonenumber`, `setcurrentdevicelanguage`, `sethost`
 - Currency setting, deep link URL resolution and parameters, `locationcoordinates` event
 - Aliases: `stoptracking` (Android name for `disabletracking`) and `disabledevicetracking` (for `anonymizeuser`)
-- `fb_login_id` accepts numeric strings; `country_code` and `phone_number` accept numbers
+- `fb_login_id` accepts numeric strings
 - Validation for negative `deepLinkTimeout`
 
 ### Fixed

@@ -606,36 +606,6 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertNil(appsFlyerInstance.lastPhoneNumber)
     }
 
-    /// Both values are `String` in the SDK, but a tag can map them from numeric variables.
-    func testSetPhoneNumberAcceptsNumbers() {
-        let payload: [String: Any] = [
-            "command_name": "setphonenumber",
-            "country_code": 1,
-            "phone_number": Int64(123456789)
-        ]
-        appsFlyerCommand.processRemoteCommand(with: payload)
-        XCTAssertEqual(appsFlyerInstance.setUserPhoneCount, 1)
-        XCTAssertEqual(appsFlyerInstance.lastCountryCode, "1")
-        XCTAssertEqual(appsFlyerInstance.lastPhoneNumber, "123456789")
-    }
-
-    func testSetPhoneNumberNotRunWithNonNumericNonStringValues() {
-        for value in [[1], true] as [Any] {
-            appsFlyerCommand.processRemoteCommand(with: [
-                "command_name": "setphonenumber",
-                "country_code": value,
-                "phone_number": "123456789"
-            ])
-            appsFlyerCommand.processRemoteCommand(with: [
-                "command_name": "setphonenumber",
-                "country_code": "1",
-                "phone_number": value
-            ])
-        }
-        XCTAssertEqual(appsFlyerInstance.setUserPhoneCount, 0)
-        XCTAssertNil(appsFlyerInstance.lastPhoneNumber)
-    }
-
     func testDeepLinkTimeoutValidation() {
         // Test that negative deepLinkTimeout is filtered out
         let settings: [String: Any] = [

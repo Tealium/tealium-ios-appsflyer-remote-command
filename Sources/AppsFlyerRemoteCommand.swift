@@ -315,8 +315,8 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     }
 
     private func executeSetPhoneNumber(_ payload: [String: Any]) throws {
-        let countryCode = try payload.requireStringOrNumber(AppsFlyerConstants.Parameters.countryCode)
-        let phoneNumber = try payload.requireStringOrNumber(AppsFlyerConstants.Parameters.phoneNumber)
+        let countryCode = try payload.requireParameter(AppsFlyerConstants.Parameters.countryCode, as: String.self)
+        let phoneNumber = try payload.requireParameter(AppsFlyerConstants.Parameters.phoneNumber, as: String.self)
         appsFlyerInstance.setUserPhone(countryCode: countryCode, phoneNumber: phoneNumber)
     }
 
@@ -471,22 +471,6 @@ extension Dictionary where Key == String, Value == Any {
                                                              expectedTypes: "Int64, Int or numeric String")
         }
         return int64
-    }
-
-    /// `setUserPhone` takes both values as `String`, but a tag can map them from numeric UDO variables
-    /// (`country_code: 1`). A JSON payload brings `NSNumber`, which bridges to `Int`, while a Swift-built
-    /// payload brings a native `Int` or `Int64` — so each is accepted and converted with `String(...)`.
-    func requireStringOrNumber(_ parameter: String) throws -> String {
-        guard let value = self[parameter] else {
-            throw AppsFlyerCommandError.missingParameter(parameter)
-        }
-        guard let string = value as? String
-                ?? (value as? Int).map(String.init)
-                ?? (value as? Int64).map(String.init) else {
-            throw AppsFlyerCommandError.invalidParameterType(parameter: parameter,
-                                                             expectedTypes: "String, Int or Int64")
-        }
-        return string
     }
 
     private static let allExcludedKeys: Set<String> = {
