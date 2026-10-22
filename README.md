@@ -7,6 +7,38 @@
 
 
 
+## Installation
+
+Swift Package Manager and CocoaPods resolve AppsFlyerLib (`>= 7.0.2, < 8.0`) and TealiumSwift (`~> 2.19`) for you. See the [documentation](https://docs.tealium.com/platforms/remote-commands/integrations/appsflyer/) for their setup steps.
+
+Since 4.0.0, `TealiumAppsFlyer.xcframework` is a static framework and no longer bundles its own copy of AppsFlyerLib. With Carthage or a manual install, the app links AppsFlyerLib itself, exactly once.
+
+### Carthage
+
+1. Add the RemoteCommand to your Cartfile. Remove any other AppsFlyer `binary` line, because this repository's Cartfile already pulls AppsFlyerLib:
+   ```
+   github "tealium/tealium-ios-appsflyer-remote-command"
+   ```
+2. Run `carthage update --use-xcframeworks --platform iOS`.
+3. Drag these frameworks from `Carthage/Build` into your app target's **Frameworks, Libraries, and Embedded Content**:
+
+   | Framework | Embed |
+   |---|---|
+   | `TealiumAppsFlyer.xcframework` | Do Not Embed (static) |
+   | `AppsFlyerLib.xcframework` | Do Not Embed (static) |
+   | `TealiumCore.xcframework` | Embed & Sign |
+   | `TealiumRemoteCommands.xcframework` | Embed & Sign |
+
+### Manual (xcframework)
+
+1. Download `tealium.xcframework.zip` from [Releases](https://github.com/Tealium/tealium-ios-appsflyer-remote-command/releases). It contains only `TealiumAppsFlyer.xcframework`.
+2. Add AppsFlyerLib `>= 7.0.2, < 8.0` from [AppsFlyerFramework releases](https://github.com/AppsFlyerSDK/AppsFlyerFramework/releases) (`AppsFlyerLib.xcframework.zip` is static, `AppsFlyerLib-Dynamic.xcframework.zip` is dynamic), and `TealiumCore` and `TealiumRemoteCommands` `~> 2.19` from [tealium-swift](https://github.com/tealium/tealium-swift).
+3. Set `TealiumAppsFlyer.xcframework` to **Do Not Embed**. Set AppsFlyerLib to **Do Not Embed** for its static build, or **Embed & Sign** for its dynamic build.
+
+### Privacy manifest with static AppsFlyerLib
+
+With the static AppsFlyerLib (Carthage, or `AppsFlyerLib.xcframework.zip`), the AppsFlyer code is linked into your app binary, but its `PrivacyInfo.xcprivacy` is not copied into the app. Copy its entries from `AppsFlyerLib.xcframework/ios-arm64/AppsFlyerLib.framework/PrivacyInfo.xcprivacy` into your app's own privacy manifest.
+
 ## Session modes
 
 AppsFlyer SDK 7 keeps a single session-ready listener, and `AppsFlyerLib.shared().start()` has to be called inside it. `AppsFlyerSessionMode` decides who owns that listener. It is a required constructor argument, not a remote setting, because it has to match what the app code does.

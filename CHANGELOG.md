@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - AppsFlyer iOS SDK `>= 7.0.2, < 8.0` (SPM, CocoaPods), `>= 7.0.2` (Carthage); TealiumSwift `~> 2.19`
-- **Breaking:** `TealiumAppsFlyer.xcframework` is static and no longer bundles AppsFlyerLib
+- **Breaking:** `TealiumAppsFlyer.xcframework` (Carthage, release zip) is static and no longer bundles AppsFlyerLib. Link AppsFlyerLib in the app and set `TealiumAppsFlyer` to **Do Not Embed**. See [Installation](README.md#installation)
 - **Breaking:** remove your `AppsFlyerLib.shared().start()` call from `applicationDidBecomeActive`. SDK 7 starts inside the session-ready listener; `AppsFlyerSessionMode` decides who owns it
 - **Breaking:** `onReady` means "AppsFlyer has credentials" and runs on the main thread. `logEvent`, `logLocation`, `logAdRevenue` and `handleOpen` queue until then
 - **Breaking:** `setphonenumber` requires `country_code`
