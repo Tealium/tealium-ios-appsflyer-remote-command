@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Hashed-PII commands: `setuseremail`, `setuserfirstname`, `setuserlastname`, `setuserfbloginid`, `clearuserpii`. The SDK hashes values on-device, except `fb_login_id`
 - `handleopen` command for deep links. Requires `config.sendDeepLinkEvent = true`; for Universal Links the app also calls `AppsFlyerLib.shared().handleLaunchOptions(_:)`
 - `setconsentdata` command (GDPR/DMA). Map it before `initialize` to include consent in the first session: `"launch": "setconsentdata,initialize"`
-- Commands: `setappinviteonelink`, `anonymizeuser`, `logadrevenue`, `setpartnerdata`, `setsharingfilterforpartners`, `setphonenumber`, `setcurrentdevicelanguage`, `sethost`
+- Commands: `setappinviteonelink`, `anonymizeuser`, `logadrevenue`, `setpartnerdata`, `setsharingfilterforpartners`, `setuserphone`, `setcurrentdevicelanguage`, `sethost`
 - Currency setting, deep link URL resolution and parameters, `locationcoordinates` event
 - Aliases: `stoptracking` (Android name for `disabletracking`) and `disabledevicetracking` (for `anonymizeuser`)
 - `fb_login_id` accepts numeric strings
@@ -26,7 +26,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking:** `TealiumAppsFlyer.xcframework` (Carthage, release zip) is static and no longer bundles AppsFlyerLib. Link AppsFlyerLib in the app and set `TealiumAppsFlyer` to **Do Not Embed**. See [Installation](README.md#installation)
 - **Breaking:** remove your `AppsFlyerLib.shared().start()` call from `applicationDidBecomeActive`. SDK 7 starts inside the session-ready listener; `AppsFlyerSessionMode` decides who owns it
 - **Breaking:** `onReady` means "AppsFlyer has credentials" and runs on the main thread. `logEvent`, `logLocation`, `logAdRevenue` and `handleOpen` queue until then
-- **Breaking:** `setphonenumber` requires `country_code`
 - **Breaking:** `disabletracking` requires `stop_tracking` (no longer defaults to `false`)
 - **Breaking:** initializers require `sessionMode`: `AppsFlyerInstance(sessionMode:)`, `AppsFlyerInstance(tealium:sessionMode:logLevel:)`, `AppsFlyerRemoteCommand(sessionMode:type:logLevel:)` (`logLevel` defaults to `.error`). `AppsFlyerRemoteCommand(appsFlyerInstance:type:)` has no default instance
 - **Breaking:** `AppsFlyerCommand` protocol changed (`setUserPhone(countryCode:phoneNumber:)`, new command methods); update custom conformances

@@ -201,8 +201,8 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     try executeAnonymizeUser(payload)
                 case .resolveDeepLinkUrls:
                     try executeResolveDeepLinkUrls(payload)
-                case .setPhoneNumber:
-                    try executeSetPhoneNumber(payload)
+                case .setUserPhone:
+                    try executeSetUserPhone(payload)
                 case .logAdRevenue:
                     try executeLogAdRevenue(payload)
                 case .setConsentData:
@@ -314,7 +314,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
         appsFlyerInstance.resolveDeepLinkURLs(urls)
     }
 
-    private func executeSetPhoneNumber(_ payload: [String: Any]) throws {
+    private func executeSetUserPhone(_ payload: [String: Any]) throws {
         let countryCode = try payload.requireParameter(AppsFlyerConstants.Parameters.countryCode, as: String.self)
         let phoneNumber = try payload.requireParameter(AppsFlyerConstants.Parameters.phoneNumber, as: String.self)
         appsFlyerInstance.setUserPhone(countryCode: countryCode, phoneNumber: phoneNumber)

@@ -582,9 +582,9 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
                       "Expected the command to log through the instance's logger")
     }
 
-    func testSetPhoneNumber() {
+    func testSetUserPhone() {
         let payload: [String: Any] = [
-            "command_name": "setphonenumber",
+            "command_name": "setuserphone",
             "country_code": "48",
             "phone_number": "123456789"
         ]
@@ -596,9 +596,9 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
 
     /// SDK 7 needs the country code separately, so a tag mapping only `phone_number` must fail
     /// rather than send a number the SDK cannot normalise.
-    func testSetPhoneNumberNotRunWithoutCountryCode() {
+    func testSetUserPhoneNotRunWithoutCountryCode() {
         let payload: [String: Any] = [
-            "command_name": "setphonenumber",
+            "command_name": "setuserphone",
             "phone_number": "123456789"
         ]
         appsFlyerCommand.processRemoteCommand(with: payload)
@@ -965,8 +965,8 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertEqual(appsFlyerInstance.lastAnonymizeUser, true)
     }
 
-    func testSetPhoneNumberNotRun() {
-        let payload: [String: Any] = ["command_name": "setphonenumber"]
+    func testSetUserPhoneNotRun() {
+        let payload: [String: Any] = ["command_name": "setuserphone"]
         appsFlyerCommand.processRemoteCommand(with: payload)
         XCTAssertEqual(0, appsFlyerInstance.setUserPhoneCount)
         XCTAssertNil(appsFlyerInstance.lastPhoneNumber)
