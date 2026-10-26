@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - `isDebug` is set first in `initialize`, so debug logs cover initialization
+- `setsharingfilterforpartners` rejects a `sharing_filter` that is not an array of strings instead of resetting the filter
 
 ### Changed
 - AppsFlyer iOS SDK `>= 7.0.2, < 8.0` (SPM, CocoaPods), `>= 7.0.2` (Carthage); TealiumSwift `~> 2.19`

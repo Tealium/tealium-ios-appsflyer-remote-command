@@ -838,6 +838,30 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertNil(appsFlyerInstance.lastSharingFilter)
     }
 
+    func testSetSharingFilterForPartnersNullResets() {
+        let payload: [String: Any] = [
+            "command_name": "setsharingfilterforpartners",
+            "sharing_filter": NSNull()
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+
+        XCTAssertEqual(appsFlyerInstance.setSharingFilterForPartnersCount, 1)
+        XCTAssertNil(appsFlyerInstance.lastSharingFilter)
+    }
+
+    /// A String such as "all" is not an array, so it must not be mistaken for a reset, which would
+    /// re-enable sharing with partners the integrator meant to exclude.
+    func testSetSharingFilterForPartnersNotRunWithWrongType() {
+        let payload: [String: Any] = [
+            "command_name": "setsharingfilterforpartners",
+            "sharing_filter": "all"
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+
+        XCTAssertEqual(appsFlyerInstance.setSharingFilterForPartnersCount, 0)
+        XCTAssertNil(appsFlyerInstance.lastSharingFilter)
+    }
+
     func testHandleOpenWithSourceApplicationAndAnnotation() {
         let payload: [String: Any] = [
             "command_name": "handleopen",

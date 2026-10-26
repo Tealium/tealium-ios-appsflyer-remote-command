@@ -210,7 +210,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 case .setPartnerData:
                     try executeSetPartnerData(payload)
                 case .setSharingFilterForPartners:
-                    executeSetSharingFilterForPartners(payload)
+                    try executeSetSharingFilterForPartners(payload)
                 case .handleOpen:
                     try executeHandleOpen(payload)
                 case .setCurrentDeviceLanguage:
@@ -382,9 +382,19 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
         appsFlyerInstance.setPartnerData(partnerId: partnerId, partnerInfo: partnerInfo)
     }
 
-    private func executeSetSharingFilterForPartners(_ payload: [String: Any]) {
-        // A nil / missing sharing_filter resets the filter — this is valid behavior, not an error.
-        let sharingFilter = payload[AppsFlyerConstants.Parameters.sharingFilter] as? [String]
+    private func executeSetSharingFilterForPartners(_ payload: [String: Any]) throws {
+        // A missing or NSNull sharing_filter resets the filter — this is valid behavior, not an error.
+        // A present value of the wrong type (e.g. the String "all") must not be read as a reset, because
+        // that would silently re-enable sharing with partners the integrator meant to exclude.
+        let value = payload[AppsFlyerConstants.Parameters.sharingFilter]
+        if value == nil || value is NSNull {
+            appsFlyerInstance.setSharingFilterForPartners(nil)
+            return
+        }
+        guard let sharingFilter = value as? [String] else {
+            throw AppsFlyerCommandError.invalidParameterType(parameter: AppsFlyerConstants.Parameters.sharingFilter,
+                                                             expectedTypes: "Array of Strings")
+        }
         appsFlyerInstance.setSharingFilterForPartners(sharingFilter)
     }
 
