@@ -1163,6 +1163,23 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertEqual(appsFlyerInstance.lastSettings?["deep_link_timeout"] as? Int, 0)
     }
 
+    func testBlankCommandEntriesAreSkipped() {
+        let payload: [String: Any] = ["command_name": "initialize, ,customevent",
+                                      "app_id": "test",
+                                      "app_dev_key": "test"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.initWithoutSettingsCount, 1)
+        XCTAssertEqual(appsFlyerInstance.logEventCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastEventName, "customevent")
+    }
+
+    func testTrailingCommaDoesNotLogEmptyEvent() {
+        appsFlyerCommand.processRemoteCommand(with: ["command_name": "setcurrencycode, ",
+                                                     "af_currency": "USD"])
+        XCTAssertEqual(appsFlyerInstance.setCurrencyCodeCount, 1)
+        XCTAssertEqual(appsFlyerInstance.logEventCount, 0)
+    }
+
     func testProcessRemoteCommandWithNonStringCommandName() {
         let payload: [String: Any] = ["command_name": 123]
         appsFlyerCommand.processRemoteCommand(with: payload)

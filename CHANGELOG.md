@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Validation for negative `deepLinkTimeout`
 
 ### Fixed
+- Empty entries in `command_name` (e.g. `"a, "`) are skipped instead of being logged as an event with an empty name
 - `isDebug` is set first in `initialize`, so debug logs cover initialization
 - `setsharingfilterforpartners` rejects a `sharing_filter` that is not an array of strings instead of resetting the filter
 

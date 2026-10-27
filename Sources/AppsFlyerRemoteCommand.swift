@@ -166,6 +166,10 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     /// Runs each command in the order given; validation errors are caught and sent to the logger.
     func executeCommands(_ commands: [String], payload: [String: Any]) {
         commands.forEach { commandString in
+            // An empty entry (e.g. a trailing comma in "initialize, ") is skipped, as on Android.
+            guard !commandString.isEmpty else {
+                return
+            }
             guard let command = AppsFlyerConstants.CommandNames.fromString(commandString) else {
                 // Not a built-in command, so treat it as a standard or custom AppsFlyer event.
                 appsFlyerInstance.logEvent(getEventName(command: commandString),
