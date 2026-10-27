@@ -32,14 +32,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking:** initializers require `sessionMode`: `AppsFlyerInstance(sessionMode:)`, `AppsFlyerInstance(tealium:sessionMode:logLevel:)`, `AppsFlyerRemoteCommand(sessionMode:type:logLevel:)` (`logLevel` defaults to `.error`). `AppsFlyerRemoteCommand(appsFlyerInstance:type:)` has no default instance
 - **Breaking:** `AppsFlyerCommand` protocol changed (`setUserPhone(countryCode:phoneNumber:)`, new command methods); update custom conformances
 - **Breaking:** `AppsFlyerInstance(tealium:sessionMode:logLevel:)` also sets `deepLinkDelegate`. If the app has its own, set it afterwards and forward to `didResolveDeepLink(_:)`
-- App-open attribution comes from `didResolveDeepLink` (SDK 7 removed `onAppOpenAttribution`). Event names and data unchanged; deferred links are reported only as `conversion_data_received`
+- App-open attribution comes from `didResolveDeepLink` (SDK 7 removed `onAppOpenAttribution`). `app_open_attribution` keeps its name but carries `DeepLink.clickEvent` instead of the `onAppOpenAttribution` dictionary, so its keys can differ; deferred links are reported only as `conversion_data_received`
+- `conversion_data_received` carries the conversion data (3.0.0 tracked it without data) and is no longer tracked when `is_first_launch` is missing or not a Bool (3.0.0 tracked it in that case)
 - `RemoteCommandLogger` is public
 - Errors are logged as typed `AppsFlyerCommandError` through `RemoteCommandLogger` instead of `print`
 - Standardized parameter names and command structures
-- Internal: deprecated SDK methods replaced, `eventsMap` replaces the event enum, `AppsFlyerConstants.Configuration` is a `String` enum, IDFA/IDFV settings handle deprecations
+- Internal: deprecated SDK methods replaced, `AppsFlyerConstants.Configuration` is a `String` enum, IDFA/IDFV settings handle deprecations
 
 ### Removed
 - **Breaking:** `setuseremails` and its `customer_emails`/`email_hash_type` parameters (removed in SDK 7). Use `setuseremail` with `email`, and unmap the old command, or it is logged as a custom event
+- **Breaking:** the public `AppsFlyerConstants.EventCommandNames` and `AppsFlyerConstants.Events` are removed; event names are resolved internally through `eventsMap`
 - **Breaking:** `wait_for_att_user_authorization_timeout_interval`, ignored by SDK 7. Use `.appManaged` to wait for ATT consent
 
 ## [3.0.0] - 2024-03-15
