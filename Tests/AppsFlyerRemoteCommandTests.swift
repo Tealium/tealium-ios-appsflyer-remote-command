@@ -1180,6 +1180,78 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertEqual(appsFlyerInstance.logEventCount, 0)
     }
 
+    /// Webview data layers send numbers as Strings.
+    func testTrackLocationWithNumericStrings() {
+        let payload: [String: Any] = ["command_name": "tracklocation",
+                                      "af_lat": "33.5",
+                                      "af_long": " -122.1 "]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.logLocationCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastLatitude, 33.5)
+        XCTAssertEqual(appsFlyerInstance.lastLongitude, -122.1)
+    }
+
+    func testTrackLocationNotRunWithNonNumericString() {
+        for invalid in ["abc", "", "nan", "inf"] {
+            appsFlyerCommand.processRemoteCommand(with: ["command_name": "tracklocation",
+                                                         "af_lat": invalid,
+                                                         "af_long": "-122.1"])
+        }
+        XCTAssertEqual(appsFlyerInstance.logLocationCount, 0)
+    }
+
+    func testLogAdRevenueWithNumericStringAmount() {
+        let payload: [String: Any] = [
+            "command_name": "logadrevenue",
+            "monetization_network": "AdMob",
+            "mediation_network": "googleadmob",
+            "ad_revenue_currency": "USD",
+            "ad_revenue_amount": "1.25"
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.logAdRevenueCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastAdRevenueAmount, 1.25)
+    }
+
+    func testLogAdRevenueNotRunWithNonNumericStringAmount() {
+        let payload: [String: Any] = [
+            "command_name": "logadrevenue",
+            "monetization_network": "AdMob",
+            "mediation_network": "googleadmob",
+            "ad_revenue_currency": "USD",
+            "ad_revenue_amount": "abc"
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.logAdRevenueCount, 0)
+    }
+
+    func testNumericStringSettingsAreConvertedToInt() {
+        initialize(with: ["deep_link_timeout": "10", "time_between_sessions": "60"])
+        XCTAssertEqual(appsFlyerInstance.lastSettings?["deep_link_timeout"] as? Int, 10)
+        XCTAssertEqual(appsFlyerInstance.lastSettings?["time_between_sessions"] as? Int, 60)
+    }
+
+    func testNegativeNumericStringSettingsAreDropped() {
+        initialize(with: ["deep_link_timeout": "-1", "time_between_sessions": "-1"])
+        XCTAssertEqual(appsFlyerInstance.initWithSettingsCount, 1)
+        XCTAssertNil(appsFlyerInstance.lastSettings?["deep_link_timeout"])
+        XCTAssertNil(appsFlyerInstance.lastSettings?["time_between_sessions"])
+    }
+
+    func testNonNumericStringSettingsAreIgnored() {
+        initialize(with: ["deep_link_timeout": "abc", "time_between_sessions": "1.5"])
+        XCTAssertEqual(appsFlyerInstance.initWithSettingsCount, 1)
+        XCTAssertNil(appsFlyerInstance.lastSettings?["deep_link_timeout"])
+        XCTAssertNil(appsFlyerInstance.lastSettings?["time_between_sessions"])
+    }
+
+    private func initialize(with settings: [String: Any]) {
+        appsFlyerCommand.processRemoteCommand(with: ["command_name": "initialize",
+                                                     "app_id": "test",
+                                                     "app_dev_key": "test",
+                                                     "settings": settings])
+    }
+
     func testProcessRemoteCommandWithNonStringCommandName() {
         let payload: [String: Any] = ["command_name": 123]
         appsFlyerCommand.processRemoteCommand(with: payload)

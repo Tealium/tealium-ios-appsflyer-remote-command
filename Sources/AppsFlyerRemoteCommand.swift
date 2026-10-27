@@ -240,12 +240,28 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
             return appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: nil)
         }
 
+        // Webview data layers send numbers as Strings, so those are converted before the check below.
+        convertNumericString(AppsFlyerConstants.Settings.deepLinkTimeout, in: &settings)
+        convertNumericString(AppsFlyerConstants.Settings.minTimeBetweenSessions, in: &settings)
+
         // The SDK takes both as `UInt`, so a negative value would trap on conversion.
         dropNegative(AppsFlyerConstants.Settings.deepLinkTimeout, from: &settings)
         dropNegative(AppsFlyerConstants.Settings.minTimeBetweenSessions, from: &settings)
 
         logger.debug("Initializing AppsFlyer with settings")
         appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: settings)
+    }
+
+    private func convertNumericString(_ key: String, in settings: inout [String: Any]) {
+        guard let string = settings[key] as? String else {
+            return
+        }
+        if let int = Int(string) {
+            settings[key] = int
+        } else {
+            logger.warning("Ignoring invalid \(key): expected a whole number or a numeric String, got \(string).")
+            settings.removeValue(forKey: key)
+        }
     }
 
     private func dropNegative(_ key: String, from settings: inout [String: Any]) {
@@ -458,14 +474,19 @@ extension Dictionary where Key == String, Value == Any {
 
     /// JSON payloads carry `NSNumber`, which bridges to both `Double` and `Int`, but a payload
     /// built in Swift carries a native number that only bridges to its own type — so `af_lat: 33`
-    /// needs the `Int` fallback to be accepted.
+    /// needs the `Int` fallback to be accepted. The `String` fallback covers webview data layer
+    /// values, which arrive as strings even for numeric UDO variables; it accepts surrounding
+    /// whitespace and rejects `nan` and `inf`.
     func requireDouble(_ parameter: String) throws -> Double {
         guard let value = self[parameter] else {
             throw AppsFlyerCommandError.missingParameter(parameter)
         }
-        guard let double = value as? Double ?? (value as? Int).map(Double.init) else {
+        guard let double = value as? Double
+                ?? (value as? Int).map(Double.init)
+                ?? (value as? String).flatMap({ Double($0.trimmingCharacters(in: .whitespacesAndNewlines)) })
+                    .flatMap({ $0.isFinite ? $0 : nil }) else {
             throw AppsFlyerCommandError.invalidParameterType(parameter: parameter,
-                                                             expectedTypes: "Double or Int")
+                                                             expectedTypes: "Double, Int or numeric String")
         }
         return double
     }

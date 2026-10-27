@@ -86,9 +86,11 @@ class AppsFlyerConstantsTests: XCTestCase {
         XCTAssertEqual(try ["af_lat": 33.5].requireDouble("af_lat"), 33.5)
         XCTAssertEqual(try ["af_lat": NSNumber(value: 33)].requireDouble("af_lat"), 33.0)
 
-        XCTAssertThrowsError(try ["af_lat": "33"].requireDouble("af_lat")) { error in
+        XCTAssertEqual(try ["af_lat": " 33.5 "].requireDouble("af_lat"), 33.5)
+
+        XCTAssertThrowsError(try ["af_lat": "abc"].requireDouble("af_lat")) { error in
             XCTAssertEqual((error as? AppsFlyerCommandError)?.message,
-                           "Unsupported type for 'af_lat'. Supported types: Double or Int.")
+                           "Unsupported type for 'af_lat'. Supported types: Double, Int or numeric String.")
         }
     }
 
