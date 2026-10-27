@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - AppsFlyer iOS SDK `>= 7.0.3, < 8.0` (SPM, CocoaPods), `>= 7.0.3` (Carthage); TealiumSwift `~> 2.19`
 - **Breaking:** `TealiumAppsFlyer.xcframework` (Carthage, release zip) is static and no longer bundles AppsFlyerLib. Link AppsFlyerLib in the app and set `TealiumAppsFlyer` to **Do Not Embed**. See [Installation](README.md#installation)
 - **Breaking:** remove your `AppsFlyerLib.shared().start()` call from `applicationDidBecomeActive`. SDK 7 starts inside the session-ready listener; `AppsFlyerSessionMode` decides who owns it
-- **Breaking:** `onReady` means "AppsFlyer has credentials" and runs on the main thread. `logEvent`, `logLocation`, `logAdRevenue` and `handleOpen` queue until then
+- **Breaking:** `onReady` means "AppsFlyer has credentials" and runs on the main thread. Every command's SDK call queues until then and runs in command order
 - **Breaking:** `disabletracking` requires `stop_tracking` (no longer defaults to `false`)
 - **Breaking:** initializers require `sessionMode`: `AppsFlyerInstance(sessionMode:)`, `AppsFlyerInstance(tealium:sessionMode:logLevel:)`, `AppsFlyerRemoteCommand(sessionMode:type:logLevel:)` (`logLevel` defaults to `.error`). `AppsFlyerRemoteCommand(appsFlyerInstance:type:)` has no default instance
 - **Breaking:** `AppsFlyerCommand` protocol changed (`setUserPhone(countryCode:phoneNumber:)`, new command methods); update custom conformances

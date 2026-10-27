@@ -62,6 +62,7 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
         lib.customData = nil
         lib.facebookDeferredAppLink = nil
         lib.isStopped = false
+        lib.currencyCode = nil
         // Left registered, this fires `start()` during an unrelated later test.
         lib.unregisterSessionReadyListener()
         super.tearDown()
@@ -386,6 +387,47 @@ class AppsFlyerInstanceInitializeTests: XCTestCase {
             }
         }
         XCTAssertEqual(order, ["onReady", "register"])
+    }
+
+    // MARK: - Command order
+
+    /// Commands run on `TealiumQueues.backgroundSerialQueue`, so a setter that reached the SDK at once
+    /// would overtake an `onReady` block queued by an earlier command.
+    func testSetterKeepsCommandOrderWhenCalledOffMain() {
+        instance.initialize(appId: "test_app_id", appDevKey: "test_dev_key", settings: nil)
+        AppsFlyerLib.shared().currencyCode = "USD"
+        let done = expectation(description: "Last onReady block ran")
+        var seen: [String] = []
+
+        TealiumQueues.backgroundSerialQueue.async {
+            self.instance.onReady { appsFlyer in seen.append("1:\(appsFlyer.currencyCode ?? "nil")") }
+            self.instance.currencyCode("EUR")
+            self.instance.onReady { _ in
+                seen.append("2:\(AppsFlyerLib.shared().currencyCode ?? "nil")")
+                done.fulfill()
+            }
+        }
+
+        wait(for: [done], timeout: 2)
+        XCTAssertEqual(seen, ["1:USD", "2:EUR"])
+    }
+
+    /// A setter mapped before `initialize` waits for it, and still reaches the SDK before the
+    /// session-ready listener is registered, so it applies to the first session.
+    func testSetterBeforeInitializeAppliedBeforeListenerRegistration() {
+        AppsFlyerLib.shared().currencyCode = "USD"
+        stubbingCredentials(false) {
+            instance.currencyCode("EUR")
+        }
+        XCTAssertEqual(AppsFlyerLib.shared().currencyCode, "USD", "Expected the setter to wait for initialize")
+
+        var currencyAtRegistration: String?
+        stubbingSessionReady(false) {
+            recordingListenerRegistrations({ currencyAtRegistration = AppsFlyerLib.shared().currencyCode }) {
+                instance.initialize(appId: "test_app_id", appDevKey: "test_dev_key", settings: nil)
+            }
+        }
+        XCTAssertEqual(currencyAtRegistration, "EUR")
     }
 
     // MARK: - Credentials validation

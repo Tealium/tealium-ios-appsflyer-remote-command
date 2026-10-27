@@ -369,7 +369,8 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
 
     /// AppsFlyer documents the call order as initialize, `setConsentData()`, then `start()`:
     /// https://dev.appsflyer.com/hc/docs/ios-send-consent-for-dma-compliance
-    /// Not gated on `onReady`, so consent mapped before `initialize` still reaches the SDK before `start()`.
+    /// Gated on `onReady` like every command, but `onReady` is released before the session-ready listener
+    /// is registered, so consent mapped before `initialize` still reaches the SDK before `start()`.
     ///
     /// `is_user_subject_to_gdpr` is required, the three consent details are optional, and fields
     /// left unmapped are omitted from the `consent_data` the SDK sends rather than defaulted.
