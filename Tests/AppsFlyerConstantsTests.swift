@@ -52,6 +52,20 @@ class AppsFlyerConstantsTests: XCTestCase {
         XCTAssertEqual(MediationNetworkType("  ironsource  "), .ironSource)
     }
 
+    /// Added in SDK 7.0.3; Android maps the same strings.
+    func testMediationNetworkResolvesGoogleAdManagerAndCloudX() {
+        XCTAssertEqual(MediationNetworkType("googleadmanager"), .googleAdManager)
+        XCTAssertEqual(MediationNetworkType("cloudx"), .cloudX)
+    }
+
+    /// One value per SDK enum case, so a missing mapping shows up as a count mismatch.
+    func testEveryValidValueResolves() {
+        XCTAssertEqual(MediationNetworkType.validValues.count, 16)
+        for value in MediationNetworkType.validValues {
+            XCTAssertNotNil(MediationNetworkType(value), value)
+        }
+    }
+
     func testMediationNetworkReturnsNilForUnknown() {
         XCTAssertNil(MediationNetworkType("not_a_network"))
         XCTAssertNil(MediationNetworkType(""))

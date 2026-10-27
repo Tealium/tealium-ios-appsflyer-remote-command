@@ -29,7 +29,9 @@ extension MediationNetworkType {
         "unity": .unity,
         "toponpte": .toponPte,
         "custom": .custom,
-        "direct": .directMonetization
+        "direct": .directMonetization,
+        "googleadmanager": .googleAdManager,
+        "cloudx": .cloudX
     ]
 
     /// Valid string values accepted by the remote command payload for `mediation_network`.

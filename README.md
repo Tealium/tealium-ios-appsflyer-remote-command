@@ -9,7 +9,7 @@
 
 ## Installation
 
-Swift Package Manager and CocoaPods resolve AppsFlyerLib (`>= 7.0.2, < 8.0`) and TealiumSwift (`~> 2.19`) for you. See the [documentation](https://docs.tealium.com/platforms/remote-commands/integrations/appsflyer/) for their setup steps.
+Swift Package Manager and CocoaPods resolve AppsFlyerLib (`>= 7.0.3, < 8.0`) and TealiumSwift (`~> 2.19`) for you. See the [documentation](https://docs.tealium.com/platforms/remote-commands/integrations/appsflyer/) for their setup steps.
 
 Since 4.0.0, `TealiumAppsFlyer.xcframework` is a static framework and no longer bundles its own copy of AppsFlyerLib. With Carthage or a manual install, the app links AppsFlyerLib itself, exactly once.
 
@@ -32,7 +32,7 @@ Since 4.0.0, `TealiumAppsFlyer.xcframework` is a static framework and no longer 
 ### Manual (xcframework)
 
 1. Download `tealium.xcframework.zip` from [Releases](https://github.com/Tealium/tealium-ios-appsflyer-remote-command/releases). It contains only `TealiumAppsFlyer.xcframework`.
-2. Add AppsFlyerLib `>= 7.0.2, < 8.0` from [AppsFlyerFramework releases](https://github.com/AppsFlyerSDK/AppsFlyerFramework/releases) (`AppsFlyerLib.xcframework.zip` is static, `AppsFlyerLib-Dynamic.xcframework.zip` is dynamic), and `TealiumCore` and `TealiumRemoteCommands` `~> 2.19` from [tealium-swift](https://github.com/tealium/tealium-swift).
+2. Add AppsFlyerLib `>= 7.0.3, < 8.0` from [AppsFlyerFramework releases](https://github.com/AppsFlyerSDK/AppsFlyerFramework/releases) (`AppsFlyerLib.xcframework.zip` is static, `AppsFlyerLib-Dynamic.xcframework.zip` is dynamic), and `TealiumCore` and `TealiumRemoteCommands` `~> 2.19` from [tealium-swift](https://github.com/tealium/tealium-swift).
 3. Set `TealiumAppsFlyer.xcframework` to **Do Not Embed**. Set AppsFlyerLib to **Do Not Embed** for its static build, or **Embed & Sign** for its dynamic build.
 
 ### Privacy manifest with static AppsFlyerLib
