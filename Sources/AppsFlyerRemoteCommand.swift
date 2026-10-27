@@ -325,10 +325,13 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     }
 
     private func executeResolveDeepLinkUrls(_ payload: [String: Any]) throws {
-        // Reports against whichever key the tag actually mapped, falling back to the canonical one
-        // so an absent parameter is not blamed on the legacy TiQ alias.
-        let key = [AppsFlyerConstants.Parameters.deepLinkUrls,
-                   AppsFlyerConstants.Parameters.deepLinkUrlsLegacyTiQ].first { payload[$0] != nil }
+        // `af_deep_link` is also the String deep link event parameter, so the key holding an array
+        // wins, as on Android. Otherwise reports against whichever key the tag actually mapped,
+        // falling back to the canonical one so an absent parameter is not blamed on the legacy TiQ alias.
+        let keys = [AppsFlyerConstants.Parameters.deepLinkUrls,
+                    AppsFlyerConstants.Parameters.deepLinkUrlsLegacyTiQ]
+        let key = keys.first { payload[$0] is [Any] }
+            ?? keys.first { payload[$0] != nil }
             ?? AppsFlyerConstants.Parameters.deepLinkUrls
         let urls = try payload.requireParameter(key, as: [String].self)
         appsFlyerInstance.resolveDeepLinkURLs(urls)

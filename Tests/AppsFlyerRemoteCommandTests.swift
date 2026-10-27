@@ -1004,6 +1004,41 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertEqual(appsFlyerInstance.lastUrls, urls)
     }
 
+    /// `af_deep_link` is also the String deep link event parameter, so it must not hide the legacy array.
+    func testResolveDeepLinkURLsUsesLegacyArrayWhenAfDeepLinkIsString() {
+        let urls = ["click.example.com"]
+        let payload: [String: Any] = [
+            "command_name": "resolvedeeplinkurls",
+            "af_deep_link": "https://example.com/product/123",
+            "resolve_deep_links": urls
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(1, appsFlyerInstance.resolveDeepLinkURLsCount)
+        XCTAssertEqual(appsFlyerInstance.lastUrls, urls)
+    }
+
+    func testResolveDeepLinkURLsNotRunWithOnlyStringAfDeepLink() {
+        let payload: [String: Any] = [
+            "command_name": "resolvedeeplinkurls",
+            "af_deep_link": "https://example.com/product/123"
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(0, appsFlyerInstance.resolveDeepLinkURLsCount)
+        XCTAssertNil(appsFlyerInstance.lastUrls)
+    }
+
+    func testResolveDeepLinkURLsPrefersAfDeepLinkArray() {
+        let urls = ["app://product/123"]
+        let payload: [String: Any] = [
+            "command_name": "resolvedeeplinkurls",
+            "af_deep_link": urls,
+            "resolve_deep_links": ["click.example.com"]
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(1, appsFlyerInstance.resolveDeepLinkURLsCount)
+        XCTAssertEqual(appsFlyerInstance.lastUrls, urls)
+    }
+
     func testSetCurrentDeviceLanguage() {
         let payload: [String: Any] = ["command_name": "setcurrentdevicelanguage", "device_language": "en-US"]
         appsFlyerCommand.processRemoteCommand(with: payload)
