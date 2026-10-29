@@ -582,9 +582,9 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
                       "Expected the command to log through the instance's logger")
     }
 
-    func testSetPhoneNumber() {
+    func testSetUserPhone() {
         let payload: [String: Any] = [
-            "command_name": "setphonenumber",
+            "command_name": "setuserphone",
             "country_code": "48",
             "phone_number": "123456789"
         ]
@@ -596,9 +596,9 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
 
     /// SDK 7 needs the country code separately, so a tag mapping only `phone_number` must fail
     /// rather than send a number the SDK cannot normalise.
-    func testSetPhoneNumberNotRunWithoutCountryCode() {
+    func testSetUserPhoneNotRunWithoutCountryCode() {
         let payload: [String: Any] = [
-            "command_name": "setphonenumber",
+            "command_name": "setuserphone",
             "phone_number": "123456789"
         ]
         appsFlyerCommand.processRemoteCommand(with: payload)
@@ -838,6 +838,30 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertNil(appsFlyerInstance.lastSharingFilter)
     }
 
+    func testSetSharingFilterForPartnersNullResets() {
+        let payload: [String: Any] = [
+            "command_name": "setsharingfilterforpartners",
+            "sharing_filter": NSNull()
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+
+        XCTAssertEqual(appsFlyerInstance.setSharingFilterForPartnersCount, 1)
+        XCTAssertNil(appsFlyerInstance.lastSharingFilter)
+    }
+
+    /// A String such as "all" is not an array, so it must not be mistaken for a reset, which would
+    /// re-enable sharing with partners the integrator meant to exclude.
+    func testSetSharingFilterForPartnersNotRunWithWrongType() {
+        let payload: [String: Any] = [
+            "command_name": "setsharingfilterforpartners",
+            "sharing_filter": "all"
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+
+        XCTAssertEqual(appsFlyerInstance.setSharingFilterForPartnersCount, 0)
+        XCTAssertNil(appsFlyerInstance.lastSharingFilter)
+    }
+
     func testHandleOpenWithSourceApplicationAndAnnotation() {
         let payload: [String: Any] = [
             "command_name": "handleopen",
@@ -965,8 +989,8 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertEqual(appsFlyerInstance.lastAnonymizeUser, true)
     }
 
-    func testSetPhoneNumberNotRun() {
-        let payload: [String: Any] = ["command_name": "setphonenumber"]
+    func testSetUserPhoneNotRun() {
+        let payload: [String: Any] = ["command_name": "setuserphone"]
         appsFlyerCommand.processRemoteCommand(with: payload)
         XCTAssertEqual(0, appsFlyerInstance.setUserPhoneCount)
         XCTAssertNil(appsFlyerInstance.lastPhoneNumber)
@@ -977,6 +1001,41 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         let payload: [String: Any] = ["command_name": "resolvedeeplinkurls", "resolve_deep_links": urls]
         appsFlyerCommand.processRemoteCommand(with: payload)
         XCTAssertEqual(1, self.appsFlyerInstance.resolveDeepLinkURLsCount)
+        XCTAssertEqual(appsFlyerInstance.lastUrls, urls)
+    }
+
+    /// `af_deep_link` is also the String deep link event parameter, so it must not hide the legacy array.
+    func testResolveDeepLinkURLsUsesLegacyArrayWhenAfDeepLinkIsString() {
+        let urls = ["click.example.com"]
+        let payload: [String: Any] = [
+            "command_name": "resolvedeeplinkurls",
+            "af_deep_link": "https://example.com/product/123",
+            "resolve_deep_links": urls
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(1, appsFlyerInstance.resolveDeepLinkURLsCount)
+        XCTAssertEqual(appsFlyerInstance.lastUrls, urls)
+    }
+
+    func testResolveDeepLinkURLsNotRunWithOnlyStringAfDeepLink() {
+        let payload: [String: Any] = [
+            "command_name": "resolvedeeplinkurls",
+            "af_deep_link": "https://example.com/product/123"
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(0, appsFlyerInstance.resolveDeepLinkURLsCount)
+        XCTAssertNil(appsFlyerInstance.lastUrls)
+    }
+
+    func testResolveDeepLinkURLsPrefersAfDeepLinkArray() {
+        let urls = ["app://product/123"]
+        let payload: [String: Any] = [
+            "command_name": "resolvedeeplinkurls",
+            "af_deep_link": urls,
+            "resolve_deep_links": ["click.example.com"]
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(1, appsFlyerInstance.resolveDeepLinkURLsCount)
         XCTAssertEqual(appsFlyerInstance.lastUrls, urls)
     }
 
@@ -1137,6 +1196,95 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         appsFlyerCommand.processRemoteCommand(with: payload)
         XCTAssertEqual(appsFlyerInstance.initWithSettingsCount, 1)
         XCTAssertEqual(appsFlyerInstance.lastSettings?["deep_link_timeout"] as? Int, 0)
+    }
+
+    func testBlankCommandEntriesAreSkipped() {
+        let payload: [String: Any] = ["command_name": "initialize, ,customevent",
+                                      "app_id": "test",
+                                      "app_dev_key": "test"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.initWithoutSettingsCount, 1)
+        XCTAssertEqual(appsFlyerInstance.logEventCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastEventName, "customevent")
+    }
+
+    func testTrailingCommaDoesNotLogEmptyEvent() {
+        appsFlyerCommand.processRemoteCommand(with: ["command_name": "setcurrencycode, ",
+                                                     "af_currency": "USD"])
+        XCTAssertEqual(appsFlyerInstance.setCurrencyCodeCount, 1)
+        XCTAssertEqual(appsFlyerInstance.logEventCount, 0)
+    }
+
+    /// Webview data layers send numbers as Strings.
+    func testTrackLocationWithNumericStrings() {
+        let payload: [String: Any] = ["command_name": "tracklocation",
+                                      "af_lat": "33.5",
+                                      "af_long": " -122.1 "]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.logLocationCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastLatitude, 33.5)
+        XCTAssertEqual(appsFlyerInstance.lastLongitude, -122.1)
+    }
+
+    func testTrackLocationNotRunWithNonNumericString() {
+        for invalid in ["abc", "", "nan", "inf"] {
+            appsFlyerCommand.processRemoteCommand(with: ["command_name": "tracklocation",
+                                                         "af_lat": invalid,
+                                                         "af_long": "-122.1"])
+        }
+        XCTAssertEqual(appsFlyerInstance.logLocationCount, 0)
+    }
+
+    func testLogAdRevenueWithNumericStringAmount() {
+        let payload: [String: Any] = [
+            "command_name": "logadrevenue",
+            "monetization_network": "AdMob",
+            "mediation_network": "googleadmob",
+            "ad_revenue_currency": "USD",
+            "ad_revenue_amount": "1.25"
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.logAdRevenueCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastAdRevenueAmount, 1.25)
+    }
+
+    func testLogAdRevenueNotRunWithNonNumericStringAmount() {
+        let payload: [String: Any] = [
+            "command_name": "logadrevenue",
+            "monetization_network": "AdMob",
+            "mediation_network": "googleadmob",
+            "ad_revenue_currency": "USD",
+            "ad_revenue_amount": "abc"
+        ]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.logAdRevenueCount, 0)
+    }
+
+    func testNumericStringSettingsAreConvertedToInt() {
+        initialize(with: ["deep_link_timeout": "10", "time_between_sessions": "60"])
+        XCTAssertEqual(appsFlyerInstance.lastSettings?["deep_link_timeout"] as? Int, 10)
+        XCTAssertEqual(appsFlyerInstance.lastSettings?["time_between_sessions"] as? Int, 60)
+    }
+
+    func testNegativeNumericStringSettingsAreDropped() {
+        initialize(with: ["deep_link_timeout": "-1", "time_between_sessions": "-1"])
+        XCTAssertEqual(appsFlyerInstance.initWithSettingsCount, 1)
+        XCTAssertNil(appsFlyerInstance.lastSettings?["deep_link_timeout"])
+        XCTAssertNil(appsFlyerInstance.lastSettings?["time_between_sessions"])
+    }
+
+    func testNonNumericStringSettingsAreIgnored() {
+        initialize(with: ["deep_link_timeout": "abc", "time_between_sessions": "1.5"])
+        XCTAssertEqual(appsFlyerInstance.initWithSettingsCount, 1)
+        XCTAssertNil(appsFlyerInstance.lastSettings?["deep_link_timeout"])
+        XCTAssertNil(appsFlyerInstance.lastSettings?["time_between_sessions"])
+    }
+
+    private func initialize(with settings: [String: Any]) {
+        appsFlyerCommand.processRemoteCommand(with: ["command_name": "initialize",
+                                                     "app_id": "test",
+                                                     "app_dev_key": "test",
+                                                     "settings": settings])
     }
 
     func testProcessRemoteCommandWithNonStringCommandName() {

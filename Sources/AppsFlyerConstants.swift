@@ -74,7 +74,7 @@ public enum AppsFlyerConstants {
         /// Android alias for `anonymizeUser` — kept for backwards compatibility.
         case disableDeviceTracking = "disabledevicetracking"
         case resolveDeepLinkUrls = "resolvedeeplinkurls"
-        case setPhoneNumber = "setphonenumber"
+        case setUserPhone = "setuserphone"
         case logAdRevenue = "logadrevenue"
         case setConsentData = "setconsentdata"
         case setPartnerData = "setpartnerdata"

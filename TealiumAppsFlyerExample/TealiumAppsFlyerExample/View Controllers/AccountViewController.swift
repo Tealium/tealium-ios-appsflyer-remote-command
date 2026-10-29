@@ -166,8 +166,8 @@ class AccountViewController: UIViewController {
                 AccountViewController.mediationNetwork: "googleadmob",
                 AccountViewController.adRevenueCurrency: "USD",
                 AccountViewController.adRevenueAmount: 0.05,
-                AccountViewController.adRevenueAdUnitId: "ca-app-pub-123456789/1234567890",
-                AccountViewController.adRevenueAdFormat: "banner",
+                AccountViewController.adRevenueAdUnit: "ca-app-pub-123456789/1234567890",
+                AccountViewController.adRevenueAdType: "banner",
                 AccountViewController.adRevenuePlacement: "main_screen"
             ])
             self.showAdRevenueResult("AdMob banner ad revenue: $0.05")
@@ -180,7 +180,7 @@ class AccountViewController: UIViewController {
                 AccountViewController.adRevenueCurrency: "USD",
                 AccountViewController.adRevenueAmount: 0.12,
                 AccountViewController.adRevenueInstanceId: "DefaultInterstitial",
-                AccountViewController.adRevenueAdFormat: "interstitial",
+                AccountViewController.adRevenueAdType: "interstitial",
                 AccountViewController.adRevenueCountry: "US"
             ])
             self.showAdRevenueResult("IronSource interstitial ad revenue: $0.12")
@@ -193,7 +193,7 @@ class AccountViewController: UIViewController {
                 AccountViewController.adRevenueCurrency: "USD",
                 AccountViewController.adRevenueAmount: 0.08,
                 AccountViewController.adRevenuePlacementId: "rewardedVideo",
-                AccountViewController.adRevenueAdFormat: "rewarded",
+                AccountViewController.adRevenueAdType: "rewarded",
                 AccountViewController.adRevenueCompletion: true
             ])
             self.showAdRevenueResult("Unity rewarded video ad revenue: $0.08")
@@ -333,8 +333,8 @@ extension AccountViewController {
     static let mediationNetwork = "mediation_network"
     static let adRevenueCurrency = "ad_revenue_currency"
     static let adRevenueAmount = "ad_revenue_amount"
-    static let adRevenueAdUnitId = "ad_revenue_ad_unit_id"
-    static let adRevenueAdFormat = "ad_revenue_ad_format"
+    static let adRevenueAdUnit = "ad_revenue_ad_unit"
+    static let adRevenueAdType = "ad_revenue_ad_type"
     static let adRevenuePlacement = "ad_revenue_placement"
     static let adRevenueInstanceId = "ad_revenue_instance_id"
     static let adRevenueCountry = "ad_revenue_country"

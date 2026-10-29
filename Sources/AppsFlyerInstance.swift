@@ -106,11 +106,13 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
         }
     }
 
-    /// Runs `onReady` on the main thread once AppsFlyer has credentials (`initialize` was called, by
-    /// our `initialize` command or by the app), or at once if it already has. This is not "session
-    /// started". Commands that log to the SDK are gated on this because the SDK needs credentials to
-    /// build a request. SDK 7.0.2 accepts `logEvent` between `initialize` and `start()`, caches it and
-    /// sends it right after `start()`, in the same session.
+    /// Runs `onReady` on the main thread once AppsFlyer has credentials, or at once if it already has.
+    /// Credentials come from `initialize`, sent by our command or called by the app; this is not
+    /// "session started".
+    /// Every SDK call except `initialize` goes through here. Logging needs credentials, and routing the
+    /// setters too keeps all calls in command order, e.g. `"logout,clearuserpii"` sends `logout` first.
+    /// Gating on credentials rather than `start()` is enough: the SDK caches events logged before
+    /// `start()` and sends them in the same session.
     public func onReady(_ onReady: @escaping (AppsFlyerLib) -> Void) {
         TealiumQueues.secureMainThreadExecution { [self] in
             defer { _onReady.subscribeOnce(onReady) }
@@ -245,53 +247,77 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
 
     public func setHost(_ host: String, with prefix: String) {
         // SDK 7 swapped the argument order to match Android: prefix first, host second.
-        AppsFlyerLib.shared().setHost(prefix, hostName: host)
+        onReady { appsFlyer in
+            appsFlyer.setHost(prefix, hostName: host)
+        }
     }
 
     /// The SDK normalises and SHA-256 hashes the value on-device before it reaches the payload, so
     /// the caller passes it in clear text. Same for the other `setUser…` methods below.
     public func setUserEmail(_ email: String) {
-        AppsFlyerLib.shared().setUserEmail(email)
+        onReady { appsFlyer in
+            appsFlyer.setUserEmail(email)
+        }
     }
 
     public func setUserPhone(countryCode: String, phoneNumber: String) {
-        AppsFlyerLib.shared().setUserPhone(countryCode: countryCode, phoneNumber: phoneNumber)
+        onReady { appsFlyer in
+            appsFlyer.setUserPhone(countryCode: countryCode, phoneNumber: phoneNumber)
+        }
     }
 
     public func setUserFirstName(_ firstName: String) {
-        AppsFlyerLib.shared().setUserFirstName(firstName)
+        onReady { appsFlyer in
+            appsFlyer.setUserFirstName(firstName)
+        }
     }
 
     public func setUserLastName(_ lastName: String) {
-        AppsFlyerLib.shared().setUserLastName(lastName)
+        onReady { appsFlyer in
+            appsFlyer.setUserLastName(lastName)
+        }
     }
 
     public func setUserFbLoginId(_ fbLoginId: Int64) {
-        AppsFlyerLib.shared().setUserFbLoginId(fbLoginId)
+        onReady { appsFlyer in
+            appsFlyer.setUserFbLoginId(fbLoginId)
+        }
     }
 
     public func clearUserPii() {
-        AppsFlyerLib.shared().clearUserPii()
+        onReady { appsFlyer in
+            appsFlyer.clearUserPii()
+        }
     }
 
     public func currencyCode(_ currency: String) {
-        AppsFlyerLib.shared().currencyCode = currency
+        onReady { appsFlyer in
+            appsFlyer.currencyCode = currency
+        }
     }
 
     public func customerId(_ id: String) {
-        AppsFlyerLib.shared().customerUserID = id
+        onReady { appsFlyer in
+            appsFlyer.customerUserID = id
+        }
     }
 
     public func disableTracking(_ disable: Bool) {
-        AppsFlyerLib.shared().isStopped = disable
+        onReady { appsFlyer in
+            appsFlyer.isStopped = disable
+        }
     }
 
     public func anonymizeUser(_ anonymize: Bool) {
-        AppsFlyerLib.shared().anonymizeUser = anonymize
+        onReady { appsFlyer in
+            appsFlyer.anonymizeUser = anonymize
+        }
     }
 
     public func resolveDeepLinkURLs(_ urls: [String]) {
-        AppsFlyerLib.shared().resolveDeepLinkURLs = urls
+        onReady { appsFlyer in
+            appsFlyer.resolveDeepLinkURLs = urls
+        }
     }
 
     public func logAdRevenue(_ adRevenueData: AFAdRevenueData, additionalParams: [String: Any]?) {
@@ -301,19 +327,25 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     }
 
     public func setConsentData(_ consent: AppsFlyerConsent) {
-        AppsFlyerLib.shared().setConsentData(consent)
+        onReady { appsFlyer in
+            appsFlyer.setConsentData(consent)
+        }
     }
 
 
     public func setPartnerData(partnerId: String, partnerInfo: [String: Any]?) {
-        AppsFlyerLib.shared().setPartnerData(partnerId: partnerId, data: partnerInfo)
+        onReady { appsFlyer in
+            appsFlyer.setPartnerData(partnerId: partnerId, data: partnerInfo)
+        }
     }
 
     public func setSharingFilterForPartners(_ sharingFilter: [String]?) {
-        AppsFlyerLib.shared().setSharingFilterForPartners(sharingFilter)
+        onReady { appsFlyer in
+            appsFlyer.setSharingFilterForPartners(sharingFilter)
+        }
     }
 
-    /// Gated on `onReady` (credentials), not on `start()`: SDK 7.0.2 handles a link received before
+    /// Gated on `onReady` (credentials), not on `start()`: the SDK handles a link received before
     /// `start()` exactly as one received after it.
     public func handleOpen(url: URL, sourceApplication: String?, annotation: Any?) {
         onReady { appsFlyer in
@@ -322,11 +354,15 @@ public class AppsFlyerInstance: NSObject, AppsFlyerCommand {
     }
 
     public func setCurrentDeviceLanguage(_ language: String) {
-        AppsFlyerLib.shared().currentDeviceLanguage = language
+        onReady { appsFlyer in
+            appsFlyer.currentDeviceLanguage = language
+        }
     }
 
     public func setAppInviteOneLink(_ oneLinkId: String) {
-        AppsFlyerLib.shared().appInviteOneLinkID = oneLinkId
+        onReady { appsFlyer in
+            appsFlyer.appInviteOneLinkID = oneLinkId
+        }
     }
 
     func tealiumTrack(title: String, data: [String: Any]? = nil) {

@@ -52,6 +52,20 @@ class AppsFlyerConstantsTests: XCTestCase {
         XCTAssertEqual(MediationNetworkType("  ironsource  "), .ironSource)
     }
 
+    /// Added in SDK 7.0.3; Android maps the same strings.
+    func testMediationNetworkResolvesGoogleAdManagerAndCloudX() {
+        XCTAssertEqual(MediationNetworkType("googleadmanager"), .googleAdManager)
+        XCTAssertEqual(MediationNetworkType("cloudx"), .cloudX)
+    }
+
+    /// One value per SDK enum case, so a missing mapping shows up as a count mismatch.
+    func testEveryValidValueResolves() {
+        XCTAssertEqual(MediationNetworkType.validValues.count, 16)
+        for value in MediationNetworkType.validValues {
+            XCTAssertNotNil(MediationNetworkType(value), value)
+        }
+    }
+
     func testMediationNetworkReturnsNilForUnknown() {
         XCTAssertNil(MediationNetworkType("not_a_network"))
         XCTAssertNil(MediationNetworkType(""))
@@ -86,9 +100,11 @@ class AppsFlyerConstantsTests: XCTestCase {
         XCTAssertEqual(try ["af_lat": 33.5].requireDouble("af_lat"), 33.5)
         XCTAssertEqual(try ["af_lat": NSNumber(value: 33)].requireDouble("af_lat"), 33.0)
 
-        XCTAssertThrowsError(try ["af_lat": "33"].requireDouble("af_lat")) { error in
+        XCTAssertEqual(try ["af_lat": " 33.5 "].requireDouble("af_lat"), 33.5)
+
+        XCTAssertThrowsError(try ["af_lat": "abc"].requireDouble("af_lat")) { error in
             XCTAssertEqual((error as? AppsFlyerCommandError)?.message,
-                           "Unsupported type for 'af_lat'. Supported types: Double or Int.")
+                           "Unsupported type for 'af_lat'. Supported types: Double, Int or numeric String.")
         }
     }
 

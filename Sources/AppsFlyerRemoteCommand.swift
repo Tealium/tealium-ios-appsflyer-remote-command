@@ -166,6 +166,10 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     /// Runs each command in the order given; validation errors are caught and sent to the logger.
     func executeCommands(_ commands: [String], payload: [String: Any]) {
         commands.forEach { commandString in
+            // An empty entry (e.g. a trailing comma in "initialize, ") is skipped, as on Android.
+            guard !commandString.isEmpty else {
+                return
+            }
             guard let command = AppsFlyerConstants.CommandNames.fromString(commandString) else {
                 // Not a built-in command, so treat it as a standard or custom AppsFlyer event.
                 appsFlyerInstance.logEvent(getEventName(command: commandString),
@@ -201,8 +205,8 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                     try executeAnonymizeUser(payload)
                 case .resolveDeepLinkUrls:
                     try executeResolveDeepLinkUrls(payload)
-                case .setPhoneNumber:
-                    try executeSetPhoneNumber(payload)
+                case .setUserPhone:
+                    try executeSetUserPhone(payload)
                 case .logAdRevenue:
                     try executeLogAdRevenue(payload)
                 case .setConsentData:
@@ -210,7 +214,7 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
                 case .setPartnerData:
                     try executeSetPartnerData(payload)
                 case .setSharingFilterForPartners:
-                    executeSetSharingFilterForPartners(payload)
+                    try executeSetSharingFilterForPartners(payload)
                 case .handleOpen:
                     try executeHandleOpen(payload)
                 case .setCurrentDeviceLanguage:
@@ -236,12 +240,28 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
             return appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: nil)
         }
 
+        // Webview data layers send numbers as Strings, so those are converted before the check below.
+        convertNumericString(AppsFlyerConstants.Settings.deepLinkTimeout, in: &settings)
+        convertNumericString(AppsFlyerConstants.Settings.minTimeBetweenSessions, in: &settings)
+
         // The SDK takes both as `UInt`, so a negative value would trap on conversion.
         dropNegative(AppsFlyerConstants.Settings.deepLinkTimeout, from: &settings)
         dropNegative(AppsFlyerConstants.Settings.minTimeBetweenSessions, from: &settings)
 
         logger.debug("Initializing AppsFlyer with settings")
         appsFlyerInstance.initialize(appId: appId, appDevKey: appDevKey, settings: settings)
+    }
+
+    private func convertNumericString(_ key: String, in settings: inout [String: Any]) {
+        guard let string = settings[key] as? String else {
+            return
+        }
+        if let int = Int(string) {
+            settings[key] = int
+        } else {
+            logger.warning("Ignoring invalid \(key): expected a whole number or a numeric String, got \(string).")
+            settings.removeValue(forKey: key)
+        }
     }
 
     private func dropNegative(_ key: String, from settings: inout [String: Any]) {
@@ -305,16 +325,19 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
     }
 
     private func executeResolveDeepLinkUrls(_ payload: [String: Any]) throws {
-        // Reports against whichever key the tag actually mapped, falling back to the canonical one
-        // so an absent parameter is not blamed on the legacy TiQ alias.
-        let key = [AppsFlyerConstants.Parameters.deepLinkUrls,
-                   AppsFlyerConstants.Parameters.deepLinkUrlsLegacyTiQ].first { payload[$0] != nil }
+        // `af_deep_link` is also the String deep link event parameter, so the key holding an array
+        // wins, as on Android. Otherwise reports against whichever key the tag actually mapped,
+        // falling back to the canonical one so an absent parameter is not blamed on the legacy TiQ alias.
+        let keys = [AppsFlyerConstants.Parameters.deepLinkUrls,
+                    AppsFlyerConstants.Parameters.deepLinkUrlsLegacyTiQ]
+        let key = keys.first { payload[$0] is [Any] }
+            ?? keys.first { payload[$0] != nil }
             ?? AppsFlyerConstants.Parameters.deepLinkUrls
         let urls = try payload.requireParameter(key, as: [String].self)
         appsFlyerInstance.resolveDeepLinkURLs(urls)
     }
 
-    private func executeSetPhoneNumber(_ payload: [String: Any]) throws {
+    private func executeSetUserPhone(_ payload: [String: Any]) throws {
         let countryCode = try payload.requireParameter(AppsFlyerConstants.Parameters.countryCode, as: String.self)
         let phoneNumber = try payload.requireParameter(AppsFlyerConstants.Parameters.phoneNumber, as: String.self)
         appsFlyerInstance.setUserPhone(countryCode: countryCode, phoneNumber: phoneNumber)
@@ -346,7 +369,8 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
 
     /// AppsFlyer documents the call order as initialize, `setConsentData()`, then `start()`:
     /// https://dev.appsflyer.com/hc/docs/ios-send-consent-for-dma-compliance
-    /// Not gated on `onReady`, so consent mapped before `initialize` still reaches the SDK before `start()`.
+    /// Gated on `onReady` like every command, but `onReady` is released before the session-ready listener
+    /// is registered, so consent mapped before `initialize` still reaches the SDK before `start()`.
     ///
     /// `is_user_subject_to_gdpr` is required, the three consent details are optional, and fields
     /// left unmapped are omitted from the `consent_data` the SDK sends rather than defaulted.
@@ -382,9 +406,19 @@ public class AppsFlyerRemoteCommand: RemoteCommand {
         appsFlyerInstance.setPartnerData(partnerId: partnerId, partnerInfo: partnerInfo)
     }
 
-    private func executeSetSharingFilterForPartners(_ payload: [String: Any]) {
-        // A nil / missing sharing_filter resets the filter — this is valid behavior, not an error.
-        let sharingFilter = payload[AppsFlyerConstants.Parameters.sharingFilter] as? [String]
+    private func executeSetSharingFilterForPartners(_ payload: [String: Any]) throws {
+        // A missing or NSNull sharing_filter resets the filter — this is valid behavior, not an error.
+        // A present value of the wrong type (e.g. the String "all") must not be read as a reset, because
+        // that would silently re-enable sharing with partners the integrator meant to exclude.
+        let value = payload[AppsFlyerConstants.Parameters.sharingFilter]
+        if value == nil || value is NSNull {
+            appsFlyerInstance.setSharingFilterForPartners(nil)
+            return
+        }
+        guard let sharingFilter = value as? [String] else {
+            throw AppsFlyerCommandError.invalidParameterType(parameter: AppsFlyerConstants.Parameters.sharingFilter,
+                                                             expectedTypes: "Array of Strings")
+        }
         appsFlyerInstance.setSharingFilterForPartners(sharingFilter)
     }
 
@@ -444,14 +478,19 @@ extension Dictionary where Key == String, Value == Any {
 
     /// JSON payloads carry `NSNumber`, which bridges to both `Double` and `Int`, but a payload
     /// built in Swift carries a native number that only bridges to its own type — so `af_lat: 33`
-    /// needs the `Int` fallback to be accepted.
+    /// needs the `Int` fallback to be accepted. The `String` fallback covers webview data layer
+    /// values, which arrive as strings even for numeric UDO variables; it accepts surrounding
+    /// whitespace and rejects `nan` and `inf`.
     func requireDouble(_ parameter: String) throws -> Double {
         guard let value = self[parameter] else {
             throw AppsFlyerCommandError.missingParameter(parameter)
         }
-        guard let double = value as? Double ?? (value as? Int).map(Double.init) else {
+        guard let double = value as? Double
+                ?? (value as? Int).map(Double.init)
+                ?? (value as? String).flatMap({ Double($0.trimmingCharacters(in: .whitespacesAndNewlines)) })
+                    .flatMap({ $0.isFinite ? $0 : nil }) else {
             throw AppsFlyerCommandError.invalidParameterType(parameter: parameter,
-                                                             expectedTypes: "Double or Int")
+                                                             expectedTypes: "Double, Int or numeric String")
         }
         return double
     }
