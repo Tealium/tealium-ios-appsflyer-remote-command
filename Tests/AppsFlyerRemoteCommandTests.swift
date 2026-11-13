@@ -102,6 +102,13 @@ class AppsFlyerRemoteCommandTests: XCTestCase {
         XCTAssertEqual(appsFlyerInstance.lastFbLoginId, 1234567890123)
     }
 
+    func testSetUserFbLoginIdAcceptsNumericStringWithWhitespace() {
+        let payload: [String: Any] = ["command_name": "setuserfbloginid", "fb_login_id": " 1234567890123\n"]
+        appsFlyerCommand.processRemoteCommand(with: payload)
+        XCTAssertEqual(appsFlyerInstance.setUserFbLoginIdCount, 1)
+        XCTAssertEqual(appsFlyerInstance.lastFbLoginId, 1234567890123)
+    }
+
     /// `0` is the SDK's unset sentinel, so it must reach the SDK rather than be rejected.
     func testSetUserFbLoginIdAcceptsZeroSentinel() {
         let payload: [String: Any] = ["command_name": "setuserfbloginid", "fb_login_id": 0]

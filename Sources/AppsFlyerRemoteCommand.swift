@@ -498,14 +498,14 @@ extension Dictionary where Key == String, Value == Any {
     /// `setUserFbLoginId` takes an `Int64`. A JSON payload brings `NSNumber`, which bridges to both,
     /// while a Swift-built payload brings a native `Int` — so the `Int` fallback is needed, as in
     /// `requireDouble` above. The `String` fallback covers webview data layer values, which arrive
-    /// as strings even for numeric UDO variables.
+    /// as strings even for numeric UDO variables; it accepts surrounding whitespace, as `requireDouble` does.
     func requireInt64(_ parameter: String) throws -> Int64 {
         guard let value = self[parameter] else {
             throw AppsFlyerCommandError.missingParameter(parameter)
         }
         guard let int64 = value as? Int64
                 ?? (value as? Int).map(Int64.init)
-                ?? (value as? String).flatMap(Int64.init) else {
+                ?? (value as? String).flatMap({ Int64($0.trimmingCharacters(in: .whitespacesAndNewlines)) }) else {
             throw AppsFlyerCommandError.invalidParameterType(parameter: parameter,
                                                              expectedTypes: "Int64, Int or numeric String")
         }
