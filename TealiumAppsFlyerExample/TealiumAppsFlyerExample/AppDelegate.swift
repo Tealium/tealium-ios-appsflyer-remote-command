@@ -8,10 +8,8 @@
 
 import UIKit
 import UserNotifications
-import AppsFlyerLib
 import TealiumSwift
-// AppsFlyer Push Notification Campaign
-// https://support.appsflyer.com/hc/en-us/articles/207364076-Measuring-push-notification-re-engagement-campaigns#setting-up-a-push-notification-campaign
+import AppsFlyerLib
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -20,25 +18,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     let tealiumHelper = TealiumHelper.shared
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        // AppsFlyer SDK 7 only waits for a cold-launch Universal Link to resolve before firing the
+        // session-ready listener if it is given `launchOptions` here. The RemoteCommand cannot do
+        // this itself — it has no access to them — so a host app supporting Universal Links has to.
+        // Must run before the `initialize` command registers the listener.
+        AppsFlyerLib.shared().handleLaunchOptions(launchOptions)
         notificationRegistration(application)
         return true
     }
-    
+
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         tealiumHelper.appsFlyerRemoteCommand.onReady { appsFlyer in
             appsFlyer.registerUninstall(deviceToken)
         }
     }
-
-    func applicationWillResignActive(_ application: UIApplication) { }
-
-    func applicationDidEnterBackground(_ application: UIApplication) { }
-
-    func applicationWillEnterForeground(_ application: UIApplication) { }
-
-    func applicationDidBecomeActive(_ application: UIApplication) { }
-
-    func applicationWillTerminate(_ application: UIApplication) { }
 
 }
 

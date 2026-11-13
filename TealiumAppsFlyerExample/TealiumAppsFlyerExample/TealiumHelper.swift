@@ -25,20 +25,26 @@ class TealiumHelper {
                                environment: TealiumConfiguration.environment)
 
     var tealium: Tealium?
-    
-    // JSON Remote Command
-    let appsFlyerRemoteCommand = AppsFlyerRemoteCommand(type: .local(file: "appsflyer"))
+
+    // JSON Remote Command. `.automatic`: the `initialize` command registers the session-ready
+    // listener and calls `start()` in it, so this app registers no listener of its own.
+    let appsFlyerRemoteCommand = AppsFlyerRemoteCommand(sessionMode: .automatic,
+                                                        type: .local(file: "appsflyer"),
+                                                        logLevel: .debug)
 
     private init() {
         config.shouldUseRemotePublishSettings = false
         config.batchingEnabled = false
         config.remoteAPIEnabled = true
         config.logLevel = .info
+        // Deep link tracking is automatic, but the `deep_link` event that drives the
+        // `handleopen` command is opt-in. Without this the AppsFlyer SDK never sees the link.
+        config.sendDeepLinkEvent = true
         config.collectors = [Collectors.Lifecycle]
         config.dispatchers = [Dispatchers.TagManagement, Dispatchers.RemoteCommands]
-        
+
         config.addRemoteCommand(appsFlyerRemoteCommand)
-        
+
         tealium = Tealium(config: config)
     }
 

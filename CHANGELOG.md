@@ -1,0 +1,111 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [4.0.0] - 2026-10-22
+
+### Added
+- `AppsFlyerSessionMode` (required): `.automatic` lets the RemoteCommand register the session-ready listener and call `start`; `.appManaged` leaves both to the app, e.g. to wait for ATT consent. See README
+- Hashed-PII commands: `setuseremail`, `setuserfirstname`, `setuserlastname`, `setuserfbloginid`, `clearuserpii`. The SDK hashes values on-device, except `fb_login_id`
+- `handleopen` command for deep links. Requires `config.sendDeepLinkEvent = true`; for Universal Links the app also calls `AppsFlyerLib.shared().handleLaunchOptions(_:)`
+- `setconsentdata` command (GDPR/DMA). Map it before `initialize` to include consent in the first session: `"launch": "setconsentdata,initialize"`
+- Commands: `setappinviteonelink`, `anonymizeuser`, `logadrevenue`, `setpartnerdata`, `setsharingfilterforpartners`, `setuserphone`, `setcurrentdevicelanguage`, `sethost`
+- Currency setting, deep link URL resolution and parameters, `locationcoordinates` event
+- Aliases: `stoptracking` (Android name for `disabletracking`) and `disabledevicetracking` (for `anonymizeuser`)
+- `fb_login_id`, `af_lat`, `af_long`, `ad_revenue_amount` and the settings `deep_link_timeout` and `time_between_sessions` accept numeric strings
+- Validation for negative `deepLinkTimeout`
+
+### Fixed
+- Empty entries in `command_name` (e.g. `"a, "`) are skipped instead of being logged as an event with an empty name
+- `isDebug` is set first in `initialize`, so debug logs cover initialization
+- `setsharingfilterforpartners` rejects a `sharing_filter` that is not an array of strings instead of resetting the filter
+
+### Changed
+- AppsFlyer iOS SDK `>= 7.0.3, < 8.0` (SPM, CocoaPods), `>= 7.0.3` (Carthage); TealiumSwift `~> 2.19`
+- **Breaking:** `TealiumAppsFlyer.xcframework` (Carthage, release zip) is static and no longer bundles AppsFlyerLib. Link AppsFlyerLib in the app and set `TealiumAppsFlyer` to **Do Not Embed**. See [Installation](README.md#installation)
+- **Breaking:** remove your `AppsFlyerLib.shared().start()` call from `applicationDidBecomeActive`. SDK 7 starts inside the session-ready listener; `AppsFlyerSessionMode` decides who owns it
+- **Breaking:** `onReady` means "AppsFlyer has credentials" and runs on the main thread. Every command's SDK call queues until then and runs in command order
+- **Breaking:** `disabletracking` requires `stop_tracking` (no longer defaults to `false`)
+- **Breaking:** initializers require `sessionMode`: `AppsFlyerInstance(sessionMode:)`, `AppsFlyerInstance(tealium:sessionMode:logLevel:)`, `AppsFlyerRemoteCommand(sessionMode:type:logLevel:)` (`logLevel` defaults to `.error`). `AppsFlyerRemoteCommand(appsFlyerInstance:type:)` has no default instance
+- **Breaking:** `AppsFlyerCommand` protocol changed (`setUserPhone(countryCode:phoneNumber:)`, new command methods); update custom conformances
+- **Breaking:** `AppsFlyerInstance(tealium:sessionMode:logLevel:)` also sets `deepLinkDelegate`. If the app has its own, set it afterwards and forward to `didResolveDeepLink(_:)`
+- App-open attribution comes from `didResolveDeepLink` (SDK 7 removed `onAppOpenAttribution`). `app_open_attribution` keeps its name but carries `DeepLink.clickEvent` instead of the `onAppOpenAttribution` dictionary, so its keys can differ; deferred links are reported only as `conversion_data_received`
+- `conversion_data_received` carries the conversion data (3.0.0 tracked it without data) and is no longer tracked when `is_first_launch` is missing or not a Bool (3.0.0 tracked it in that case)
+- `RemoteCommandLogger` is public
+- Errors are logged as typed `AppsFlyerCommandError` through `RemoteCommandLogger` instead of `print`
+- Standardized parameter names and command structures
+- Internal: deprecated SDK methods replaced, `AppsFlyerConstants.Configuration` is a `String` enum, IDFA/IDFV settings handle deprecations
+
+### Removed
+- **Breaking:** `setuseremails` and its `customer_emails`/`email_hash_type` parameters (removed in SDK 7). Use `setuseremail` with `email`, and unmap the old command, or it is logged as a custom event
+- **Breaking:** the public `AppsFlyerConstants.EventCommandNames` and `AppsFlyerConstants.Events` are removed; event names are resolved internally through `eventsMap`
+- **Breaking:** `wait_for_att_user_authorization_timeout_interval`, ignored by SDK 7. Use `.appManaged` to wait for ATT consent
+
+## [3.0.0] - 2024-03-15
+
+### Added
+- Carthage/SPM build and publish scripts (`publish.sh`, `xcframeworks.sh`)
+
+### Changed
+- Replace `TealiumRegistration` and notification-based initialization with `onReady` callbacks
+
+### Fixed
+- Resolve XCFramework build issues caused by naming conflict with `AppsFlyerLib` class
+
+## [2.1.2] - 2023-02-22
+
+### Fixed
+- Remove `arm64` architecture exclusion for simulators (was causing build failures on Apple Silicon Macs)
+
+## [2.1.1] - 2023-02-08
+
+### Added
+- Custom command support
+
+### Changed
+- Update AppsFlyer SDK version
+- Update to latest tealium-swift SDK
+
+## [2.1.0] - 2022-02-03
+
+### Added
+- Remote command `name` and `version` metadata (used by TealiumSwift to track active remote commands)
+
+### Fixed
+- Fix remote command interoperability with TealiumSwift 2.5+
+
+### Changed
+- Use JSON file for Carthage dependency resolution
+- Update SPM to `upToNextMajor` version strategy
+- Update podspec for Tealium 2.6
+
+## [2.0.0] - 2020-10-20
+
+### Added
+- JSON-based remote command implementation
+- XCFramework support
+
+### Changed
+- Rename `Tracker` to `Instance` throughout the codebase
+- Refactor to adopt JSON remote command structure
+
+## [1.0.1] - 2020-06-05
+
+### Changed
+- Sample app updates and finalize remote command implementation
+- Update Objective-C interoperability files
+
+## [1.0.0] - 2020-05-06
+
+### Added
+- Initial stable release
+- Objective-C delegate methods
+- Constants definitions
+
+## [0.0.1] - 2020-04-06
+
+### Added
+- Initial pre-release version

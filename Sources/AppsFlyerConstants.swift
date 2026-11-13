@@ -7,115 +7,177 @@
 //
 
 import Foundation
+import AppsFlyerLib
 
 public enum AppsFlyerConstants {
-    
+
     static let commandName = "command_name"
     static let separator: Character = ","
     static let commandId = "appsflyer"
     static let description = "AppsFlyer Remote Command"
-    static let errorPrefix = "AppsFlyer Error: "
     static let attributionLog = "AppsFlyer Attribution: "
-    static let version = "3.0.0"
-    
-    /// Standard AppsFlyer events: https://support.appsflyer.com/hc/en-us/articles/115005544169#Event-Types
-    public enum EventCommandNames: String, CaseIterable {
-        case achievelevel
-        case adclick
-        case adview
-        case addpaymentinfo
-        case addtocart
-        case addtowishlist
-        case completeregistration
-        case completetutorial
-        case viewedcontent
-        case search
-        case rate
-        case starttrial
-        case subscribe
-        case initiatecheckout
-        case purchase
-        case unlockachievement
-        case spentcredits
-        case listview
-        case travelbooking
-        case share
-        case invite
-        case reengage
-        case update
-        case login
-        case customersegment
-        case pushnotificationopened
-    }
-    
-    public enum CommandNames: String {
+    static let version = "4.0.0"
+
+    /// Standard AppsFlyer events: https://dev.appsflyer.com/hc/docs/in-app-events-ios
+    static let eventsMap: [String: String] = [
+        "achievelevel": AFEventLevelAchieved,
+        "adclick": AFEventAdClick,
+        "adview": AFEventAdView,
+        "addpaymentinfo": AFEventAddPaymentInfo,
+        "addtocart": AFEventAddToCart,
+        "addtowishlist": AFEventAddToWishlist,
+        "completeregistration": AFEventCompleteRegistration,
+        "completetutorial": AFEventTutorial_completion,
+        "viewedcontent": AFEventContentView,
+        "search": AFEventSearch,
+        "rate": AFEventRate,
+        "starttrial": AFEventStartTrial,
+        "subscribe": AFEventSubscribe,
+        "initiatecheckout": AFEventInitiatedCheckout,
+        "purchase": AFEventPurchase,
+        "unlockachievement": AFEventAchievementUnlocked,
+        "spentcredits": AFEventSpentCredits,
+        "listview": AFEventListView,
+        "travelbooking": AFEventTravelBooking,
+        "share": AFEventShare,
+        "invite": AFEventInvite,
+        "reengage": AFEventReEngage,
+        "update": AFEventUpdate,
+        "login": AFEventLogin,
+        "customersegment": AFEventCustomerSegment,
+        "pushnotificationopened": AFEventOpenedFromPushNotification,
+        "locationcoordinates": AFEventLocation,
+        // Android naming aliases — both variants accepted on all platforms.
+        "levelachieved": AFEventLevelAchieved,
+        "contentview": AFEventContentView,
+        "tutorialcompletion": AFEventTutorial_completion,
+        "achievementunlocked": AFEventAchievementUnlocked,
+        "openfrompushnotification": AFEventOpenedFromPushNotification
+    ]
+
+    /// Command names come from the AppsFlyer SDK https://dev.appsflyer.com/hc/docs/ios-sdk-reference-appsflyerlib
+    public enum CommandNames: String, CaseIterable {
         case initialize = "initialize"
         case trackLocation = "tracklocation"
         case setHost = "sethost"
-        case setUserEmails = "setuseremails"
+        case setUserEmail = "setuseremail"
+        case setUserFirstName = "setuserfirstname"
+        case setUserLastName = "setuserlastname"
+        case setUserFbLoginId = "setuserfbloginid"
+        case clearUserPii = "clearuserpii"
         case setCurrencyCode = "setcurrencycode"
-        case setCustomerId = "setcustomerid"
+        case setCustomerId = "setcustomerid" // customerUserID
         case disableTracking = "disabletracking"
+        /// Android alias for `disableTracking` — enables shared cross-platform TiQ tags.
+        case stopTracking = "stoptracking"
+        case anonymizeUser = "anonymizeuser"
+        /// Android alias for `anonymizeUser` — kept for backwards compatibility.
+        case disableDeviceTracking = "disabledevicetracking"
         case resolveDeepLinkUrls = "resolvedeeplinkurls"
+        case setUserPhone = "setuserphone"
+        case logAdRevenue = "logadrevenue"
+        case setConsentData = "setconsentdata"
+        case setPartnerData = "setpartnerdata"
+        case setSharingFilterForPartners = "setsharingfilterforpartners"
+        case handleOpen = "handleopen"
+        case setCurrentDeviceLanguage = "setcurrentdevicelanguage"
+        case setAppInviteOneLink = "setappinviteonelink"
+
+        /// Resolves a command string to a CommandNames case. Case-insensitive and trims whitespace.
+        /// Returns nil when the string is not a built-in command — callers should fall back to
+        /// treating it as a custom/standard event name.
+        public static func fromString(_ command: String) -> CommandNames? {
+            let normalized = command.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+            return CommandNames(rawValue: normalized)
+        }
     }
-    
-    public enum Configuration {
-        static let appId = "app_id"
-        static let appDevKey = "app_dev_key"
+
+    public enum Configuration: String, CaseIterable {
+        case appId = "app_id" // appleAppID
+        case appDevKey = "app_dev_key" // appsFlyerDevKey
+        case settings = "settings"
+    }
+
+    /// Settings names come from the AppsFlyer SDK https://dev.appsflyer.com/hc/docs/ios-sdk-reference-appsflyerlib
+    public enum Settings {
         static let debug = "debug"
         static let disableAdTracking = "disable_ad_tracking"
+        /// Android cross-platform alias — accepted alongside the canonical iOS key.
+        static let disableAdvertisingIdentifiersAlias = "disable_advertising_identifiers"
+        static let disableAppleAdsAttribution = "disable_apple_ads_attribution"
         static let disableAppleAdTracking = "disable_apple_ad_tracking"
         static let minTimeBetweenSessions = "time_between_sessions"
         static let anonymizeUser = "anonymize_user"
         static let collectDeviceName = "collect_device_name"
         static let customData = "custom_data"
-        static let settings = "settings"
+        static let enableTCFDataCollection = "enable_tcf_data_collection"
+        static let deepLinkTimeout = "deep_link_timeout"
+        static let oneLinkCustomDomains = "one_link_custom_domains"
+        static let facebookDeferredAppLink = "facebook_deferred_app_link"
+        static let pushNotificationDeepLinkPath = "push_notification_deep_link_path"
+        static let deepLinkParameters = "deep_link_parameters"
+        static let enableFacebookDeferredApplinks = "enable_facebook_deferred_applinks"
+        static let disableIDFVCollection = "disable_idfv_collection"
     }
 
     public enum Parameters {
         static let latitude = "af_lat"
         static let longitude = "af_long"
-        static let pushPayload = "af_push_payload"
         static let host = "host"
         static let hostPrefix = "host_prefix"
-        static let emails = "customer_emails"
-        static let cryptType = "email_hash_type"
+        static let email = "email"
         static let currency = "af_currency"
         static let customerId = "af_customer_user_id"
         static let stopTracking = "stop_tracking"
+        static let anonymizeUser = "anonymize_user"
         static let deepLinkUrls = "af_deep_link"
+        /// TiQ UI labels this key as "resolve_deep_links" — accepted as a fallback to avoid silent failures.
+        static let deepLinkUrlsLegacyTiQ = "resolve_deep_links"
         static let event = "event"
+
+        // Hashed PII (for setUserPhone / setUserFirstName / setUserLastName / setUserFbLoginId)
+        static let phoneNumber = "phone_number"
+        static let countryCode = "country_code"
+        static let firstName = "first_name"
+        static let lastName = "last_name"
+        static let fbLoginId = "fb_login_id"
+
+        // Deep link parameters configuration (for appendParametersToDeepLinkingURL)
+        static let deepLinkContains = "contains"
+        static let deepLinkParameters = "parameters"
+
+        // Ad revenue parameters (for logAdRevenue)
+        static let monetizationNetwork = "monetization_network"
+        static let mediationNetwork = "mediation_network"
+        static let adRevenueCurrency = "ad_revenue_currency"
+        static let adRevenueAmount = "ad_revenue_amount"
+        static let adRevenueAdditionalParams = "ad_revenue_additional_params"
+
+        // Consent data parameters (for setConsentData)
+        static let isUserSubjectToGDPR = "is_user_subject_to_gdpr"
+        static let hasConsentForDataUsage = "has_consent_for_data_usage"
+        static let hasConsentForAdsPersonalization = "has_consent_for_ads_personalization"
+        static let hasConsentForAdStorage = "has_consent_for_ad_storage"
+
+        // Partner data parameters (for setPartnerData)
+        static let partnerId = "partner_id"
+        static let partnerInfo = "partner_info"
+
+        // Sharing filter parameters (for setSharingFilterForPartners)
+        static let sharingFilter = "sharing_filter"
+
+        // Deep link handling parameters
+        static let url = "url"
+        static let sourceApplication = "source_application"
+        static let annotation = "annotation"
+
+        // Device language (for setCurrentDeviceLanguage)
+        static let deviceLanguage = "device_language"
+
+        // App invite OneLink (for setAppInviteOneLink)
+        static let appInviteOneLinkID = "app_invite_onelink_id"
     }
-    
-    public enum Events {
-        static let achievedLevel = "af_level_achieved"
-        static let addPaymentInfo = "af_add_payment_info"
-        static let addToCart = "af_add_to_cart"
-        static let addToWishlist = "af_add_to_wishlist"
-        static let completeRegistration = "af_complete_registration"
-        static let completeTutorial = "af_tutorial_completion"
-        static let initiateCheckout = "af_initiated_checkout"
-        static let purchase = "af_purchase"
-        static let subscribe = "af_subscribe"
-        static let startTrial = "af_start_trial"
-        static let rate = "af_rate"
-        static let search = "af_search"
-        static let spentCredits = "af_spent_credits"
-        static let unlockAchievement = "af_achievement_unlocked"
-        static let contentView = "af_content_view"
-        static let listView = "af_list_view"
-        static let adClick = "af_ad_click"
-        static let adView = "af_ad_view"
-        static let travelBooking = "af_travel_booking"
-        static let share = "af_share"
-        static let invite = "af_invite"
-        static let reEngage = "af_re_engage"
-        static let update = "af_update"
-        static let login = "af_login"
-        static let customerSegment = "af_customer_segment"
-        static let pushNotificationOpened = "af_opened_from_push_notification"
-    }
-    
+
     public enum Attribution {
         static let appOpen = "app_open_attribution"
         static let appOpenFailure = "app_open_attribution_failure"
@@ -129,5 +191,4 @@ public enum AppsFlyerConstants {
         static let campaign = "campaign"
         static let error = "appsflyer_error"
     }
-    
 }

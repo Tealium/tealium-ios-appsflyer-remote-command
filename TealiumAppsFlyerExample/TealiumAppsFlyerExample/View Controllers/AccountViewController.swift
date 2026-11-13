@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import AppsFlyerLib
 
 // Image Credit: https://www.flaticon.com/authors/freepik and
 // https://www.flaticon.com/authors/monkik 🙏
@@ -14,7 +15,13 @@ class AccountViewController: UIViewController {
 
     @IBOutlet weak var offersImage: UIImageView!
     @IBOutlet weak var groupNameTextField: UITextField!
-    
+    @IBOutlet weak var trackingSwitch: UISwitch!
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        trackingSwitch.isOn = !AppsFlyerLib.shared().isStopped
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         TealiumHelper.trackScreen(self, name: "account")
@@ -70,6 +77,227 @@ class AccountViewController: UIViewController {
         TealiumHelper.trackEvent(title: "rate", data: [AccountViewController.rating: rating])
     }
     
+    @IBAction func setAppsFlyerHostTapped(_ sender: UIButton) {
+        let ac = UIAlertController(title: "Set AppsFlyer Host", message: "Enter custom host and prefix for AppsFlyer tracking", preferredStyle: .alert)
+        
+        ac.addTextField { textField in
+            textField.placeholder = "Host (e.g., custom.appsflyer.com)"
+            textField.text = "custom.appsflyer.com"
+        }
+        
+        ac.addTextField { textField in
+            textField.placeholder = "Host Prefix (e.g., custom-prefix)"
+            textField.text = "custom-prefix"
+        }
+        
+        ac.addAction(UIAlertAction(title: "Set Host", style: .default) { _ in
+            guard let host = ac.textFields?[0].text, !host.isEmpty,
+                  let hostPrefix = ac.textFields?[1].text, !hostPrefix.isEmpty else {
+                return
+            }
+            
+            TealiumHelper.trackEvent(title: "set_host", data: [
+                AccountViewController.host: host,
+                AccountViewController.hostPrefix: hostPrefix
+            ])
+            
+            let successAlert = UIAlertController(title: "Success", message: "AppsFlyer host set to: \(host) with prefix: \(hostPrefix)", preferredStyle: .alert)
+            successAlert.addAction(UIAlertAction(title: "OK", style: .default))
+            self.present(successAlert, animated: true)
+        })
+        
+        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(ac, animated: true)
+    }
+    
+    @IBAction func trackingToggleTapped(_ sender: UISwitch) {
+        let isTrackingDisabled = !sender.isOn
+        TealiumHelper.trackEvent(title: "disable_tracking", data: [
+            AccountViewController.stopTracking: isTrackingDisabled
+        ])
+
+        let message = isTrackingDisabled ? "AppsFlyer tracking has been disabled (privacy mode)" : "AppsFlyer tracking has been enabled"
+        let ac = UIAlertController(title: "Tracking Status", message: message, preferredStyle: .alert)
+        ac.addAction(UIAlertAction(title: "OK", style: .default))
+        present(ac, animated: true)
+    }
+    
+    @IBAction func setConsentDataTapped(_ sender: UIButton) {
+        let ac = UIAlertController(title: "Set Consent Data", message: "Configure GDPR consent settings", preferredStyle: .alert)
+        
+        ac.addAction(UIAlertAction(title: "EU User - Full Consent", style: .default) { _ in
+            TealiumHelper.trackEvent(title: "set_consent", data: [
+                AccountViewController.isUserSubjectToGDPR: true,
+                AccountViewController.hasConsentForDataUsage: true,
+                AccountViewController.hasConsentForAdsPersonalization: true,
+                AccountViewController.hasConsentForAdStorage: true
+            ])
+            self.showConsentResult("Full consent granted for EU user")
+        })
+        
+        ac.addAction(UIAlertAction(title: "EU User - Limited Consent", style: .default) { _ in
+            TealiumHelper.trackEvent(title: "set_consent", data: [
+                AccountViewController.isUserSubjectToGDPR: true,
+                AccountViewController.hasConsentForDataUsage: true,
+                AccountViewController.hasConsentForAdsPersonalization: false,
+                AccountViewController.hasConsentForAdStorage: false
+            ])
+            self.showConsentResult("Limited consent for EU user (no ads personalization)")
+        })
+        
+        ac.addAction(UIAlertAction(title: "Non-EU User", style: .default) { _ in
+            // AppsFlyer requires the consent details to be left out when GDPR does not apply.
+            TealiumHelper.trackEvent(title: "set_consent", data: [
+                AccountViewController.isUserSubjectToGDPR: false
+            ])
+            self.showConsentResult("GDPR not applicable - consent details omitted")
+        })
+        
+        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(ac, animated: true)
+    }
+    
+    @IBAction func logAdRevenueTapped(_ sender: UIButton) {
+        let ac = UIAlertController(title: "Log Ad Revenue", message: "Test ad revenue tracking with different networks", preferredStyle: .alert)
+        
+        ac.addAction(UIAlertAction(title: "Google AdMob - $0.05", style: .default) { _ in
+            TealiumHelper.trackEvent(title: "ad_revenue", data: [
+                AccountViewController.monetizationNetwork: "AdMob",
+                AccountViewController.mediationNetwork: "googleadmob",
+                AccountViewController.adRevenueCurrency: "USD",
+                AccountViewController.adRevenueAmount: 0.05,
+                AccountViewController.adRevenueAdUnit: "ca-app-pub-123456789/1234567890",
+                AccountViewController.adRevenueAdType: "banner",
+                AccountViewController.adRevenuePlacement: "main_screen"
+            ])
+            self.showAdRevenueResult("AdMob banner ad revenue: $0.05")
+        })
+        
+        ac.addAction(UIAlertAction(title: "IronSource - $0.12", style: .default) { _ in
+            TealiumHelper.trackEvent(title: "ad_revenue", data: [
+                AccountViewController.monetizationNetwork: "IronSource",
+                AccountViewController.mediationNetwork: "ironsource",
+                AccountViewController.adRevenueCurrency: "USD",
+                AccountViewController.adRevenueAmount: 0.12,
+                AccountViewController.adRevenueInstanceId: "DefaultInterstitial",
+                AccountViewController.adRevenueAdType: "interstitial",
+                AccountViewController.adRevenueCountry: "US"
+            ])
+            self.showAdRevenueResult("IronSource interstitial ad revenue: $0.12")
+        })
+        
+        ac.addAction(UIAlertAction(title: "Unity - $0.08", style: .default) { _ in
+            TealiumHelper.trackEvent(title: "ad_revenue", data: [
+                AccountViewController.monetizationNetwork: "Unity",
+                AccountViewController.mediationNetwork: "unity",
+                AccountViewController.adRevenueCurrency: "USD",
+                AccountViewController.adRevenueAmount: 0.08,
+                AccountViewController.adRevenuePlacementId: "rewardedVideo",
+                AccountViewController.adRevenueAdType: "rewarded",
+                AccountViewController.adRevenueCompletion: true
+            ])
+            self.showAdRevenueResult("Unity rewarded video ad revenue: $0.08")
+        })
+        
+        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(ac, animated: true)
+    }
+    
+    @IBAction func setPartnerDataTapped(_ sender: UIButton) {
+        let ac = UIAlertController(title: "Set Partner Data", message: "Send custom data to AppsFlyer partners", preferredStyle: .alert)
+        
+        ac.addAction(UIAlertAction(title: "Analytics Partner", style: .default) { _ in
+            TealiumHelper.trackEvent(title: "set_partner_data", data: [
+                AccountViewController.partnerId: "analytics_partner_int",
+                AccountViewController.partnerPuid: "user_12345",
+                AccountViewController.partnerUserSegment: "premium",
+                AccountViewController.partnerLtv: 150.75,
+                AccountViewController.partnerEngagementScore: 8.5
+            ])
+            self.showPartnerDataResult("Analytics partner data sent")
+        })
+        
+        ac.addAction(UIAlertAction(title: "Marketing Partner", style: .default) { _ in
+            TealiumHelper.trackEvent(title: "set_partner_data", data: [
+                AccountViewController.partnerId: "marketing_partner_int",
+                AccountViewController.partnerPuid: "marketing_user_67890",
+                AccountViewController.partnerUserSegment: "high_value",
+                AccountViewController.partnerLtv: 299.99
+            ])
+            self.showPartnerDataResult("Marketing partner data sent")
+        })
+        
+        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(ac, animated: true)
+    }
+    
+    @IBAction func setDeviceLanguageTapped(_ sender: UIButton) {
+        let ac = UIAlertController(title: "Set Device Language", message: "Override the device language sent to AppsFlyer", preferredStyle: .alert)
+        ac.addTextField { textField in
+            textField.placeholder = "Language code (e.g., en, fr, de)"
+            textField.text = Locale.current.languageCode ?? "en"
+        }
+        ac.addAction(UIAlertAction(title: "Set", style: .default) { _ in
+            guard let language = ac.textFields?[0].text, !language.isEmpty else { return }
+            TealiumHelper.trackEvent(title: "set_device_language", data: [
+                AccountViewController.deviceLanguage: language
+            ])
+        })
+        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(ac, animated: true)
+    }
+
+    @IBAction func setSharingFilterTapped(_ sender: UIButton) {
+        let ac = UIAlertController(title: "Set Sharing Filter", message: "Control which partners receive data", preferredStyle: .alert)
+        
+        ac.addAction(UIAlertAction(title: "Block Facebook & Google", style: .default) { _ in
+            TealiumHelper.trackEvent(title: "set_sharing_filter", data: [
+                AccountViewController.sharingFilter: ["facebook_int", "googleads_int"]
+            ])
+            self.showSharingFilterResult("Blocked data sharing with Facebook and Google")
+        })
+        
+        ac.addAction(UIAlertAction(title: "Block All Partners", style: .default) { _ in
+            TealiumHelper.trackEvent(title: "set_sharing_filter", data: [
+                AccountViewController.sharingFilter: ["all"]
+            ])
+            self.showSharingFilterResult("Blocked data sharing with all partners")
+        })
+        
+        ac.addAction(UIAlertAction(title: "Reset Filter (Allow All)", style: .default) { _ in
+            TealiumHelper.trackEvent(title: "set_sharing_filter", data: [:])
+            self.showSharingFilterResult("Reset sharing filter - all partners allowed")
+        })
+        
+        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(ac, animated: true)
+    }
+    
+    // Helper methods for showing results
+    private func showConsentResult(_ message: String) {
+        let ac = UIAlertController(title: "Consent Updated", message: message, preferredStyle: .alert)
+        ac.addAction(UIAlertAction(title: "OK", style: .default))
+        present(ac, animated: true)
+    }
+    
+    private func showAdRevenueResult(_ message: String) {
+        let ac = UIAlertController(title: "Ad Revenue Logged", message: message, preferredStyle: .alert)
+        ac.addAction(UIAlertAction(title: "OK", style: .default))
+        present(ac, animated: true)
+    }
+    
+    private func showPartnerDataResult(_ message: String) {
+        let ac = UIAlertController(title: "Partner Data Sent", message: message, preferredStyle: .alert)
+        ac.addAction(UIAlertAction(title: "OK", style: .default))
+        present(ac, animated: true)
+    }
+    
+    private func showSharingFilterResult(_ message: String) {
+        let ac = UIAlertController(title: "Sharing Filter Updated", message: message, preferredStyle: .alert)
+        ac.addAction(UIAlertAction(title: "OK", style: .default))
+        present(ac, animated: true)
+    }
+    
 }
 
 extension AccountViewController: UITextFieldDelegate {
@@ -86,10 +314,38 @@ extension AccountViewController {
     static let contentType = "content_type"
     static let shareId = "share_id"
     static let adType = "ad_type"
-    static let adNetworkName = "ad_network_name"
     static let adPlacementId = "ad_placement_id"
     static let adSize = "ad_size"
     static let adMediatedName = "ad_mediated_name"
     static let groupName = "group_name"
     static let rating = "rating"
+    static let host = "host"
+    static let hostPrefix = "host_prefix"
+    static let stopTracking = "stop_tracking"
+    
+    // New function parameters
+    static let isUserSubjectToGDPR = "is_user_subject_to_gdpr"
+    static let hasConsentForDataUsage = "has_consent_for_data_usage"
+    static let hasConsentForAdsPersonalization = "has_consent_for_ads_personalization"
+    static let hasConsentForAdStorage = "has_consent_for_ad_storage"
+    
+    static let monetizationNetwork = "monetization_network"
+    static let mediationNetwork = "mediation_network"
+    static let adRevenueCurrency = "ad_revenue_currency"
+    static let adRevenueAmount = "ad_revenue_amount"
+    static let adRevenueAdUnit = "ad_revenue_ad_unit"
+    static let adRevenueAdType = "ad_revenue_ad_type"
+    static let adRevenuePlacement = "ad_revenue_placement"
+    static let adRevenueInstanceId = "ad_revenue_instance_id"
+    static let adRevenueCountry = "ad_revenue_country"
+    static let adRevenuePlacementId = "ad_revenue_placement_id"
+    static let adRevenueCompletion = "ad_revenue_completion"
+    static let partnerId = "partner_id"
+    static let partnerPuid = "partner_puid"
+    static let partnerUserSegment = "partner_user_segment"
+    static let partnerLtv = "partner_ltv"
+    static let partnerEngagementScore = "partner_engagement_score"
+    
+    static let sharingFilter = "sharing_filter"
+    static let deviceLanguage = "device_language"
 }

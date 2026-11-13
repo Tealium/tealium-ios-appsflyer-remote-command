@@ -87,7 +87,7 @@ class EcommerceMainViewController: UIViewController {
         ac.addAction(UIAlertAction(title: "OK", style: .default))
         present(ac, animated: true)
     }
-    
+
     @IBAction func trackLocation(_ sender: Any) {
         TealiumHelper.trackEvent(title: "track_location", data: [EcommerceMainViewController.latitude: 32.802353, EcommerceMainViewController.longitude: -117.241676])
         let ac = UIAlertController(title: "Tracking Location", message: "Tracking your location as San Diego ☀️🏖, enjoy the beach!", preferredStyle: .actionSheet)
@@ -115,6 +115,40 @@ class EcommerceMainViewController: UIViewController {
         hideAllViews(except: orderView)
     }
 
+    @IBAction func setPhoneNumberTapped(_ sender: UIButton) {
+        let ac = UIAlertController(title: "Set Phone Number", message: "Enter phone number for AppsFlyer tracking", preferredStyle: .alert)
+
+        ac.addTextField { textField in
+            textField.placeholder = "Country code (e.g., 1)"
+            textField.text = "1"
+            textField.keyboardType = .phonePad
+        }
+        ac.addTextField { textField in
+            textField.placeholder = "Phone number (e.g., 1234567890)"
+            textField.text = "1234567890"
+            textField.keyboardType = .phonePad
+        }
+
+        ac.addAction(UIAlertAction(title: "Set Phone", style: .default) { _ in
+            guard let countryCode = ac.textFields?[0].text, !countryCode.isEmpty,
+                  let phoneNumber = ac.textFields?[1].text, !phoneNumber.isEmpty else {
+                return
+            }
+
+            TealiumHelper.trackEvent(title: "set_phone_number", data: [
+                EcommerceMainViewController.countryCode: countryCode,
+                EcommerceMainViewController.phoneNumber: phoneNumber
+            ])
+
+            let successAlert = UIAlertController(title: "Success", message: "Phone number set to: \(phoneNumber)", preferredStyle: .alert)
+            successAlert.addAction(UIAlertAction(title: "OK", style: .default))
+            self.present(successAlert, animated: true)
+        })
+
+        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(ac, animated: true)
+    }
+
 }
 
 extension EcommerceMainViewController: UITextFieldDelegate {
@@ -133,4 +167,6 @@ extension EcommerceMainViewController {
     static let contentType = "content_type"
     static let shareId = "share_id"
     static let signUpMethod = "signup_method"
+    static let phoneNumber = "phone_number"
+    static let countryCode = "country_code"
 }
